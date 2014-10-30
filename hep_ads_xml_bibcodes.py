@@ -203,6 +203,7 @@ BIBCODE_DICT = {
     'IAUS':'IAU Symp.',
     'Icar':'Icarus',
     'IComM':'IEEE Commun.Mag.',
+    'ICRC':'Int.Cosmic Ray Conf.',
     'ICSE':'Impact Comput.Sci.Eng.',
     'IDAQP':'Inf.Dim.Anal.Quant.Probab.Rel.Top.',
     'IER':'Int.Elek.Rundsch.',
