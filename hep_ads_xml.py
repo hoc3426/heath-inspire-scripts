@@ -98,10 +98,10 @@ def create_xml(input_dict):
             return None
         match_obj = re.search(r'10.1051/epjconf/(\d{4})(\d\d)(\d{5})', doi)
         if match_obj:
-        journal = 'EPJ Web Conf.'
-        volume  = match_obj.group(2)
-        page    = match_obj.group(3)
-        pubyear = match_obj.group(1)
+            journal = 'EPJ Web Conf.'
+            volume  = match_obj.group(2)
+            page    = match_obj.group(3)
+            pubyear = match_obj.group(1)
     #Phys.Rev.A.86:013639,2012
     #J.Appl.Phys.100:084104,2006
     match_obj = re.search(r'(.*\w\.)(\d+)\:(\w+)\,(\d{4})', journal)
