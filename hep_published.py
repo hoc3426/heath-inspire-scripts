@@ -35,9 +35,8 @@ def create_xml(recid, type_code):
 
 
 def main(paper_type):
-    filename = 'tmp_' + __file__ + '_' + paper_type
-    new_suffix = '_' + paper_type + '_append.out'
-    filename = re.sub('.py', new_suffix, filename)
+    filename = 'tmp_' + re.sub('.py', '', __file__)
+    filename += '_' + paper_type + '_append.out'
     output = open(filename,'w')
     output.write('<collection>')
     search = ''
