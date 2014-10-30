@@ -29,7 +29,7 @@ BADRECS = [1299943, 1263270, 782224, 799038, 834458]
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
 INPUT_COUNTER = 1
-OUTPUT_COUNTER = 21
+OUTPUT_COUNTER = 5
 
 
 
@@ -76,6 +76,10 @@ def create_xml(input_dict):
     eprint  = element_dict['preprint_id']
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
+        search  =  '037__a:' + eprint
+        result = perform_request_search(p=search, cc='HEP')
+        if len(result) == 0:
+            return None
     doi     = element_dict['doi']
     bibcode = element_dict['journal_bibcode']
     journal = element_dict['journal_ref']
