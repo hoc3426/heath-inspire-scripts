@@ -15,14 +15,14 @@ import xml.etree.ElementTree as ET
 import re
 
 VERBOSE = 1
-DEBUG = 0
+DEBUG = 1
 
 #DOCUMENT = 'ADSmatches_updates.xml'
 #DOCUMENT = 'ADS_astro2.xml'
 #DOCUMENT = 'ADS_cond.xml'
 #DOCUMENT = 'ADS_math.xml'
 DOCUMENT = 'ADSmatches.xml'
-#DOCUMENT = 'tmp.xml'
+DOCUMENT = 'test.xml'
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
 #INPUT_COUNTER = 66885
@@ -37,7 +37,9 @@ def journal_fix(journal):
     """
     Puts the journal name into INSPIRE form.
     """
+    print journal
     if re.match(r'^\w+\&?\w+$', journal):
+        print 'ads', journal
         for key in BIBCODE_DICT:
             if journal == key:
                 return BIBCODE_DICT[key]
@@ -73,24 +75,23 @@ def create_xml(input_dict):
         if element in input_dict:
             element_dict[element] = input_dict[element]
         #print element, '=', element_dict[element]
-    eprint  = element_dict['preprint_id']
+    eprint        = element_dict['preprint_id']
+    doi           = element_dict['doi']
+    bibcode       = element_dict['journal_bibcode']
+    journal_ref   = element_dict['journal_ref']
+    journal       = ''
+    volume        = ''
+    volume_letter = ''
+    page          = ''
+    page_letter   = ''
+    if VERBOSE == 2:
+        print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
         search  =  '037__a:' + eprint
         result = perform_request_search(p=search, cc='HEP')
         if len(result) == 0:
             return None
-    doi     = element_dict['doi']
-    bibcode = element_dict['journal_bibcode']
-    journal = element_dict['journal_ref']
-    volume  = ''
-    page    = ''
-    if VERBOSE == 2:
-        print element_dict
-    search  = '035__a:' + bibcode
-    result = perform_request_search(p=search, cc='HEP')
-    if len(result) == 1:
-        return None
     if doi:
         if re.search(r'10.1103/PhysRev[CD]', doi):
             return None
@@ -106,29 +107,43 @@ def create_xml(input_dict):
             volume  = match_obj.group(2)
             page    = match_obj.group(3)
             pubyear = match_obj.group(1)
-    #Phys.Rev.A.86:013639,2012
-    #J.Appl.Phys.100:084104,2006
-    match_obj = re.search(r'(.*\w\.)(\d+)\:(\w+)\,(\d{4})', journal)
-    if match_obj:
-        journal = match_obj.group(1)
-        volume  = match_obj.group(2)
-        page    = match_obj.group(3)
-        pubyear = match_obj.group(4)
-        if re.search(r'\.\.\d+L\.', bibcode):
-            page = 'L' + page
-    if journal and volume:
-        match_obj = re.match(r'^(.*\.)(\w)\.$', journal)
+    if bibcode:
+        search  = '035__a:' + bibcode
+        result = perform_request_search(p=search, cc='HEP')
+        if len(result) == 1:
+            return None
+        if re.search(r'PhRv[CD]', bibcode):
+            return None
+        match_obj = re.match(r'^\d{4}(\w+)', bibcode)
         if match_obj:
-            letter   = match_obj.group(2)
-            if letter in ['A', 'B', 'C', 'D', 'E', 'X']:
-                volume   = letter + volume
-                journal  = match_obj.group(1)
-        journal = journal_fix(journal)
-        if not journal:
-            match_obj = re.match(r'^\d{4}(\w+)', bibcode)
-            if match_obj:
-                journal = journal_fix(match_obj.group(1))
+            journal_test = journal_fix(match_obj.group(1))
+            if journal_test:
+                match_obj = re.match(r'(.*)\:\:(\w+)', journal_test)
+                if match_obj:
+                    journal = match_obj.group(1)
+                    volume_letter = match_obj.group(2)
+        if re.search(r'\.\.\d+L\.', bibcode):
+            page_letter = 'L'
+    if journal_ref:
+        #Phys.Rev.A.86:013639,2012
+        #J.Appl.Phys.100:084104,2006
+        match_obj = re.search(r'(.*\w\.)(\d+)\:(\w+)\,(\d{4})', journal_ref)
+        if match_obj:
+            volume  = match_obj.group(2)
+            page    = match_obj.group(3)
+            pubyear = match_obj.group(4)
+            if not journal:
+                journal = match_obj.group(1)
+                match_obj = re.match(r'^(.*\.)(\w)\.$', journal)
+                if match_obj:
+                    letter   = match_obj.group(2)
+                    if letter in ['A', 'B', 'C', 'D', 'E', 'G', 'X']:
+                        volume_letter = letter
+                        journal  = match_obj.group(1)
+                journal = journal_fix(journal)
     if eprint and journal and volume and page and pubyear:
+        volume  = volume_letter + volume
+        page    = page_letter + page
         search = 'find j "' + journal + ',' + volume + ',' + page + '"'
         result = perform_request_search(p=search, cc='HEP')
         if len(result) == 1:
