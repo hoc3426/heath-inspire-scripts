@@ -37,9 +37,7 @@ def journal_fix(journal):
     """
     Puts the journal name into INSPIRE form.
     """
-    print journal
     if re.match(r'^\w+\&?\w+$', journal):
-        print 'ads', journal
         for key in BIBCODE_DICT:
             if journal == key:
                 return BIBCODE_DICT[key]
@@ -116,9 +114,9 @@ def create_xml(input_dict):
             return None
         match_obj = re.match(r'^\d{4}(\w+)', bibcode)
         if match_obj:
-            journal_test = journal_fix(match_obj.group(1))
-            if journal_test:
-                match_obj = re.match(r'(.*)\:\:(\w+)', journal_test)
+            journal = journal_fix(match_obj.group(1))
+            if journal:
+                match_obj = re.match(r'(.*)\:\:(\w+)', journal)
                 if match_obj:
                     journal = match_obj.group(1)
                     volume_letter = match_obj.group(2)
