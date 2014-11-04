@@ -15,21 +15,21 @@ import xml.etree.ElementTree as ET
 import re
 
 VERBOSE = 1
-DEBUG = 1
+DEBUG = 0
 
 #DOCUMENT = 'ADSmatches_updates.xml'
 #DOCUMENT = 'ADS_astro2.xml'
 #DOCUMENT = 'ADS_cond.xml'
 #DOCUMENT = 'ADS_math.xml'
 DOCUMENT = 'ADSmatches.xml'
-DOCUMENT = 'test.xml'
+#DOCUMENT = 'test.xml'
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
 #INPUT_COUNTER = 66885
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
 INPUT_COUNTER = 1
-OUTPUT_COUNTER = 5
+OUTPUT_COUNTER = 100
 
 
 
@@ -156,7 +156,11 @@ def create_xml(input_dict):
             record = {}
             record_add_field(record, '001', controlfield_value=str(recid))
             pubnote = [('p', journal), ('v', volume), ('c', page)]
-            pubnote.append(('y', pubyear))
+            if journal == 'ICRC':
+                journal = journal + ' ' + pubyear
+                pubnote = [('q', journal), ('v', volume), ('c', page)]
+            else:
+                pubnote.append(('y', pubyear))
             record_add_field(record, '773', '', '', subfields=pubnote)
             if doi:
                 doi  = [('a', doi), ('2', 'DOI'), ('9', 'ADS')]
