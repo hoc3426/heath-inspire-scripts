@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: UTF-8 -*-
+
 import unicodedata
 import re
 import os
@@ -59,8 +59,8 @@ for book in books:
     output2 = open(fileName2,'w')
     for i in open(fileName,'r'):
         i = re.sub(r'\n',r'',i)
-        i = re.sub(r'</?pre>','',i)   
-        i = re.sub(r'<pre style="margin: 1em 0px;">,'',i)
+        i = re.sub(r'</?pre>','',i)
+        i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
         if re.search(author,i):
             j = i.lower()
             #j = re.sub(r',',r' ',j)
