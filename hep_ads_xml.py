@@ -17,19 +17,19 @@ import re
 VERBOSE = 1
 DEBUG = 0
 
-#DOCUMENT = 'ADSmatches_updates.xml'
+DOCUMENT = 'ADSmatches_updates.xml'
 #DOCUMENT = 'ADS_astro2.xml'
 #DOCUMENT = 'ADS_cond.xml'
 #DOCUMENT = 'ADS_math.xml'
-DOCUMENT = 'ADSmatches.xml'
-#DOCUMENT = 'test.xml'
+#DOCUMENT = 'ADSmatches.xml'
+DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc'
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
 #INPUT_COUNTER = 66885
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
 INPUT_COUNTER = 1
-OUTPUT_COUNTER = 100
+OUTPUT_COUNTER = 201
 
 
 

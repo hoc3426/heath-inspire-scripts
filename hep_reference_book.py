@@ -31,6 +31,7 @@ books = [
 books = [['Streater','pct.*spin and statistics.*and all that','0691070628','290343']]
 #books = [['Chandrasekhar','mathematical theory of black holes','9780198503705','224457']]
 books = [['Birrell', 'quantum fields in curved space', '0521278589', '181166']]
+books = [['W5013','w5013','CERN-W5013','863473']]
 for book in books:
     referenceFlag = False
     date = False
