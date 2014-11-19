@@ -221,6 +221,7 @@ search = '961__x:1993-* and topcite 5+'
 #search="find recid 9189 or 9208 or 153191 or 152935"
 #search="find recid 24937"
 search = 'find date 2013 and recid:1255928->99999999'
+search = '037__a:fermilab-thesis* -245__a:/\$/'
 x = perform_request_search(p=search,cc='HEP')
 
 print "<?xml version=\"1.0\" ?>"

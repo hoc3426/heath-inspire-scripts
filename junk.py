@@ -16,7 +16,7 @@ from hep_convert_email_to_id import find_inspire_id_from_record
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 
-from hep_aff import get_aff
+#from hep_aff import get_aff
 
 if False:
   r = 1290484
@@ -95,18 +95,21 @@ search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 fileName = 'tmp_junk.out'
 output = open(fileName,'w')
 
-if False:
+if True:
   search = 'cn CMS and ac 300+ and 037__a:fermilab*'
   search = 'cn ATLAS and ac 300+ and 037__a:fermilab*'
   search = '037__z:fermilab*'
   search = "0247_9:ads 035:/[0-9]L\./"
+  search = '693__e:cern-lhc-cms authorcount:2000+ 037__a:fermilab*'
   x = perform_request_search(p=search, cc='HEP')
   #print 'Number of Fermilab reports', len(x)
   #output.write(print_record(r,format='xm'))
 #  x = x[:50]
   for r in x:
-      output.write(print_record(r,ot=['001','773'],format='xm'))
-
+      try:
+          output.write(print_record(r,ot=['001','037'],format='xm'))
+      except:
+          print 'problem with', r
 #atsearch = '100__m:/\@/ or 700__m:/\@/'
 #x = perform_request_search(p=atsearch, cc='HEP')
 #for r in x:

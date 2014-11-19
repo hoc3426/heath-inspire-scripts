@@ -6,8 +6,9 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 
 
-JOURNAL_DICT = {"Astron.Astrophys.":"10.1051/0004-6361/",
+JOURNAL_PUBLISHED_DICT = {"Astron.Astrophys.":"10.1051/0004-6361/",
 "Astrophys.J.":"10.1088/0004-637X/",
+"Astrophys.J.Suppl.":"10.1088/0067-0049/",
 "JHEP":"10.1007/JHEP",
 "Mon.Not.Roy.Astron.Soc.":"10.1093/mnras",
 #"Nucl.Phys.":"10.1016/j.nuclphysb.",
@@ -41,7 +42,7 @@ def main(paper_type):
     output.write('<collection>')
     search = ''
     if paper_type == 'pub':
-        type_dict = JOURNAL_DICT
+        type_dict = JOURNAL_PUBLISHED_DICT
         type_code = 'Published'
     elif paper_type == 'conf':
         type_dict = CONFERENCE_DICT
@@ -59,7 +60,7 @@ def main(paper_type):
         #search += ' -980:Introductory'
         #search += ' -245:/erratum/'
         result = perform_request_search(p=search, cc='HEP')
-        result = result[:200]
+        result = result[:1000]
         if len(result):
             for recid in result:
                 record_update = create_xml(recid, type_code)

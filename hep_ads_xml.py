@@ -22,7 +22,7 @@ DOCUMENT = 'ADSmatches_updates.xml'
 #DOCUMENT = 'ADS_cond.xml'
 #DOCUMENT = 'ADS_math.xml'
 #DOCUMENT = 'ADSmatches.xml'
-DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc'
+DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
 #INPUT_COUNTER = 66885
@@ -37,26 +37,28 @@ def journal_fix(journal):
     """
     Puts the journal name into INSPIRE form.
     """
-    if re.match(r'^\w+\&?\w+$', journal):
+    if journal == 'PhDT':
+        return None
+    if re.match(r'^[A-Z]\w*\&?\w+$', journal):
         for key in BIBCODE_DICT:
             if journal == key:
                 return BIBCODE_DICT[key]
-    for key in JOURNAL_DICT:
-            if journal == key:
-                return JOURNAL_DICT[key]
-    journal = re.sub(r'^Acta\.', r'Acta ', journal)
-    search = '711__a:"' + journal + '"'
-    result = perform_request_search(p=search, cc='Journals')
-    if len(result) == 1:
-        return journal
-    elif re.search(r'\.$', journal):
-        journal = re.sub(r'\.$', r'', journal)
-        journal_iter = journal_fix(journal)
-        return journal_iter
-    else:
+    #for key in JOURNAL_DICT:
+    #        if journal == key:
+    #            return JOURNAL_DICT[key]
+    #journal = re.sub(r'^Acta\.', r'Acta ', journal)
+    #search = '711__a:"' + journal + '"'
+    #result = perform_request_search(p=search, cc='Journals')
+    #if len(result) == 1:
+    #    return journal
+    #elif re.search(r'\.$', journal):
+    #    journal = re.sub(r'\.$', r'', journal)
+    #    journal_iter = journal_fix(journal)
+    #    return journal_iter   
+    #else:
         if VERBOSE > 0:
             print 'BAD JOURNAL', journal
-        return None
+    return None
 
 def create_xml(input_dict):
     """

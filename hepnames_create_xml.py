@@ -40,7 +40,10 @@ def xml_affiliations(affiliations):
         country = ''
         zip     = '' 
         address = ''
-        search = '110__u:"' + affiliation + '"'
+        try:
+            search = '110__u:"' + affiliation + '"'
+        except:
+            print 'Problem affiliation', affiliation
         x = perform_request_search(p = search, cc = 'Institutions') 
         if len(x) == 1:
             y = get_fieldvalues(x[0], '110__a')
@@ -87,7 +90,10 @@ def xml_authors(authors):
         output += str(authors[key]['affiliation_id']) + '" connection="member"/>\n'
         output += '      </cal:authorAffiliations>\n'
         output += '      <cal:authorids>\n'
-        output += '        <cal:authorid source="INSPIRE">' + authors[key]['author_id'] + '</cal:authorid>\n'
+        try:
+            output += '        <cal:authorid source="INSPIRE">' + authors[key]['author_id'] + '</cal:authorid>\n'
+        except:
+            print authors[key]
         output += '      </cal:authorids>\n'
         output += '    </foaf:Person>\n'
     output  += '  </cal:authors>\n'

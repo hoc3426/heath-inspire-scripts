@@ -12,7 +12,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 
 import re
 
-from hep_ads_xmltree import JOURNAL_DICT
+from hep_ads_xml_bibcodes import BIBCODE_DICT
 
 def create_xml(recid):
     """
@@ -58,8 +58,8 @@ def main():
     filename = re.sub('.py', '_correct.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
-    for key in JOURNAL_DICT:
-        journal = JOURNAL_DICT[key]
+    for key in BIBCODE_DICT:
+        journal = BIBCODE_DICT[key]
         print journal
         search = '773__p:"' + journal + '" 035__9:ads'
         result = perform_request_search(p=search, cc = 'HEP')

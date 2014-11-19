@@ -8,9 +8,10 @@ eprints = ['gr-qc']
 for eprint in eprints :
   print eprint
   search = "find primarch " + eprint + " and tc p and (jy 2012 not jy 2011 not jy 2010 not jy 2009 not jy 2008 not jy 2007)"
+  search = "035__9:ads - 035__a:/ICRC/"
   x = perform_request_search(p=search,cc='HEP')
   journals = []
-  for r in x :
+  for r in x :    
     v = str(get_fieldvalues(r,'773__p')[0]) + str(get_fieldvalues(r,'773__v')[0])
     v = re.sub(r"\d", "", v)
     journals.append(v)
