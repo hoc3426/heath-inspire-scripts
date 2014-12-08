@@ -14,7 +14,7 @@ from hep_ads_xml_bibcodes import BIBCODE_DICT
 import xml.etree.ElementTree as ET
 import re
 
-VERBOSE = 1
+VERBOSE = 0
 DEBUG = 0
 
 DOCUMENT = 'ADSmatches_updates.xml'
@@ -23,13 +23,15 @@ DOCUMENT = 'ADSmatches_updates.xml'
 #DOCUMENT = 'ADS_math.xml'
 #DOCUMENT = 'ADSmatches.xml'
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
+#DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
+BADRECS = []
 #INPUT_COUNTER = 66885
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
-INPUT_COUNTER = 1
-OUTPUT_COUNTER = 201
+INPUT_COUNTER = 341600
+OUTPUT_COUNTER = 501
 
 
 
@@ -88,8 +90,10 @@ def create_xml(input_dict):
         print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
-        search  =  '037__a:' + eprint
+        search  =  '037__a:' + eprint + ' or 037__a:arXiv:' + eprint
         result = perform_request_search(p=search, cc='HEP')
+        if VERBOSE == 2:
+            print search, result
         if len(result) == 0:
             return None
     if doi:
@@ -114,9 +118,13 @@ def create_xml(input_dict):
             return None
         if re.search(r'PhRv[CD]', bibcode):
             return None
-        match_obj = re.match(r'^\d{4}(\w+)', bibcode)
+        match_obj = re.match(r'^\d{4}(\w+\&?\w+)', bibcode)
         if match_obj:
+            if VERBOSE == 2:
+                print 
             journal = journal_fix(match_obj.group(1))
+            if VERBOSE == 2:
+                print journal
             if journal:
                 match_obj = re.match(r'(.*)\:\:(\w+)', journal)
                 if match_obj:
@@ -124,6 +132,10 @@ def create_xml(input_dict):
                     volume_letter = match_obj.group(2)
         if re.search(r'\.\.\d+L\.', bibcode):
             page_letter = 'L'
+        elif re.search(r'\.\.\d+A\.', bibcode):
+            page_letter = 'A'
+        if VERBOSE == 2:
+            print 'page_letter = ', page_letter
     if journal_ref:
         #Phys.Rev.A.86:013639,2012
         #J.Appl.Phys.100:084104,2006
@@ -140,7 +152,13 @@ def create_xml(input_dict):
                     if letter in ['A', 'B', 'C', 'D', 'E', 'G', 'X']:
                         volume_letter = letter
                         journal  = match_obj.group(1)
+                if VERBOSE == 2:
+                    print journal
                 journal = journal_fix(journal)
+                if VERBOSE == 2:
+                    print journal
+        if VERBOSE == 2:
+            print journal, volume, page, pubyear
     if eprint and journal and volume and page and pubyear:
         volume  = volume_letter + volume
         page    = page_letter + page
@@ -149,6 +167,8 @@ def create_xml(input_dict):
         if len(result) == 1:
             return None
         search = "find eprint " + eprint + " not tc p"
+        if VERBOSE == 2:
+            print search
         result = perform_request_search(p=search, cc='HEP')
         if len(result) == 1 :
             recid = result[0]
