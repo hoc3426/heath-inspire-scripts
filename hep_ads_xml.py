@@ -10,6 +10,7 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from hep_ads_xml_bibcodes import JOURNAL_DICT
 from hep_ads_xml_bibcodes import BIBCODE_DICT
+from hep_published import JOURNAL_PUBLISHED_DICT
 
 import xml.etree.ElementTree as ET
 import re
@@ -30,8 +31,8 @@ BADRECS = []
 #INPUT_COUNTER = 66885
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
-INPUT_COUNTER = 341600
-OUTPUT_COUNTER = 501
+INPUT_COUNTER = 350000
+OUTPUT_COUNTER = 11
 
 
 
@@ -184,6 +185,9 @@ def create_xml(input_dict):
             else:
                 pubnote.append(('y', pubyear))
             record_add_field(record, '773', '', '', subfields=pubnote)
+            if journal in JOURNAL_PUBLISHED_DICT:
+                collection = [('a', 'Published')]
+                record_add_field(record, '980', '', '', subfields=collection)
             if doi:
                 doi  = [('a', doi), ('2', 'DOI'), ('9', 'ADS')]
                 record_add_field(record, '024', '7', '', subfields=doi)
