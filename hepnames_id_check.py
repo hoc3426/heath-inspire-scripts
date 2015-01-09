@@ -1,48 +1,81 @@
-import re
+#import re
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
-from hep_convert_email_to_id import get_hepnames_recid_from_email
+#from hep_convert_email_to_id import get_hepnames_recid_from_email
+from hep_convert_email_to_id import find_inspire_id_from_record
 
-for i in [1, 2, 3]:
-  listOfIds = []
-  listOfIdsKnownDuplicate = []
-  if i == 1:
-    field = '035__a'
-    search = field + ':INSPIRE-*'
-  elif i == 2:
-#    emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
-#    reclist = perform_request_search(p = \
-#        emailsearch % (email, email, email, email), cc='HepNames')
-    field = '371__m'
-    search = field + ':/\@/'
-  elif i == 3:
-    field = '371__m'
-    search = field + ':/\,/'
-  x = perform_request_search(p=search,cc='HepNames')
-  for r in x:
-    if i == 3:
-      print 'https://inspirehep.net/record/' + str(r)
-    ids = get_fieldvalues(r,field)
-    for id in ids:
-      search = field + ':' + id
-      if i == 2:
-        email = id
-        emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
-        search = emailsearch % (email, email, email, email)
-      #if id in listOfIds and not id in listOfIdsKnownDuplicate:
-      if not id in listOfIdsKnownDuplicate:
-        #print 'Duplicate - ' + search
-        #print search
-        xx = perform_request_search(p=search,cc='HepNames')
-        if len(xx) > 1 :
-          #print 'Multiple records -  (' + str(len(xx)) + ') ' + search
-          print search
-          if i == 1:
-            search = '100__i:' + id + ' or 700__i:' + id
-            xxx = perform_request_search(p=search,cc='HEP')
-            if len(xxx) > 1 :
-              print '  Multiple records -  (' + str(len(xxx)) + ') ' + search
-          listOfIdsKnownDuplicate.append(id)
-      listOfIds.append(id)
- 
+#this is a comment
+
+VERBOSE = 1
+
+def main():
+    for counter in [1, 2, 3]:
+        hepnames_search_ids(counter)
+    name_duplicates()
+
+def hepnames_search_ids(counter):
+    list_of_ids = []
+    if counter == 1:
+        field = '035__a'
+        search = field + ':INSPIRE-*'
+    elif counter == 2:
+        field = '371__m'
+        search = field + r':/\@/'
+    elif counter == 3:
+        field = '371__m'
+        search = field + r':/\,/'
+    if VERBOSE == 1:
+        print search
+    result = perform_request_search(p=search, cc='HepNames')
+    for recid in result:
+        if counter == 3:
+            print 'https://inspirehep.net/record/' + str(recid)
+        id_values = get_fieldvalues(recid, field)
+        for id_value in id_values:
+            search = field + ':' + id_value
+            if counter == 2:
+                email = id_value
+                emailsearch = \
+                            '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
+                search = emailsearch % (email, email, email, email)
+            if not id_value in list_of_ids:
+                duplicate_id = perform_request_search(p=search, cc='HepNames')
+                if len(duplicate_id) > 1 :
+                    print search
+                    if counter == 1:
+                        search = '100__i:' + id_value + \
+                                 ' or 700__i:' + id_value
+                        hep_id_check = perform_request_search(p=search, \
+                                                              cc='HEP')
+                        if len(hep_id_check) > 1 :
+                            print '  Multiple records -  (' + \
+                                  str(len(hep_id_check)) + ') ' + search
+                list_of_ids.append(id_value)
+
+
+def name_duplicates():
+    author_id = None
+    author_name = None
+    already_checked = []
+    search = ''
+    search = '100__a:Z*'
+    result = perform_request_search(p=search, cc='HepNames')
+    for recid in result:
+        author_name = get_fieldvalues(recid, '100__a')[0]
+        if author_name not in already_checked:
+            already_checked.append(author_name)
+            search = 'find ea ' + author_name
+            result2 = perform_request_search(p=search, cc='HepNames')
+            if len(result2) > 1:
+                for recid2 in result2:
+                    author_id = find_inspire_id_from_record(recid2)
+                    print '{0:11d} {1:40s} {2:20s}'.\
+                          format(recid2, author_name, author_id)
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print 'Exiting'
 

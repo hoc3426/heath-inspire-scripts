@@ -62,7 +62,6 @@ def main():
     output.write('      padding: 7px;\n')
     output.write('  }\n')
     output.write('  </style>\n')
-    output.write('  </meta\n')
     output.write('</head>\n')
     output.write('<body>\n')
     output.write('<p><a href="http://ccd.fnal.gov/techpubs/fermilab_spires.html">\n')

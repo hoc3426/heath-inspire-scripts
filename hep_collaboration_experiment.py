@@ -32,7 +32,7 @@ def create_xml(recid, experiment):
     record = get_record(recid)
     correct_record = {}
     common_tags = {}
-    common_tags['693__'] = [('e', experiment)]
+    #common_tags['693__'] = [('e', experiment)]
     tags = ['693__','710__']
     for tag in tags:
         field_instances = record_get_field_instances(record, tag[0:3], tag[3], tag[4])
@@ -51,7 +51,7 @@ def create_xml(recid, experiment):
 
 def main():
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '.out', filename)
+    filename = re.sub('.py', '_append.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
     done_records = []

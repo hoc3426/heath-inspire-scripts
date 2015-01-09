@@ -60,7 +60,7 @@ def main(paper_type):
         #search += ' -980:Introductory'
         #search += ' -245:/erratum/'
         result = perform_request_search(p=search, cc='HEP')
-        result = result[:1000]
+        result = result[:500]
         if len(result):
             for recid in result:
                 record_update = create_xml(recid, type_code)

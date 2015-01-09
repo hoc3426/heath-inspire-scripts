@@ -15,10 +15,9 @@ from hep_published import JOURNAL_PUBLISHED_DICT
 import xml.etree.ElementTree as ET
 import re
 
-VERBOSE = 0
+VERBOSE = 1
 DEBUG = 0
 
-DOCUMENT = 'ADSmatches_updates.xml'
 #DOCUMENT = 'ADS_astro2.xml'
 #DOCUMENT = 'ADS_cond.xml'
 #DOCUMENT = 'ADS_math.xml'
@@ -31,8 +30,8 @@ BADRECS = []
 #INPUT_COUNTER = 66885
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
-INPUT_COUNTER = 350000
-OUTPUT_COUNTER = 11
+INPUT_COUNTER = 133800
+OUTPUT_COUNTER = 501
 
 
 
@@ -121,8 +120,6 @@ def create_xml(input_dict):
             return None
         match_obj = re.match(r'^\d{4}(\w+\&?\w+)', bibcode)
         if match_obj:
-            if VERBOSE == 2:
-                print 
             journal = journal_fix(match_obj.group(1))
             if VERBOSE == 2:
                 print journal
