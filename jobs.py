@@ -79,6 +79,7 @@ if __name__ == '__main__':
     4 = Middle East
     5 = South America
     6 = North America
+    7 = All
     """)
     region = int(raw_input("Please choose a region "))
     if region == 1 : region = '/asia/'
@@ -87,6 +88,7 @@ if __name__ == '__main__':
     elif region == 4 : region = 'Middle East'
     elif region == 5 : region = "'South America'"
     elif region == 6 : region = "'North America'"
+    elif region == 7 : region = '*'
     else:
         print region, "is not a valid choice."
     print("""
