@@ -100,14 +100,20 @@ if True:
   search = 'cn ATLAS and ac 300+ and 037__a:fermilab*'
   search = '037__z:fermilab*'
   search = "0247_9:ads 035:/[0-9]L\./"
-  search = '693__e:cern-lhc-cms authorcount:2000+ 037__a:fermilab*'
+  search = 'fin tc core and de 2014-01-01->2014-02-28'
+  #search = 'fin tc core and tc arxiv and de 2014-01-01->2014-02-28'
+  #search = 'find primarch hep-th and de 2014-01-01->2014-02-28'
   x = perform_request_search(p=search, cc='HEP')
-  #print 'Number of Fermilab reports', len(x)
+  print 'Number of Fermilab reports', len(x)
   #output.write(print_record(r,format='xm'))
+  output.write(search)
+  output.write('\n')
+  output.write(str(len(x)))
+  output.write('\n')
 #  x = x[:50]
   for r in x:
       try:
-          output.write(print_record(r,ot=['001','037'],format='xm'))
+          output.write(print_record(r,ot=['999C5'],format='hm'))
       except:
           print 'problem with', r
 #atsearch = '100__m:/\@/ or 700__m:/\@/'
@@ -172,8 +178,8 @@ authors = [["Nian Qin", "Qin, N.", "Qin", "Wuhan University", "qinnian@ihep.ac.c
 
 
 
-
-for author in authors:
+if False:
+#for author in authors:
     nicename = author[0] 
     vname = author[1]
     af = author[3]
