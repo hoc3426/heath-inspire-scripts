@@ -359,7 +359,7 @@ BIBCODE_DICT = {
     'JEWA':'J.Electromagn.Waves Appl.',
     'JFM':'J.Fluid Mech.',
     'JG':'J.Geology',
-    'JGeod':J.Geod.',
+    'JGeod':'J.Geod.',
     'JGG':'J.Geomag.Geoelectr.Japan',
     'JGla':'J.Glaciol.',
     'JGP':'J.Geom.Phys.',

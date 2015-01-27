@@ -97,10 +97,10 @@ output = open(fileName,'w')
 
 if True:
   search = 'cn CMS and ac 300+ and 037__a:fermilab*'
-  search = 'cn ATLAS and ac 300+ and 037__a:fermilab*'
-  search = '037__z:fermilab*'
-  search = "0247_9:ads 035:/[0-9]L\./"
-  search = 'fin tc core and de 2014-01-01->2014-02-28'
+  #search = 'cn ATLAS and ac 300+ and 037__a:fermilab*'
+  #search = '037__z:fermilab*'
+  #search = "0247_9:ads 035:/[0-9]L\./"
+  #search = 'fin tc core and de 2014-01-01->2014-02-28'
   #search = 'fin tc core and tc arxiv and de 2014-01-01->2014-02-28'
   #search = 'find primarch hep-th and de 2014-01-01->2014-02-28'
   x = perform_request_search(p=search, cc='HEP')
@@ -113,7 +113,7 @@ if True:
 #  x = x[:50]
   for r in x:
       try:
-          output.write(print_record(r,ot=['999C5'],format='hm'))
+          output.write(print_record(r,ot=['037'],format='xm'))
       except:
           print 'problem with', r
 #atsearch = '100__m:/\@/ or 700__m:/\@/'
