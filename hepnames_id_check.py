@@ -10,8 +10,9 @@ VERBOSE = 1
 
 def main():
     for counter in [1, 2, 3]:
-        hepnames_search_ids(counter)
-    name_duplicates()
+        #hepnames_search_ids(counter)
+        pass
+    name_duplicates('b')
 
 def hepnames_search_ids(counter):
     list_of_ids = []
@@ -53,12 +54,12 @@ def hepnames_search_ids(counter):
                 list_of_ids.append(id_value)
 
 
-def name_duplicates():
+def name_duplicates(name):
     author_id = None
     author_name = None
     already_checked = []
     search = ''
-    search = '100__a:Z*'
+    search = '100__a:' + name + '*'
     result = perform_request_search(p=search, cc='HepNames')
     for recid in result:
         author_name = get_fieldvalues(recid, '100__a')[0]

@@ -96,6 +96,7 @@ fileName = 'tmp_junk.out'
 output = open(fileName,'w')
 
 if True:
+  all_refs = []
   search = 'cn CMS and ac 300+ and 037__a:fermilab*'
   #search = 'cn ATLAS and ac 300+ and 037__a:fermilab*'
   #search = '037__z:fermilab*'
@@ -103,6 +104,9 @@ if True:
   #search = 'fin tc core and de 2014-01-01->2014-02-28'
   #search = 'fin tc core and tc arxiv and de 2014-01-01->2014-02-28'
   #search = 'find primarch hep-th and de 2014-01-01->2014-02-28'
+  search = 'standard model'
+  search = '"dark matter"'
+  search = 'qcd sum rules'
   x = perform_request_search(p=search, cc='HEP')
   print 'Number of Fermilab reports', len(x)
   #output.write(print_record(r,format='xm'))
@@ -110,12 +114,60 @@ if True:
   output.write('\n')
   output.write(str(len(x)))
   output.write('\n')
-#  x = x[:50]
+  #x = x[:50]
   for r in x:
       try:
-          output.write(print_record(r,ot=['037'],format='xm'))
+          #output.write(print_record(r,ot=['037'],format='xm'))
+          search = 'citedby:recid:' + str(r)
+          refs = perform_request_search(p=search, cc='HEP')
+          #refs_0  = get_fieldvalues(r, '999C50')
+          #refs_r  = get_fieldvalues(r, '999C5r')
+          #refs_s  = get_fieldvalues(r, '999C5s')
+          #refs_r0 = []
+          #refs_s0 = []
+          #for ref_r in refs_r:
+          #    search = 'find r ' + ref_r
+          #    result = perform_request_search(p=search, cc='HEP')
+          #    if result:
+          #        refs_r0.append(result)
+          #for ref_s in refs_s:
+          #    search = 'find j ' + ref_s
+          #    result = perform_request_search(p=search, cc='HEP')
+          #    if result:
+          #        refs_s0.append(result)
+          #refs = refs_0 + refs_r0 + refs_s0
+          for ref in refs:
+              all_refs.append(ref)
+          #print refs
+          #output.write(print_record(r,ot=['999C5'],format='hm'))
       except:
           print 'problem with', r
+  #print all_refs
+  from Counter import Counter
+  counter=Counter(all_refs)
+  #print all_refs
+  d = Counter(all_refs)
+  l = list(set(all_refs))
+  topcites = {}
+  #topcites = dict( (my_dict[k], k) for k in my_dict)
+  for key in d:
+      #if d[key] > 200: 
+      topcites[d[key]] = key
+  #sorted(topcites, key=topcites.get)
+  #print topcites
+  import collections
+  od = collections.OrderedDict(sorted(topcites.items()))
+  for k, v in od.iteritems(): 
+      print k, v
+      title = get_fieldvalues(v, '245__a')[0]
+      print '  ', title
+
+
+  #for letter in c:
+  #    print '%s : %d' % (letter, c[letter])
+
+
+
 #atsearch = '100__m:/\@/ or 700__m:/\@/'
 #x = perform_request_search(p=atsearch, cc='HEP')
 #for r in x:
