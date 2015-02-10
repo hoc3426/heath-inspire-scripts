@@ -31,7 +31,8 @@ def main(search):
         topcites[d[key]] = key
     od = collections.OrderedDict(sorted(topcites.items()))
     for k, v in od.iteritems():
-        print k, v
+        url = 'http://inspirehep.net/record/' + str(v)
+        print k, url
         title = get_fieldvalues(v, '245__a')[0]
         print '  ', title
 

@@ -32,16 +32,19 @@ def create_xml(recid, experiment):
     record = get_record(recid)
     correct_record = {}
     common_tags = {}
-    #common_tags['693__'] = [('e', experiment)]
+    experiment_tag = {}
+    experiment_tag['693__'] = [('e', experiment)]
     tags = ['693__','710__']
-    for tag in tags:
-        field_instances = record_get_field_instances(record, tag[0:3], tag[3], tag[4])
-        for field_instance in field_instances:
-            correct_subfields = []
-            for code, value in field_instance[0]:
-                correct_subfields.append((code, value))
-            record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
-                subfields=correct_subfields)
+    #for tag in tags:
+    #    field_instances = record_get_field_instances(record, tag[0:3], tag[3], tag[4])
+    #    for field_instance in field_instances:
+    #        correct_subfields = []
+    #        for code, value in field_instance[0]:
+    #            correct_subfields.append((code, value))
+    #        record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
+    #            subfields=correct_subfields)
+    record_add_field(correct_record, '693', '_', '_', \
+                     subfields=experiment_tag['693__'])
     record_add_field(correct_record, '001', controlfield_value=str(recid))
     for key in common_tags:
         tag = key

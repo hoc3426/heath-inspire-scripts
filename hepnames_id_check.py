@@ -10,9 +10,9 @@ VERBOSE = 1
 
 def main():
     for counter in [1, 2, 3]:
-        #hepnames_search_ids(counter)
-        pass
-    name_duplicates('b')
+        hepnames_search_ids(counter)
+        #pass
+    name_duplicates('c')
 
 def hepnames_search_ids(counter):
     list_of_ids = []
