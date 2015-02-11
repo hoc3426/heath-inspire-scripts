@@ -1,41 +1,43 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+"""This module returns a Google-like result"""
+
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 from Counter import Counter
-import collections
+import operator
 import sys
 
 def main(search):
+    """This module returns a Google-like result showing the most
+       highly cited papers from a given result."""
+
     all_refs = []
     if not search:
         search = 'standard model'
         search = '"dark matter"'
         search = 'qcd sum rules'
     print 'Your search is', search
-    x = perform_request_search(p=search, cc='HEP')
-    print 'The result is', len(x)
-    for r in x:
+    result = perform_request_search(p=search, cc='HEP')
+    print 'The result is', len(result)
+    for recid in result:
         try:
-            search = 'citedby:recid:' + str(r)
+            search = 'citedby:recid:' + str(recid)
             refs = perform_request_search(p=search, cc='HEP')
             all_refs += refs
         except:
-            print 'problem with', r
-    d = Counter(all_refs)
-    l = list(set(all_refs))
-    topcites = {}
-    for key in d:
-        #if d[key] > 200:
-        topcites[d[key]] = key
-    od = collections.OrderedDict(sorted(topcites.items()))
-    for k, v in od.iteritems():
-        url = 'http://inspirehep.net/record/' + str(v)
-        print k, url
-        title = get_fieldvalues(v, '245__a')[0]
-        print '  ', title
-
+            print 'problem with', recid
+    print all_refs
+    all_refs.sort()
+    counted_all_refs = Counter(all_refs)
+    sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1))
+    for recid_count, count in sorted_count:
+        url = 'http://inspirehep.net/record/' + str(recid_count)
+        print count, url
+        title = get_fieldvalues(recid_count, '245__a')[0]
+        author = get_fieldvalues(recid_count, '100__a')[0]
+        print '  ', author, ':', title
 
 if __name__ == '__main__':
     SEARCH = sys.argv[1:][0]
