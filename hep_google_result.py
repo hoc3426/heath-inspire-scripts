@@ -28,7 +28,6 @@ def main(search):
             all_refs += refs
         except:
             print 'problem with', recid
-    print all_refs
     all_refs.sort()
     counted_all_refs = Counter(all_refs)
     sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1))
@@ -36,7 +35,10 @@ def main(search):
         url = 'http://inspirehep.net/record/' + str(recid_count)
         print count, url
         title = get_fieldvalues(recid_count, '245__a')[0]
-        author = get_fieldvalues(recid_count, '100__a')[0]
+        try:
+            author = get_fieldvalues(recid_count, '100__a')[0]
+        except:
+            author = 'No Author'
         print '  ', author, ':', title
 
 if __name__ == '__main__':
