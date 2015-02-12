@@ -31,14 +31,17 @@ def main(search):
     all_refs.sort()
     counted_all_refs = Counter(all_refs)
     sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1))
-    for recid_count, count in sorted_count:
+    for recid_count, count in sorted_count[-10:]:
         url = 'http://inspirehep.net/record/' + str(recid_count)
         print count, url
         title = get_fieldvalues(recid_count, '245__a')[0]
         try:
-            author = get_fieldvalues(recid_count, '100__a')[0]
+            author = get_fieldvalues(recid_count, '710__g')[0]
         except:
-            author = 'No Author'
+            try:
+                author = get_fieldvalues(recid_count, '100__a')[0]
+            except:
+                author = 'No Author'
         print '  ', author, ':', title
 
 if __name__ == '__main__':
