@@ -16,6 +16,7 @@ verbose = 0
 
 def find_records():
     atsearch = '100__u:/UNDEFINED/ or 700__u:/UNDEFINED/'
+    atsearch = '100__v:Fermilab or 700__v:Fermilab'
     return perform_request_search(p=atsearch, cc='HEP')
 
 def get_aff(aff):
@@ -53,6 +54,7 @@ def create_xml(recid, tags, forceFlag):
 def main(recordlist):
     if not recordlist:
         forceFlag = False
+        forceFlag = True
         if verbose: print "scanning all HEP records ..."
         recordlist = find_records()
         if verbose: print "%d records with '@' in author fields found" % len(recordlist)

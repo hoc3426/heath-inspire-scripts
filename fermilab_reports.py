@@ -8,6 +8,8 @@ serieses = ['thesis','misc','tm','fn','proposal','workbook','bachelors','masters
 serieses.sort()
 print 'cd /afs/fnal.gov/files/expwww/bss/html/techpubs'
 
+VERBOSE = False
+
 for series in serieses :
   reports = []
   authorId = False
@@ -17,7 +19,7 @@ for series in serieses :
   #print search 
   result = perform_request_search(p=search,cc='HEP')
   for recid in result : 
-    #print recid
+    if VERBOSE: print recid
     reportValues = get_fieldvalues(recid,'037__a')
     author = get_fieldvalues(recid,'100__a')
     authorId = get_fieldvalues(recid,'100__i')
@@ -26,7 +28,7 @@ for series in serieses :
     experiment = get_fieldvalues(recid,'693__e')
     
     if author : 
-      author = author[0]
+      author = author[0]    
     else :
       author = ''
     if title : 
@@ -53,7 +55,7 @@ for series in serieses :
       or re.match(r'MURA-\w\-', report, re.IGNORECASE) \
       or re.match(r'MURA-\w$', report, re.IGNORECASE):
         y = [report,str(recid),author,title,authorId,experiment,authorAff]
-        #print "y = ", y
+        if VERBOSE: print "y = ", y
         reports.append(y)
   reports.sort(reverse=True)
 
@@ -76,12 +78,12 @@ for series in serieses :
   output.write(dateTimeStamp)
   output.write('<br />\n<table>\n')
   for report in reports :
-    #print "report =", report
+    if VERBOSE: print "report =", report
     if report[4]: 
       search2 = '035__a:' + report[4] 
-      #print "search2 =", search2
+      if VERBOSE: print "search2 =", search2
       result = perform_request_search(p=search2,cc='HepNames')
-      #print report[4], result
+      if VERBOSE: print report[4], result
       report[2] = '<a href="http://inspirehep.net/record/' + str(result[0]) + '">'+report[2]+'</a>'
     line = '<tr><td><a href="http://inspirehep.net/record/'+report[1]+'">'+report[0]+'</a></td>\
                 <td>'+report[2]+'</td><td>'+report[3]+'</td></tr>\n'

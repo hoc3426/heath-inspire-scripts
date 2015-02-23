@@ -12,7 +12,7 @@ def main():
     for counter in [1, 2, 3]:
         hepnames_search_ids(counter)
         #pass
-    name_duplicates('c')
+    name_duplicates('d')
 
 def hepnames_search_ids(counter):
     list_of_ids = []
