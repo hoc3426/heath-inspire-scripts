@@ -37,7 +37,7 @@ def main(recids):
         #contact_email = "hepnames@slac.stanford.edu"
         #contact_email = "cleggm1@fnal.gov"
         #contact_email = "cleggm1@gmail.com"
-        contact_email = "bhecker@slac.stanford.edu"
+        #contact_email = "bhecker@slac.stanford.edu"
         #contact_email = "thorsten.schwander@gmail.com"
 
 
@@ -49,7 +49,12 @@ def main(recids):
         print 'name = ', contact_name
         print 'dline = ', deadline
         print ' '
-        send_jobs_mail(recid, contact_email, contact_name, title, deadline)
+        try:
+            send_jobs_mail(recid, contact_email, contact_name, title,
+                           deadline)
+        except:
+            print 'PROBLEM'
+            print recid, contact_email, contact_name, title, deadline
         icount += 1
 
 
@@ -121,8 +126,10 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
     msg['To'] = email
 
     # Record the MIME types of both parts - text/plain and text/html.
-    part1 = MIMEText(text, 'plain')
-    part2 = MIMEText(html, 'html')
+    #part1 = MIMEText(text, 'plain')
+    part1 = MIMEText(text.encode('utf-8'), 'plain', 'utf-8')
+    #part2 = MIMEText(html, 'html')
+    part2 = MIMEText(html.encode('utf-8'), 'html', 'utf-8')
 
     # Attach parts into message container.
     # According to RFC 2046, the last part of a multipart message,
