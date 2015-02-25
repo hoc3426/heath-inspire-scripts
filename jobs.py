@@ -24,11 +24,12 @@ def main(recids):
             contact_name = get_fieldvalues(recid, '270__p')[0]
             if "," in contact_name:
                 contact_name = " ".join(contact_name.split(", ")[::-1])
-            contact_name = 'Dear ' + contact_name
+            #contact_name = contact_name
         except:
-            contact_name = 'Hello'
+            contact_name = 'Sir or Madam'
         if contact_email == 'employ@fnal.gov':
             contact_email = 'kvb@fnal.gov'
+            #contact_email = 'cnbrown@fnal.gov'
         elif contact_email == 'recruitment.service@cern':
             contact_email = 'Caroline.Dumont@cern'
         contact_email = 'hoc@fnal.gov'
@@ -68,7 +69,8 @@ def send_jobs_mail(recid, email, name, title, deadline):
 """<html>
 <head></head>
 <body>
-<p>%(name)s,
+<p>
+Dear %(name)s,
 <br /><br />
 The HEPJobs listing for your position:<br />
 <a href=\"%(link)s\">%(link)s</a><br />
