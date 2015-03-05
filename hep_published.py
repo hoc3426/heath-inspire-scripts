@@ -58,6 +58,10 @@ def main(paper_type):
         #search += ' -980:Book'
         #search += ' -980:BookChapter'
         #search += ' -980:Introductory'
+        search_intro = search + ' 980:Introductory'
+        result_intro = perform_request_search(p=search_intro, cc='HEP')
+        if len(result_intro) > 0:
+            search += ' 980:arxiv cited:10->999 -980:Introductory'
         #search += ' -245:/erratum/'
         result = perform_request_search(p=search, cc='HEP')
         result = result[:500]

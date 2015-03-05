@@ -32,7 +32,7 @@ def main(recids):
             #contact_email = 'cnbrown@fnal.gov'
         elif contact_email == 'recruitment.service@cern':
             contact_email = 'Caroline.Dumont@cern'
-        contact_email = 'hoc@fnal.gov'
+        #contact_email = 'hoc@fnal.gov'
         #contact_email = "hoc3426@gmail.com"
         #contact_email = "atkinson@fnal.gov"
         #contact_email = "hepnames@slac.stanford.edu"
@@ -47,7 +47,7 @@ def main(recids):
         print 'recid = ', recid
         print 'title = ', title
         print 'email = ', contact_email
-        print 'name = ', contact_name
+        print 'name  = ', contact_name
         print 'dline = ', deadline
         print ' '
         try:
@@ -179,7 +179,7 @@ def find_jobs():
     print """
     Chose a date, e.g. 2014, 2014-05, etc.
     """
-    print "    Default value is %s\n" %date
+    print "    Default value is %s\n"%date
     date_input = raw_input("Your date? ")
     if len(date_input) > 3:
         date = date_input
