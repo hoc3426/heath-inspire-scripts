@@ -1,4 +1,4 @@
-#import re
+import re
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 #from hep_convert_email_to_id import get_hepnames_recid_from_email
@@ -18,7 +18,7 @@ def hepnames_search_ids(counter):
     list_of_ids = []
     if counter == 1:
         field = '035__a'
-        search = field + ':INSPIRE-*'
+        search = field + ':INSPIRE*'
     elif counter == 2:
         field = '371__m'
         search = field + r':/\@/'
@@ -37,6 +37,12 @@ def hepnames_search_ids(counter):
         id_values = get_fieldvalues(recid, field)
         for id_value in id_values:
             search = field + ':' + id_value
+            if counter == 1:
+                if re.search(r'INSPIRE', id_value) and \
+                   re.match(r'INSPIRE-\d{8}', id_value):
+                    pass
+                elif re.search(r'INSPIRE', id_value):
+                    print 'Bad INSPIRE ID: ', id_value
             if counter == 2:
                 email = id_value
                 emailsearch = \

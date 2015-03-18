@@ -19,7 +19,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 #from hep_aff import get_aff
 from numbers_beijing import IDS
 
-if True:
+if False:
     for ID in IDS:
         search = '035__a:' + ID
         x = perform_request_search(p=search,cc='HepNames')
@@ -105,6 +105,18 @@ search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 
 fileName = 'tmp_junk.out'
 output = open(fileName,'w')
+
+if True:
+  result = [1317852, 1319472, 1324458, 1325164, 1326367, 1327466, 1328450, 1328598, 1328943, 1333186, 1333470]
+  for r in result:
+    #print r
+    print print_record(r,ot=['001','980'],format='xm')
+    print \
+'''<datafield tag="980" ind1=" " ind2=" ">
+    <subfield code="a">HEP</subfield>
+  </datafield>
+'''
+
 
 if False:
   all_refs = []

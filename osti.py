@@ -55,7 +55,8 @@ def main(search):
     
         if re.search(r'accession_num', i):
             matchObj = re.match(r'.*<accession_num>(\d+)</accession_num>.*', i)
-            if matchObj: 
+            if matchObj:
+                doctype_flag = False 
                 accession_num = matchObj.group(1)
                 search = "find recid " + accession_num + " or irn " + accession_num + " and r fermilab"
                 y = perform_request_search(p=search, cc='HEP')
@@ -135,7 +136,20 @@ def main(search):
                 abstract = cgi.escape(abstract)
                 abstract = "  <abstract>" + abstract + "</abstract>\n"
                 i = i + abstract
-    
+
+        if re.search("<doctype>", i) :
+            doctype_flag = True
+
+        if re.search("<arXiv_eprint>", i) :
+            if not doctype_flag:
+                try:
+                    report = get_fieldvalues(recid, '037__z')[0]
+                    report = "  <report_number>" + report + "</report_number>\n"                    
+                    i = i + report
+                    i = i + "  <doctype>JA</doctype>\n"
+                except:
+                    pass
+
         if re.search("journal", i) :
             i = re.sub(r'<journal_info>(.*[ \.])(\S+)\:(\S+)\,(\d+)</journal_info>', r'<journal_name>\1</journal_name>\n    <journal_volume>\2</journal_volume>\n    <journal_issue></journal_issue>', i)
             issue = get_fieldvalues(recid, '773__n')

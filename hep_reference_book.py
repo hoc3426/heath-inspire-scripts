@@ -27,13 +27,16 @@ books = [
 ['H\S+bsch','bestiary for physicists','9789810219277','338506'],
 ['Streater','pct.*spin and statistics.*and all that','0691070628','290343'],
 ['Galperin','harmonic superspace*camb','9780511535109','570842'],
+['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512'],
 ['W5013','w5013','CERN-W5013','863473']]
 
 books = [['Streater','pct.*spin and statistics.*and all that','0691070628','290343']]
 #books = [['Chandrasekhar','mathematical theory of black holes','9780198503705','224457']]
-books = [['Birrell', 'quantum fields in curved space', '0521278589', '181166']]
+books = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
+['W5013','w5013','CERN-W5013','863473']]
 #books = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
 #['W5013','w5013','CERN-W5013','863473']]
+books = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
 for book in books:
     referenceFlag = False
     date = False

@@ -128,7 +128,7 @@ def create_xml(input_dict):
                 if match_obj:
                     journal = match_obj.group(1)
                     volume_letter = match_obj.group(2)
-        if re.search(r'\.\.\d+L\.', bibcode):
+        if re.search(r'\.\.?\d+L\.', bibcode):
             page_letter = 'L'
         elif re.search(r'\.\.\d+A\.', bibcode):
             page_letter = 'A'

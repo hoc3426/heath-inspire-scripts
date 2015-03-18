@@ -11,6 +11,8 @@ author = 'Vellidis, Konstantinos'
 author = 'Escobar, Carlos Ourivio'
 author = 'Khalid, Farah'
 author = 'Lowe, Andrew'
+author = 'Vellidis, Konstantinos (Costas)'
+author = 'Vellidis'
 fileName = re.sub(r'(.*)\,.*',r'\1',author)
 fileName = fileName.replace(' ','_')
 fileName = 'www/texfiles/' + fileName + '.tex'
@@ -19,6 +21,8 @@ search = 'find a ' + author
 search = 'find ea C.O.Escobar.1'
 search = 'fin a F. Khalid or a f fahim'
 search = 'find ea A.Lowe.1'
+search = 'find a Vellidis'
+
 print search
 
 x = perform_request_search(p=search,cc='HEP')
