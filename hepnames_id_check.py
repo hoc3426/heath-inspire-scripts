@@ -9,16 +9,17 @@ from hep_convert_email_to_id import find_inspire_id_from_record
 VERBOSE = 1
 
 def main():
-    for counter in [1, 2, 3, 4]:
+    for counter in [1, 2, 3, 4, 5]:
         hepnames_search_ids(counter)
         #pass
-    name_duplicates('f')
+    name_duplicates('i')
 
 def hepnames_search_ids(counter):
     list_of_ids = []
+    collection = 'HepNames'
     if counter == 1:
         field = '035__a'
-        search = field + ':INSPIRE*'
+        search = '035__9:bai or 035__9:inspire or 035__9:orcid or 035__9:jacow'
     elif counter == 2:
         field = '371__m'
         search = field + r':/\@/'
@@ -30,7 +31,7 @@ def hepnames_search_ids(counter):
         search = field + r':/[\{\}\\]/'
     if VERBOSE == 1:
         print search
-    result = perform_request_search(p=search, cc='HepNames')
+    result = perform_request_search(p=search, cc=collection)
     for recid in result:
         if counter == 3:
             print 'https://inspirehep.net/record/' + str(recid)

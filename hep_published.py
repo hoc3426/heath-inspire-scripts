@@ -6,17 +6,23 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 
 
-JOURNAL_PUBLISHED_DICT = {"Astron.Astrophys.":"10.1051/0004-6361/",
+JOURNAL_PUBLISHED_DICT = {"Ann.Rev.Astron.Astrophys.":"10.1146/annurev-astro",
+"Astron.Astrophys.":"10.1051/0004-6361/",
+"Astron.J.":"10.1088/0004-6256/",
+"Astron.Astrophys.Suppl.Ser.":None,
 "Astrophys.J.":"10.1088/0004-637X/",
 "Astrophys.J.Suppl.":"10.1088/0067-0049/",
 "JHEP":"10.1007/JHEP",
 "Mon.Not.Roy.Astron.Soc.":"10.1093/mnras",
+"Nature":"10.1038/nature",
+"Nature Phys.":"10.1038/nphys",
 #"Nucl.Phys.":"10.1016/j.nuclphysb.",
 "Phys.Lett.":"10.1016/j.physletb.",
 "Phys.Rept.":"10.1016/j.physrep.",
 "Phys.Rev.":"10.1103/PhysRevD.",
 "Phys.Rev.Lett.":"10.1103/PhysRevLett.",
-"Rev.Mod.Phys.":"10.1103/RevModPhys."}
+"Rev.Mod.Phys.":"10.1103/RevModPhys.",
+"Science":"10.1126/science"}
 
 CONFERENCE_DICT = {"AIP Conf.Proc.":None,
 "ASP Conf.Ser.":None,
