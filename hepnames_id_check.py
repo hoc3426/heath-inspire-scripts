@@ -9,10 +9,10 @@ from hep_convert_email_to_id import find_inspire_id_from_record
 VERBOSE = 1
 
 def main():
-    for counter in [1, 2, 3, 4, 5]:
+    for counter in [1, 2, 3, 4]:
         hepnames_search_ids(counter)
         #pass
-    name_duplicates('i')
+    name_duplicates('l')
 
 def hepnames_search_ids(counter):
     list_of_ids = []

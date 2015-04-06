@@ -18,7 +18,7 @@ category = {'a' : ['1. Cosmic Frontier',50,'exp fnal-e-0990 or fnal-t-0969 or fn
             'g' : ['5b. Science and Technology (S&T) published', 10,'Papers from a section of journals']}
 
 yearStart = 2007
-yearEnd = 2015
+yearEnd = 2016
 
 os.environ['TZ'] = 'CEST+5'
 dateTimeStamp = time.strftime('%Y-%m-%d %H:%M:%S')

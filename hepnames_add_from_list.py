@@ -19,6 +19,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 
 from hepnames_add_from_list_authors import AUTHORS
 EXPERIMENT = 'FNAL-E-0974'
+EXPERIMENT = 'AUGER'
 
 def create_xml(author,email,af,experiment):
     common_fields = {}
@@ -43,19 +44,21 @@ search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 
 x = perform_request_search(p=search,cc='HepNames')
 #x = x[:5]
-print len(x)
+#print len(x)
 
 fileName = 'tmp_junk.out'
 output = open(fileName,'w')
 for author in AUTHORS:
-    au = author[1] 
-    email = author[0]
+    #print author
+    au = author[0] 
+    email = author[1]
     email = email.lower()
     #af = author[2]
     af = ''
     #au = re.sub(r'(.*[A-Z][A-Z]) ([A-Z][a-z].*)',r'\1, \2',au)
     #au = re.sub(r'(.*[a-z]) ([A-Z][A-Z].*)',r'\2, \1',au)
     #au = string.capwords(au)    
+    au = re.sub(r'\s+', r' ', au)
     au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
     search = "find a " + au
     x = perform_request_search(p=search,cc='HepNames')
@@ -65,7 +68,8 @@ for author in AUTHORS:
         search = "001:" + str(hepnames_record) + " -693__e:" + EXPERIMENT
         x = perform_request_search(p=search,cc='HepNames')
         if len(x) == 1:
-            print x[0]
+            #print x[0]
+            pass
     elif len(x) < 1 and not hepnames_record:
         if af:
             bm = bestmatch(af,'ICN')

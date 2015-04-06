@@ -15,6 +15,7 @@ from invenio.bibformat_engine import BibFormatObject
 from hep_convert_email_to_id import find_inspire_id_from_record
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
+from invenio.intbitset import intbitset
 
 #from hep_aff import get_aff
 from numbers_beijing import IDS
@@ -27,6 +28,14 @@ if False:
             print ID, x
 
 
+if True:
+    search = 'find (fc p or fc t or fc l or fc g) and tc p'
+    theory = intbitset(perform_request_search(p=search,cc='HEP'))
+    for i in range(1,100):        
+        search = 'find ac ' + str(i)
+        result = intbitset(perform_request_search(p=search,cc='HEP'))
+        x = theory & result
+        print i, len(x), x[0:3]
 
 
 if False:
@@ -106,7 +115,7 @@ search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 fileName = 'tmp_junk.out'
 output = open(fileName,'w')
 
-if True:
+if False:
   result = [1317852, 1319472, 1324458, 1325164, 1326367, 1327466, 1328450, 1328598, 1328943, 1333186, 1333470]
   for r in result:
     #print r

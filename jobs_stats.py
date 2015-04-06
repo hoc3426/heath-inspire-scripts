@@ -8,7 +8,15 @@ regions = ('Africa', 'Asia', 'Australasia', 'Europe', 'Middle East', \
 fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
 
-for r in range(2007, 2015):
+search = 'dadd:2015-01-01->2015-03-31'
+x = perform_request_search(p=search, cc='Jobs')
+y = perform_request_search(p=search, cc='Jobs Hidden')              
+total = len(x+y)
+print search, len(x), len(y), total
+
+
+if False:
+  for r in range(2007, 2015):
     for region in regions:
         #print 'Year', 'region'.ljust(15), 'rank'.ljust(10), 'field'.ljust(15), 'open'.rjust(6), \
         #    'filled'.rjust(6),'total'.rjust(6)
