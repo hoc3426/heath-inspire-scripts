@@ -73,6 +73,9 @@ def main(recordlist):
 if __name__ == '__main__':
     recids = sys.argv[1:]
     try:
-        main(recids)
+        main(recids)   
     except KeyboardInterrupt:
         print 'Exiting'
+    except:
+        main(find_records())
+

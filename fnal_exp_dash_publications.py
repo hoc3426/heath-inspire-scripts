@@ -37,7 +37,6 @@ expts = {
           'des'        :['DES',      'Ongoing',frontier['c'],category[3]],
           'auger'      :['AUGER',    'Ongoing',frontier['c'],category[3]],
           'snap'       :['SNAP',     'Completed',frontier['c'],category[3]],
-          'fnal-e-0939':['DES',      'Construction',frontier['c'],category[3]],
           'sdss'       :['SDSS',     'Analysis',frontier['c'],category[3]],
           'fnal-e-1000':['DarkSide', 'R&D',frontier['c'],category[3]],
           'lsst'       :['LSST',     'R&D',frontier['c'],category[3]],
@@ -84,7 +83,7 @@ output.write('  <tr>')
 output.write('    <td>Category</td>')
 output.write('    <td>Frontier</td>')
 output.write('    <td>Experiment</td>')
-output.write('    <td>2007</td><td>2008</td><td>2009</td><td>2010</td><td>2011</td><td>2012</td><td>2013</td><td>2014</td>')
+output.write('    <td>2007</td><td>2008</td><td>2009</td><td>2010</td><td>2011</td><td>2012</td><td>2013</td><td>2014</td><td>2015</td>')
 output.write('    <td>current status</td>')
 output.write('  </tr>')
 

@@ -12,7 +12,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from invenio.intbitset import intbitset
 from hep_convert_email_to_id import find_inspire_id_from_record
 
-verbose = 0
+verbose = False
 
 bad_experiments = ['CERN-LEP-DELPHI',
 'BIGBOSS',
@@ -43,7 +43,7 @@ experiments = ['AMANDA',
 #'DESY-HERA-HERMES',
 #'DESY-HERA-ZEUS',
 #'FERMI-LAT', 
-#'FNAL-E-0740',
+'FNAL-E-0740',
 #'FNAL-E-0741',
 'FNAL-E-0799',
 'FNAL-E-0799',
@@ -87,6 +87,9 @@ experiments = ['AMANDA',
 #'TRIUMF-614', 
 #'WASA-COSY'
 ]
+
+experiments = ['FNAL-E-0740', 'DES']
+experiments = ['FNAL-E-0740']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')
@@ -136,6 +139,8 @@ def create_xml(recid, tags, experiment):
 def find_records_with_no_id(experiment):
    print experiment
    osearch = "find exp " + experiment + " and date > 2011"
+   osearch = "find exp " + experiment
+   osearch = "693__e:fnal-e-0740 -693__e:fnal-e-0823 -693__:fnal-e-0741"
    oresult = perform_request_search(p=osearch, cc='HEP')
    psearch = '693__e:' + experiment + ' -100__i:INSPIRE* -700__i:INSPIRE*'
    if verbose: print psearch
@@ -143,7 +148,8 @@ def find_records_with_no_id(experiment):
    oresult = intbitset(oresult)
    presult = intbitset(presult)
    result = oresult & presult
-   result = result[:25]
+   if verbose: print len(result)
+   result = result[:100]
    return result
 
 def experiment_convert(experiment):

@@ -9,7 +9,7 @@ bitly_account = 'hoc3426'
 api = bitly.Api(login = bitly_account, apikey = bitly_key)
 
 
-category = {'a' : ['1. Cosmic Frontier',50,'exp fnal-e-0990 or fnal-t-0969 or fnal-e-0987 or auger or cdms or fnal-e-0939 or fnal-e-0961 or fnal-e-1000 or lsst or sdss or snap or des'],
+category = {'a' : ['1. Cosmic Frontier',50,'exp fnal-e-0990 or fnal-t-0969 or fnal-e-0987 or auger or cdms or fnal-e-0961 or fnal-e-1000 or lsst or sdss or snap or des'],
             'b' : ['2a. Energy Frontier (TeV)',50,'exp fnal-e-0823 or fnal-e-0830'],
             'c' : ['2b. Energy Frontier (CMS)',50,'exp cern-lhc-cms'],
             'd' : ['3. Intensity Frontier',50,'exp fnal-e-0831 or fnal-e-0875 or fnal-e-0898 or fnal-e-0906 or fnal-e-0929 or fnal-e-0938 or fnal-e-0954 or fnal-e-0973 or fnal-e-0974 or fnal-e-0989 or fnal-t-0962 or lbne'],
@@ -180,7 +180,7 @@ expts = {
           'fnal-e-0961':['COUPP',    'Running',frontier['c'],category[3]],
           'auger'      :['AUGER',    'Ongoing',frontier['c'],category[3]],
           'snap'       :['SNAP',     'Completed',frontier['c'],category[3]],
-          'fnal-e-0939':['DES',      'Construction',frontier['c'],category[3]],
+          'des'        :['DES',      'Construction',frontier['c'],category[3]],
           'sdss'       :['SDSS',     'Analysis',frontier['c'],category[3]],
           'fnal-e-1000':['DarkSide', 'R&D',frontier['c'],category[3]],
           'lsst'       :['LSST',     'R&D',frontier['c'],category[3]],

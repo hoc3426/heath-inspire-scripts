@@ -1,18 +1,32 @@
 import re
+import sys
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 #from hep_convert_email_to_id import get_hepnames_recid_from_email
 from hep_convert_email_to_id import find_inspire_id_from_record
+from invenio.search_engine import search_unit
 
 #this is a comment
 
-VERBOSE = 1
+VERBOSE = False
+#VERBOSE = True
 
 def main():
-    for counter in [1, 2, 3, 4]:
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_correct.out', filename)
+    orig_stdout = sys.stdout
+    output = open(filename,'w')
+    sys.stdout = output
+    
+    #for counter in [1, 2, 3, 4]:
+    #for counter in [7, 8]:
+    for counter in range(1, 8):
         hepnames_search_ids(counter)
         #pass
-    name_duplicates('l')
+    name_duplicates('O')
+
+    output.close()
+
 
 def hepnames_search_ids(counter):
     list_of_ids = []
@@ -29,14 +43,36 @@ def hepnames_search_ids(counter):
     elif counter == 4:
         field = '100__a'
         search = field + r':/[\{\}\\]/'
-    if VERBOSE == 1:
-        print search
+    elif counter == 5:
+        collection = 'HEP'
+        field = '100__j'
+        search = field + r':/\d/'
+    elif counter == 6:
+        collection = 'HEP'
+        field = '700__j'
+        search = field + r':/\d/'
+    elif counter == 7:
+        collection = 'HEP'
+        field = '541__a'
+        search = r'*0000*'
+    elif counter == 8:
+        collection = 'HEP'
+        field = '541__m'
+        search = r'/\@/'
+    original_field = field
     result = perform_request_search(p=search, cc=collection)
+    if re.search(r'541.*', field):
+        result = search_unit(p = search, m = 'a', f = field)
+    if VERBOSE:
+        print "search = %s field = %s collection = %s result = %d" \
+              % (search, field, collection, len(result))
     for recid in result:
         if counter == 3:
             print 'https://inspirehep.net/record/' + str(recid)
         id_values = get_fieldvalues(recid, field)
         for id_value in id_values:
+            if re.search(r'(CCID|JACoW|uid)', id_value):
+                continue
             search = field + ':' + id_value
             if counter == 1:
                 if re.search(r'INSPIRE', id_value) and \
@@ -44,12 +80,18 @@ def hepnames_search_ids(counter):
                     pass
                 elif re.search(r'INSPIRE', id_value):
                     print 'Bad INSPIRE ID: ', id_value
-            if counter == 2:
+            if counter == 2 or counter == 8:
                 email = id_value
                 emailsearch = \
                             '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
                 search = emailsearch % (email, email, email, email)
+            if counter == 5 or counter == 6 or counter == 7 or counter == 8:
+                search = '035__a:' + id_value
+                search = re.sub(r'ORCID:', r'', search)
+                search = re.sub(r'orcid:', r'', search)
             if not id_value in list_of_ids:
+                if VERBOSE:
+                    print search
                 duplicate_id = perform_request_search(p=search, cc='HepNames')
                 if len(duplicate_id) > 1 :
                     print search
@@ -61,6 +103,8 @@ def hepnames_search_ids(counter):
                         if len(hep_id_check) > 1 :
                             print '  Multiple records -  (' + \
                                   str(len(hep_id_check)) + ') ' + search
+                elif len(duplicate_id) == 0:
+                    print '%s:%s' % (original_field, id_value)
                 list_of_ids.append(id_value)
 
 

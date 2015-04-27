@@ -9,9 +9,10 @@ SEARCH = '710__g:"Collaboration for the *"'
 SEARCH = 'find recid 1215702 or 1216022 or 1216926 or 1255017 or 1264950 or 1273524 or 1273643 or 1273646'
 SEARCH = '693__e:FNAL-TEV-*'
 SEARCH = '500:/youtube/ -8564_y:youtube'
+SEARCH = '"Waseda U., Cosmic Ray Div." phenix "waseda u., rise"'
 MARC_FIELD = '710'
 MARC_FIELD = '037'
-MARC_FIELD = '500'
+MARC_FIELD = '700'
 
 
 def main():
@@ -28,6 +29,7 @@ def main():
         #info = re.sub(r'>.*[fF]*o[rf] the (\w+) [Cc]oll.*<', r'>\1 Collaboration<', info)
         info = re.sub(r'>.* (\S+youtube\S+).*<', r'>\1<', info)
         info = re.sub(r'code="e">FERMILAB-TEV-', r'', info)
+        info = re.sub(r'.*Waseda U., Cosmic Ray Div..*', r'', info)
         info += '\n\n'
         output.write(info)
     output.write('</collection>')

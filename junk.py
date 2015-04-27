@@ -28,7 +28,7 @@ if False:
             print ID, x
 
 
-if True:
+if False:
     search = 'find (fc p or fc t or fc l or fc g) and tc p'
     theory = intbitset(perform_request_search(p=search,cc='HEP'))
     for i in range(1,100):        
@@ -200,10 +200,13 @@ if False:
 
 
 
-#atsearch = '100__m:/\@/ or 700__m:/\@/'
-#x = perform_request_search(p=atsearch, cc='HEP')
-#for r in x:
-#  output.write(print_record(r,ot=['001','700'],format='xm'))
+if True:
+    atsearch = '0247:10.1093/mnras/*l* -773__c:L*'
+    atsearch = '773__p:Astron.Astrophys. 035__a:/A&A.*\dL\./ -773__c:L*'
+    atsearch = '773__p:astron.astrophys. 773__y:2010->2016 -773__c:A*  -773__c:L*'
+    x = perform_request_search(p=atsearch, cc='HEP')
+    for r in x:
+        output.write(print_record(r,ot=['001', '773'],format='xm'))
 
 authors = [["Nian Qin", "Qin, N.", "Qin", "Wuhan University", "qinnian@ihep.ac.cn", "Graduate Student", "1/1/2013"],
 ["Hao Cai", "Cai, H.", "Cai", "Wuhan University", "hcai@whu.edu.cn", "Associate Prof.", "12/6/2011"],

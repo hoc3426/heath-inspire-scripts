@@ -5,17 +5,16 @@ from invenio.search_engine import get_fieldvalues
 
 words = ['AND', 'AROUND', 'FOR', 'FROM', 'IN', 'OF', 'THE', 'WITH']  
 
-def titleFix(x):
-  acronyms = ['AdS', 'ADC','AGN', 'AGS', 'ALICE', 'ATLAS','BCS','BEBC',
+acronyms = ['AdS', 'ADC','AGN', 'AGS', 'ALICE', 'ATLAS', 'BaBar', 'BCS','BEBC',
               'BELLE', 'BH', 'BL', 'BNL', 'BPM', 'BPS', 'BRS','BRST', 
               'CAMAC','CDF', 'CDM', 'CEBAF', 'CERN', 'CESR', 'CFT', 'CKM', 
               'CLEO', 'CLIC', 'CM', 'CMB', 'CMS', 'CP', 'CPT', 'CPV', 
               'DAPHNE', 'DAQ','DC', 'DELPHI', 'DESY', 'DIS','DTU', 'EAS','ECFA',
-              'EDM', 'EFT','EMC', 'EOS', 'EW', 'EWSB', 'FEL', 'Fermilab',
+              'EDM', 'EFT','EMC', 'EOS', 'EW', 'EWSB', 'FEL', 'FCNC', 'Fermilab',
               'GEM', 'GeV', 'GHZ', 'GR', 'GRB', 'GUT', 'GUTs','HERA', 'HERMES', 'HST',
               'ICFA', 'IHEP','II', 'III', 'IV', 'ILC',
               'IR', 'IRAS', 'ISM', 'ISR', 'IV', 'IX','JINR','KdV', 'KEK', 'KEKB','KNO', 'LAr','LAMPF','LAT',
-              'LC','LEAR', 'LEP', 'LGT', 'LHC', 'LINAC', 'LISA','LLNL', 'LMC', 'LQCD', 'LSS',
+              'LC','LEAR', 'LEP', 'LGT', 'LHC', 'LHCb', 'LINAC', 'LISA','LLNL', 'LMC', 'LQCD', 'LSS',
               'MACSYMA','MAGIC', 'MC', 'MeV', 'MHD', 'MIT', 'MR', 'MSSM', 'NC', 'NCG', 'NGC', 'NJL',
               'NLC', 'NLO', 'NP','OBE', 'OZI','PCAC', 'PEP', 'PETRA', 'PHENIX', 'PPP', 'PQCD',
               'QCD', 'QED', 'QFT', 'QGP', 'QH', 'QM', 'QSO', 'RED', 
@@ -72,11 +71,15 @@ def titleFix(x):
 'Yang-Baxter',
 'Zweig-Okubo-Iizuka',
 ]
-  particles = ['alpha','b','B','B0','c','chi','cos','d','D','DELTA','e','E','epsilon','EPSLION','eta','ETA',
+
+particles = ['alpha','b','B','B0','c','chi','cos','d','D','DELTA','e','E','epsilon','EPSLION','eta','ETA',
                'g','G','gamma','GAMMA','H','H0','J','K','K0','l',
-              'l','lambda','LAMBDA','LAMBDA0','lepton','mu','n','N','nu','omega','OMEGA','p','P','phi','pi0','pi', 
+              'l','lambda','LAMBDA','LAMBDA0','lepton','mu','n','N','nu','omega','OMEGA','p','P','phi','pi0','pi', 'pp',
               'psi','Q','q','rho','rho0','s','SIGMA','SIGMA0','Sigma','Sigma0','sigma','sin','T', 'tau',
               'theta','Theta','u','UPSILON','V','W','XI','Xi','Z','z','Z0']
+
+
+def titleFix_case(x):
 
   x = re.sub(r'[sS]\*\*\(1\/2\)\s*=\s*(\d+)',r'$\\9sqrt{ssss}=\1$',x)
   x = re.sub(r'[sS]\*\*\(1\/2\)',r'$\\9sqrt{ssss}$',x)
@@ -100,6 +103,11 @@ def titleFix(x):
   for e in elements:
     x = re.sub("\\b" + e.upper() + "\-(\d+)",r'$^{\1}$protectedchemicalelement' + e + 'protectedchemicalelement',x)
     x = re.sub("\\b" + e + "\-(\d+)",r'$^{\1}$protectedchemicalelement' + e + 'protectedchemicalelement',x)
+
+  #Convert subscript underscores to latex
+  if re.search(r'\_', x):
+      x = re.sub(r' (\S+)\_(\S*\w)([\s\,\:])', r' $\1_\2$\3', x)
+      x = re.sub(r'\$\$', r'$', x)
 
   #Set up case protection for particles
   particleCase = {}
@@ -214,6 +222,42 @@ def titleFix(x):
     x = re.sub(lower,e,x)
   return x
 
+particles_greek = ['alpha', 'beta', 'chi', 'gamma', 'delta', 'epsilon', 'eta',
+                  'nu', 'pi', 'psi', 'sigma', 'Sigma']
+
+def titleFix(x):
+    if re.search(r'V\_([udstbc]{2})', x):
+        x = re.sub(r'V\_([udstbc]{2})', r'$V_{\1}$', x)
+    elif re.search(r'([sS])\_([nN]{2})', x):
+        x = re.sub(r'([sS])\_([nN]{2})', r'$\1_{\2}$', x)
+    elif re.search(r'\_', x) or re.search(r'\^', x):
+        x = re.sub(r'^(\S+)([\_\^])(\S+)', r'$\1\2\3$', x)
+        x = re.sub(r'(\S+)([\_\^])(\S+)$', r'$\1\2\3$', x)
+        x = re.sub(r'(\S+)([\_\^])(\S+)([\, ])', r'$\1\2\3$\4', x)
+    x = re.sub(r' \-?\-\> ', r' $\\to$ ', x)
+    for acronym in acronyms:
+        y = "\\b" + acronym + "\\b"
+        x = re.sub(y, "{" + acronym + "}", x)
+        y = "{{" + acronym + "}}"  
+        x = re.sub(y, "{" + acronym + "}", x)
+    for particle in particles:    
+        initial = "\\b" + particle + "\\b"
+        if particle == r'l':
+            particle = r'\\ell'
+        elif particle in particles_greek:
+            particle = r'\\' + particle
+        #elif particle == r'nu':
+        #    particle = r'\\nu'
+        #elif particle == r'pi':
+        #    particle = r'\\pi'
+        final = r"$" + particle + r"$"
+        #print particle, y, z, x
+        x = re.sub(initial, final, x)
+        #print particle, y, z, x
+    x = re.sub(r'\$\s*\/\s*\$', r'/', x)
+    x = re.sub(r'\$\s*\$', r' ', x)
+    x = re.sub(r'[ ]+', r' ', x)
+    return x
 
 search = '961__x:1980-1*'
 search = '961__x:1993-* and topcite 5+'
@@ -222,8 +266,11 @@ search = '961__x:1993-* and topcite 5+'
 #search="find recid 24937"
 search = 'find date 2013 and recid:1255928->99999999'
 search = '037__a:fermilab-thesis* -245__a:/\$/'
+search = 'refersto:author:Giorgio.Bellettini.1 245__a:/\\pi/ -245__a:/\$/'
+#search = '001:1339902'
 x = perform_request_search(p=search,cc='HEP')
-
+#print search, len(x)
+title = 'Meas alpha f the chi_c and chi_b quarkonium states in pp collisions with the ATLAS experiment'
 print "<?xml version=\"1.0\" ?>"
 print "<collection>"
 
@@ -235,7 +282,8 @@ for r in x:
   oldTitle = re.sub(r'\s+',' ',oldTitle)
   for word in words:
     wordCheck = "\\b" + word + "\\b" 
-    if re.search(wordCheck,title):
+    #if re.search(wordCheck,title):
+    if title:
       title = titleFix(title)
       print '<record>'
       print '  <controlfield tag="001">'+str(r)+'</controlfield>'
