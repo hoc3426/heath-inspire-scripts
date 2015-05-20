@@ -12,7 +12,8 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from invenio.intbitset import intbitset
 from hep_convert_email_to_id import find_inspire_id_from_record
 
-verbose = False
+VERBOSE = False
+#VERBOSE = True
 
 bad_experiments = ['CERN-LEP-DELPHI',
 'BIGBOSS',
@@ -88,19 +89,20 @@ experiments = ['AMANDA',
 #'WASA-COSY'
 ]
 
-experiments = ['FNAL-E-0740', 'DES']
-experiments = ['FNAL-E-0740']
+#experiments = ['FNAL-E-0740', 'DES']
+#experiments = ['FNAL-E-0740']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')
     if len(reclist) == 1:
         return reclist[0]
     elif len(reclist) > 1:
-        if verbose:
+        if VERBOSE:
             print "WARNING: more than one hepnames record found for %s: " % (search)
             print '\t' + ', '.join([str(r) for r in reclist])
+        return None
     else:
-        if verbose:
+        if VERBOSE:
             print "WARNING: no hepnames record found for %s: " % (search)
         return None
 
@@ -140,36 +142,40 @@ def find_records_with_no_id(experiment):
    print experiment
    osearch = "find exp " + experiment + " and date > 2011"
    osearch = "find exp " + experiment
-   osearch = "693__e:fnal-e-0740 -693__e:fnal-e-0823 -693__:fnal-e-0741"
+   #osearch = "693__e:fnal-e-0740 -693__e:fnal-e-0823 -693__:fnal-e-0741"
    oresult = perform_request_search(p=osearch, cc='HEP')
    psearch = '693__e:' + experiment + ' -100__i:INSPIRE* -700__i:INSPIRE*'
-   if verbose: print psearch
+   if VERBOSE: print psearch
    presult = perform_request_search(p=psearch, cc='HEP')
    oresult = intbitset(oresult)
    presult = intbitset(presult)
    result = oresult & presult
-   if verbose: print len(result)
-   result = result[:100]
+   if VERBOSE: print len(result)
+   result = result[:400]
    return result
 
 def experiment_convert(experiment):
+    i_count = 1
     recordlist = find_records_with_no_id(experiment)
     if recordlist:
-        if verbose: print experiment + ": %d records with no author ids found" % len(recordlist)
+        if VERBOSE: print experiment + ": %d records with no author ids found" % len(recordlist)
         fileName = 'tmp_hep_convert_experiment_to_id_' + experiment + '_correct.out'
         output = open(fileName,'w')
         for record in recordlist:
-            if verbose > 0: print "doing %d" % (record)
+            if i_count > 20:
+                break
+            if VERBOSE > 0: print "%d doing %d" % (i_count, record)
             #print create_xml(record,['100__','700__'])
             #create_xml(record, ['100__','700__'], experiment)
             new_author_list = create_xml(record, ['100__','700__'], experiment)
             if new_author_list:
                 output.write(new_author_list)
                 output.write("\n")
+                i_count += 1
         output.close()
         if (os.stat(fileName)[6] == 0) : os.unlink(fileName)
     else:
-      if verbose: print "No " + experiment + " records with no author ids found" 
+      if VERBOSE: print "No " + experiment + " records with no author ids found" 
 
 def main(input):
     if not input:

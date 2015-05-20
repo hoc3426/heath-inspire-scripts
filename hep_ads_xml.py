@@ -15,19 +15,19 @@ from hep_published import JOURNAL_PUBLISHED_DICT
 import xml.etree.ElementTree as ET
 import re
 
-TEST = 0
-VERBOSE = 0
-DEBUG = 0
+TEST = True
+VERBOSE = False
+DEBUG = False
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
 #DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
-
+DOCUMENT = 'test.xml'
 
 
 if TEST:
     VERBOSE = 1
     DEBUG = 1
-    #DOCUMENT = 'test.xml'
+    DOCUMENT = 'test.xml'
     #DOCUMENT = 'ADS_astro2.xml'
     #DOCUMENT = 'ADS_cond.xml'
     #DOCUMENT = 'ADS_math.xml'
@@ -76,7 +76,9 @@ def create_xml(input_dict):
     checks to see if it has information that should be added to INSPIRE.
     If so, it builds up that information.
     """
-
+ 
+    if TEST:
+        print "In create_xml"  
     elements = ['doi', 'preprint_id', 'journal_bibcode', 'journal_ref']
     element_dict = {}
     pubyear = ''
@@ -123,6 +125,11 @@ def create_xml(input_dict):
             volume  = match_obj.group(2)
             page    = match_obj.group(3)
             pubyear = match_obj.group(1)
+        else:
+            match_obj = re.search(r'10.1142\/S0217751X(\d{7})\w', doi)
+            if match_obj:
+                page    = match_obj.group(1)
+                print 'DOI match', page
     if bibcode:
         search  = '035__a:' + bibcode
         result = perform_request_search(p=search, cc='HEP')
@@ -130,6 +137,16 @@ def create_xml(input_dict):
             return None
         if re.search(r'PhRv[CD]', bibcode):
             return None
+        #2015IJMPA..3050059N
+        match_obj = re.match(r'^(\d{4})IJMP(\w)\.\.(\d{7})\w', bibcode)
+        if match_obj:
+            if not page:
+                return None
+            journal        = 'Int.J.Mod.Phys.'
+            pubyear        = match_obj.group(1)
+            volume_letter  = match_obj.group(2)
+            if TEST:
+                print 'IJMP', journal, pubyear, volume, page
         match_obj = re.match(r'^\d{4}(\w+\&?\w+)', bibcode)
         if match_obj:
             journal = journal_fix(match_obj.group(1))
@@ -146,14 +163,17 @@ def create_xml(input_dict):
             page_letter = 'A'
         if DEBUG == 1:
             print 'page_letter = ', page_letter
-    if journal_ref:
+    if journal_ref and not volume:
         #Phys.Rev.A.86:013639,2012
         #J.Appl.Phys.100:084104,2006
         match_obj = re.search(r'(.*\w\.)(\d+)\:(\w+)\,(\d{4})', journal_ref)
         if match_obj:
-            volume  = match_obj.group(2)
-            page    = match_obj.group(3)
-            pubyear = match_obj.group(4)
+            if not volume:
+                volume  = match_obj.group(2)
+            if not page:
+                page    = match_obj.group(3)
+            if not pubyear:
+                pubyear = match_obj.group(4)
             if not journal:
                 journal = match_obj.group(1)
                 match_obj = re.match(r'^(.*\.)(\w)\.$', journal)

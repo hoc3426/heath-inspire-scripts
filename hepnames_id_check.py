@@ -19,11 +19,10 @@ def main():
     sys.stdout = output
     
     #for counter in [1, 2, 3, 4]:
-    #for counter in [7, 8]:
-    for counter in range(1, 8):
+    for counter in range(1, 9):
         hepnames_search_ids(counter)
         #pass
-    name_duplicates('O')
+    name_duplicates('P')
 
     output.close()
 
@@ -104,7 +103,12 @@ def hepnames_search_ids(counter):
                             print '  Multiple records -  (' + \
                                   str(len(hep_id_check)) + ') ' + search
                 elif len(duplicate_id) == 0:
-                    print '%s:%s' % (original_field, id_value)
+                    id_value_stripped = re.sub(r'orcid:', r'', id_value)
+                    id_value_stripped = re.sub(r'ORCID:', r'', id_value_stripped)
+                    if VERBOSE:
+                        print id_value, id_value_stripped
+                    #print '%6s:%24s' % (original_field, id_value)
+                    print '%-6s:%-25s  035__ $$9ORCID$$a%-16s  https://inspirehep.net/record/%s/export/hm  http://orcid.org/%s' % (original_field, id_value, id_value_stripped, recid, id_value_stripped)
                 list_of_ids.append(id_value)
 
 

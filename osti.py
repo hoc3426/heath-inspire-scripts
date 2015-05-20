@@ -13,10 +13,9 @@ from check_url import checkURL
 def main(search):
     if not search:
         search = "find r fermilab and dadd 2014"
-    print search
     search_original = search
     x = intbitset(perform_request_search(p=search, cc='HEP'))    
-    print len(x)
+    print search, ':', len(x)
     fermilab         = intbitset(perform_request_search(p="8564_y:fermilab*", cc='HEP'))
     fermilabtoday   = intbitset(perform_request_search(p="8564_y:fermilabtoday", cc='HEP'))
     fermilabpub     = intbitset(perform_request_search(p="8564_y:fermilabpub", cc='HEP'))
@@ -24,9 +23,9 @@ def main(search):
     fermilabconf    = intbitset(perform_request_search(p="8564_y:fermilabconf", cc='HEP'))
     fermilabtm      = intbitset(perform_request_search(p="8564_y:fermilabtm", cc='HEP'))
     ok = fermilab - fermilabtoday | fermilabpub | fermilabthesis | fermilabconf | fermilabtm
-    print len(ok)
+    print 'Total number of Fermilab links:', len(ok)
     x = x & ok
-    print len(x)    
+    print 'Intersection:', len(x)    
     
     fileName    = 'osti.out'
     fileName2 = 'osti2.out'

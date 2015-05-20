@@ -18,7 +18,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from invenio.intbitset import intbitset
 
 #from hep_aff import get_aff
-from numbers_beijing import IDS
+#from numbers_beijing import IDS
 
 if False:
     for ID in IDS:
@@ -82,8 +82,8 @@ def create_xml(author,nicname,vname,email,af,rank,experiment,start):
     print print_rec(common_fields)
 
 
-
-authors = [["E05","T.Nagae","Kyoto U","Spectroscopic Study of Ξ- Hypernucleus, 12ΞBe, via the 12C(K-, K+) Reaction"],
+if False:
+    authors = [["E05","T.Nagae","Kyoto U","Spectroscopic Study of Ξ- Hypernucleus, 12ΞBe, via the 12C(K-, K+) Reaction"],
 ["E06","J.Imazato","KEK","Measurement of T-violating Transverse Muon Polarization in K+->π0μ+ν Decays"],
 ["E07","K.Imai, K.Nakazawa, H.Tamura","JAEA, Gifu U, Tohoku U","Systematic　Study of Double Strangeness System with an Emulsion-counter Hybrid Method"],
 ["E08","A.Krutenkova","ITEP","Pion double charge exchange on oxygen at J-PARC"],
@@ -201,6 +201,20 @@ if False:
 
 
 if True:
+    list_oth = ['hep-th','hep-ph','hep-ex','hep-lat','nucl-th','nucl-ex','gr-qc']
+    list_ast = ['astro-ph.GA','astro-ph.CO','astro-ph.EP','astro-ph.HE','astro-ph.IP','astro-ph.SR']
+    list_all = list_oth + list_ast
+    print list_all
+    for ast in list_ast:
+        if ast in list_all:
+            try:
+               print list_all.remove(ast)
+            except:
+               print "ERROR", ast
+            print list_all
+    print list_all
+
+if False:
     atsearch = '0247:10.1093/mnras/*l* -773__c:L*'
     atsearch = '773__p:Astron.Astrophys. 035__a:/A&A.*\dL\./ -773__c:L*'
     atsearch = '773__p:astron.astrophys. 773__y:2010->2016 -773__c:A*  -773__c:L*'

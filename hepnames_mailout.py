@@ -5,9 +5,9 @@ asking them to send us their ORCID ID.
 """
 
 VERBOSE = True
-
 RECIDS = False
-from fermi_theory_inspire_ids import RECIDS
+
+#from fermi_theory_inspire_ids import RECIDS
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 
 import time
@@ -35,15 +35,15 @@ def main(recids):
 
     icount = 1
     for recid in recids:
+        recid = str(recid)
         if re.search(r'INSPIRE-', recid):
             search = '035__a:' + recid
             result = perform_request_search(p=search, cc='HepNames')
             recid = result[0]
-            if get_hepnames_anyid_from_recid(recid, 'ORCID'):
-                print recid, 'already has an ORCID'
-                icount += 1
-                continue
-        recid = str(recid)
+        if get_hepnames_anyid_from_recid(recid, 'ORCID'):
+            print recid, 'already has an ORCID\n'
+            icount += 1
+            continue
         try:
             contact_email = get_fieldvalues(recid, '371__m')[0]
         except:
@@ -58,7 +58,7 @@ def main(recids):
         #contact_email = "hoc3426@gmail.com"
         #contact_email = "atkinson@fnal.gov"
         #contact_email = "hepnames@slac.stanford.edu"
-        contact_email = "cleggm1@fnal.gov"
+        #contact_email = "cleggm1@fnal.gov"
         #contact_email = "cleggm1@gmail.com"
         #contact_email = "bhecker@slac.stanford.edu"
         #contact_email = "thorsten.schwander@gmail.com"
@@ -70,9 +70,11 @@ def main(recids):
         print ' '
         try:
             send_jobs_mail(recid, contact_email, contact_name)
-        except:
-            print 'PROBLEM'
-            print recid, contact_email, contact_name
+            time.sleep(1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            print 'PROBLEM sending mail to:'
+            print recid, contact_email, contact_name, '\n'
         icount += 1
 
 
@@ -81,6 +83,7 @@ def send_jobs_mail(recid, email, name):
     Generates an email message and sends it out.
     """
 
+    recid = str(recid)
     subject = 'record in INSPIRE HEPNames ' + recid
     subject_sender = 'Adding an ORCID to your ' + subject
     link = "http://inspirehep.net/record/" + recid
@@ -164,7 +167,7 @@ def find_records():
     else:
         print "That's not a search. Game over."
         return None
-    #search += ' -035__9:ORCID'
+    search += ' -035__9:ORCID'
     print search
     result = perform_request_search(p=search, cc='HepNames')
     if len(result) > 0:
