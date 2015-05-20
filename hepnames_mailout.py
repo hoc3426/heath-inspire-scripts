@@ -35,26 +35,29 @@ def main(recids):
 
     icount = 1
     for recid in recids:
-        recid = str(recid)
-        if re.search(r'INSPIRE-', recid):
-            search = '035__a:' + recid
+        recid_str = str(recid)
+        recid_int = int(recid)
+        if re.search(r'INSPIRE-', recid_str):
+            search = '035__a:' + recid_str
             result = perform_request_search(p=search, cc='HepNames')
             recid = result[0]
-        if get_hepnames_anyid_from_recid(recid, 'ORCID'):
-            print recid, 'already has an ORCID\n'
+            recid_str = str(recid)
+            recid_int = int(recid)
+        if get_hepnames_anyid_from_recid(recid_int, 'ORCID'):
+            print recid_str, 'already has an ORCID\n'
             icount += 1
             continue
         try:
-            contact_email = get_fieldvalues(recid, '371__m')[0]
+            contact_email = get_fieldvalues(recid_int, '371__m')[0]
         except:
             contact_email = 'hoc@fnal.gov'
         try:
-            contact_name = get_fieldvalues(recid, '100__a')[0]
+            contact_name = get_fieldvalues(recid_int, '100__a')[0]
             if "," in contact_name:
                 contact_name = " ".join(contact_name.split(", ")[::-1])
         except:
             contact_name = 'Sir or Madam'
-        #contact_email = 'hoc@fnal.gov'
+        contact_email = 'hoc@fnal.gov'
         #contact_email = "hoc3426@gmail.com"
         #contact_email = "atkinson@fnal.gov"
         #contact_email = "hepnames@slac.stanford.edu"
@@ -64,12 +67,12 @@ def main(recids):
         #contact_email = "thorsten.schwander@gmail.com"
 
         print icount, '/', len(recids)
-        print 'recid = ', recid
+        print 'recid = ', recid_str
         print 'email = ', contact_email
         print 'name  = ', contact_name
         print ' '
         try:
-            send_jobs_mail(recid, contact_email, contact_name)
+            send_jobs_mail(recid_str, contact_email, contact_name)
             time.sleep(1)
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
@@ -83,7 +86,6 @@ def send_jobs_mail(recid, email, name):
     Generates an email message and sends it out.
     """
 
-    recid = str(recid)
     subject = 'record in INSPIRE HEPNames ' + recid
     subject_sender = 'Adding an ORCID to your ' + subject
     link = "http://inspirehep.net/record/" + recid

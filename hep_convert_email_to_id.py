@@ -34,6 +34,7 @@ def get_hepnames_recid_from_email(email):
         return None
 
 def get_hepnames_anyid_from_recid(record, id_type):
+    record = int(record)
     author_id = None
     for item in BibFormatObject(record).fields('035__'):
         if item.has_key('9') and item['9'] == id_type and item.has_key('a'):
@@ -43,6 +44,7 @@ def get_hepnames_anyid_from_recid(record, id_type):
     return author_id
 
 def get_hepnames_affiliation_from_recid(record, id_type):
+    record = int(record)
     affiliation = None
     for item in BibFormatObject(record).fields('371__'):
         if item.has_key('z') and item['z'].lower() == id_type.lower() \

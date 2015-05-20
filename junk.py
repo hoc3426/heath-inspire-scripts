@@ -115,6 +115,10 @@ search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 fileName = 'tmp_junk.out'
 output = open(fileName,'w')
 
+if True:
+    recid = 355574 
+    output.write(print_record(recid, ot=['001','700'],format='xm'))
+
 if False:
   result = [1317852, 1319472, 1324458, 1325164, 1326367, 1327466, 1328450, 1328598, 1328943, 1333186, 1333470]
   for r in result:
@@ -200,7 +204,7 @@ if False:
 
 
 
-if True:
+if False:
     list_oth = ['hep-th','hep-ph','hep-ex','hep-lat','nucl-th','nucl-ex','gr-qc']
     list_ast = ['astro-ph.GA','astro-ph.CO','astro-ph.EP','astro-ph.HE','astro-ph.IP','astro-ph.SR']
     list_all = list_oth + list_ast
