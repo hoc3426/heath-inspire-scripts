@@ -9,7 +9,25 @@ fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
 
 search = 'dadd:2015-01-01->2015-03-31'
-print "{0:16s} {1:5s} {2:5s} {3:5s}".format(search, 'open', 'closed', 'total')
+print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
+
+for field in fields:
+  search = '65017:' + field
+  x = perform_request_search(p=search, cc='Jobs')
+  y = perform_request_search(p=search, cc='Jobs Hidden')
+  total = len(x+y)
+  print "{0:20s} {1:5d} {2:5d} {3:5d}".format(search, len(x), len(y), total)
+
+for rank in ranks:
+  search = '656:' + rank
+  x = perform_request_search(p=search, cc='Jobs')
+  y = perform_request_search(p=search, cc='Jobs Hidden')
+  total = len(x+y)
+  print "{0:20s} {1:5d} {2:5d} {3:5d}".format(search, len(x), len(y), total)
+
+
+
+
 for year in range(2010, 2016):
   for month in range(1, 13):
     if month < 10:
@@ -20,6 +38,7 @@ for year in range(2010, 2016):
     y = perform_request_search(p=search, cc='Jobs Hidden')              
     total = len(x+y)
     print "{0:12s} {1:5d} {2:5d} {3:5d}".format(search, len(x), len(y), total)
+
 
 
 if False:

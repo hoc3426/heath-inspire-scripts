@@ -15,7 +15,7 @@ from hep_published import JOURNAL_PUBLISHED_DICT
 import xml.etree.ElementTree as ET
 import re
 
-TEST = True
+TEST = False
 VERBOSE = False
 DEBUG = False
 

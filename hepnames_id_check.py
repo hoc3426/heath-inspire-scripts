@@ -22,7 +22,7 @@ def main():
     for counter in range(1, 9):
         hepnames_search_ids(counter)
         #pass
-    name_duplicates('P')
+    name_duplicates('Q')
 
     output.close()
 

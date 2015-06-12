@@ -57,7 +57,7 @@ def main(recids):
                 contact_name = " ".join(contact_name.split(", ")[::-1])
         except:
             contact_name = 'Sir or Madam'
-        contact_email = 'hoc@fnal.gov'
+        #contact_email = 'hoc@fnal.gov'
         #contact_email = "hoc3426@gmail.com"
         #contact_email = "atkinson@fnal.gov"
         #contact_email = "hepnames@slac.stanford.edu"
@@ -169,6 +169,7 @@ def find_records():
     else:
         print "That's not a search. Game over."
         return None
+    search += ' 371__m:/\@/'
     search += ' -035__9:ORCID'
     print search
     result = perform_request_search(p=search, cc='HepNames')
