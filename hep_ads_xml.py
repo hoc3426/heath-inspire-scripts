@@ -21,7 +21,6 @@ DEBUG = False
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
 #DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
-DOCUMENT = 'test.xml'
 
 
 if TEST:

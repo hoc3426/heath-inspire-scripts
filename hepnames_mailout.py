@@ -104,7 +104,8 @@ matched to it.
 If you do not have an ORCID ID you can obtain one at:
 <a href=\"http://orcid.org/register\">http://orcid.org/register</a>
 <br /><br />
-Once you have an ORCID ID please just reply to this email and let us know.
+Once you have an ORCID ID please just reply to this email and let us know
+what it is so that we can add it to your HEPNames record.
 <br /><br />
 For more information on ORCID and its importance to INSPIRE, please see
 our recent <a href=\"%(link_blog)s\">blog post</a>.
