@@ -32,7 +32,8 @@ for year in range(2010, 2016):
   for month in range(1, 13):
     if month < 10:
         month = '0' + str(month)
-    date = str(year) + '-' + str(month) + '-*'
+    #date = str(year) + '-' + str(month) + '-*'
+    date = str(year) + '-' + str(month)
     search = 'dadd:' + date
     x = perform_request_search(p=search, cc='Jobs')
     y = perform_request_search(p=search, cc='Jobs Hidden')              

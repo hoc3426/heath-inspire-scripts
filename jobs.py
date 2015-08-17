@@ -41,16 +41,20 @@ def main(recids):
         #contact_email = "bhecker@slac.stanford.edu"
         #contact_email = "thorsten.schwander@gmail.com"
 
-
-        deadline = get_fieldvalues(recid, '046__i')[0]
-        print icount, '/', len(recids)
-        print 'recid = ', recid
-        print 'title = ', title
-        print 'email = ', contact_email
-        print 'name  = ', contact_name
-        print 'dline = ', deadline
-        print ' '
+        try:      
+            deadline = get_fieldvalues(recid, '046__i')[0]
+        except:
+            print 'PROBLEM: no deadline'
+            print recid, contact_email, contact_name, title
+            print ''
         try:
+            print icount, '/', len(recids)
+            print 'recid = ', recid
+            print 'title = ', title
+            print 'email = ', contact_email
+            print 'name  = ', contact_name
+            print 'dline = ', deadline
+            print ' '
             send_jobs_mail(recid, contact_email, contact_name, title,
                            deadline)
         except:

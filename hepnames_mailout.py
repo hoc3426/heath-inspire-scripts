@@ -172,6 +172,7 @@ def find_records():
         return None
     search += ' 371__m:/\@/'
     search += ' -035__9:ORCID'
+    search += ' -001:1004158'
     print search
     result = perform_request_search(p=search, cc='HepNames')
     if len(result) > 0:

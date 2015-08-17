@@ -70,6 +70,7 @@ experiments = ['AMANDA',
 #'GSI-FAIR-PANDA',
 #'GSI-HADES',
 'IceCube',
+'JUNO',
 #'KAMLAND',
 'KEK-BF-BELLE',
 'KEK-BF-BELLE-II',
@@ -91,6 +92,7 @@ experiments = ['AMANDA',
 
 #experiments = ['FNAL-E-0740', 'DES']
 #experiments = ['FNAL-E-0740']
+#experiments = ['JUNO']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')

@@ -128,7 +128,7 @@ def create_xml(input_dict):
             match_obj = re.search(r'10.1142\/S0217751X(\d{7})\w', doi)
             if match_obj:
                 page    = match_obj.group(1)
-                print 'DOI match', page
+                #print 'DOI match', page
     if bibcode:
         search  = '035__a:' + bibcode
         result = perform_request_search(p=search, cc='HEP')
