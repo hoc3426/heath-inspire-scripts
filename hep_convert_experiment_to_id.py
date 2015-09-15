@@ -24,7 +24,7 @@ bad_experiments = ['CERN-LEP-DELPHI',
 'VERITAS',
 'XENON']
 
-experiments = ['AMANDA',
+experiments = [#'AMANDA',
 'AUGER',
 #'BEPC-BES-III',
 'BNL-RHIC-PHENIX',
@@ -33,9 +33,9 @@ experiments = ['AMANDA',
 'CDMS',
 'CERN-LHC-ALICE',
 'CERN-LHC-ATLAS',
-'CERN-LHC-CMS', 
-'CERN-LHC-LHCB',
-'CERN-LHC-TOTEM',
+#'CERN-LHC-CMS', 
+#'CERN-LHC-LHCB',
+#'CERN-LHC-TOTEM',
 #'CERN-NA-049',
 #'CERN-NA-058',
 #'CERN-NA-061', 
@@ -43,7 +43,7 @@ experiments = ['AMANDA',
 #'DESY-HERA-H1',
 #'DESY-HERA-HERMES',
 #'DESY-HERA-ZEUS',
-#'FERMI-LAT', 
+'FERMI-LAT', 
 'FNAL-E-0740',
 #'FNAL-E-0741',
 'FNAL-E-0799',
@@ -153,7 +153,7 @@ def find_records_with_no_id(experiment):
    presult = intbitset(presult)
    result = oresult & presult
    if VERBOSE: print len(result)
-   result = result[:400]
+   #result = result[:400]
    return result
 
 def experiment_convert(experiment):

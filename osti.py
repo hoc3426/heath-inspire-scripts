@@ -206,7 +206,7 @@ def main(search):
             subj_keywords_flag = True
 
         if i: 
-            print i
+            #print i
             output2.write(i)
 
     output2.close()

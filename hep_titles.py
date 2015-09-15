@@ -1,7 +1,10 @@
-import re
-from titlecase import titlecase
-from invenio.search_engine import perform_request_search
+import re 
+from titlecase import titlecase 
+from invenio.search_engine import perform_request_search 
 from invenio.search_engine import get_fieldvalues
+
+VERBOSE = True
+VERBOSE = False
 
 words = ['AND', 'AROUND', 'FOR', 'FROM', 'IN', 'OF', 'THE', 'WITH']  
 
@@ -15,7 +18,7 @@ acronyms = ['AdS', 'ADC','AGN', 'AGS', 'ALICE', 'ATLAS', 'BaBar', 'BCS','BEBC',
               'ICFA', 'IHEP','II', 'III', 'IV', 'ILC',
               'IR', 'IRAS', 'ISM', 'ISR', 'IV', 'IX','JINR','KdV', 'KEK', 'KEKB','KNO', 'LAr','LAMPF','LAT',
               'LC','LEAR', 'LEP', 'LGT', 'LHC', 'LHCb', 'LINAC', 'LISA','LLNL', 'LMC', 'LQCD', 'LSS',
-              'MACSYMA','MAGIC', 'MC', 'MeV', 'MHD', 'MIT', 'MR', 'MSSM', 'NC', 'NCG', 'NGC', 'NJL',
+              'MACSYMA','MAGIC', 'MC', 'MeV', 'MHD', 'MIT', 'MR', 'MSSM', 'NAL', 'NC', 'NCG', 'NGC', 'NJL',
               'NLC', 'NLO', 'NP','OBE', 'OZI','PCAC', 'PEP', 'PETRA', 'PHENIX', 'PPP', 'PQCD',
               'QCD', 'QED', 'QFT', 'QGP', 'QH', 'QM', 'QSO', 'RED', 
               'RF', 'RFQ', 'RG', 'RHIC', 'SDC', 'SDSS', 'SGR', 'SLAC', 'SLC',
@@ -259,40 +262,49 @@ def titleFix(x):
     x = re.sub(r'[ ]+', r' ', x)
     return x
 
-search = '961__x:1980-1*'
-search = '961__x:1993-* and topcite 5+'
+#search = '961__x:1980-1*'
+#search = '961__x:1993-* and topcite 5+'
 #search = 'find t An Isobar Model Partial Wave Analysis'
 #search="find recid 9189 or 9208 or 153191 or 152935"
 #search="find recid 24937"
-search = 'find date 2013 and recid:1255928->99999999'
-search = '037__a:fermilab-thesis* -245__a:/\$/'
-search = 'refersto:author:Giorgio.Bellettini.1 245__a:/\\pi/ -245__a:/\$/'
+#search = 'find date 2013 and recid:1255928->99999999'
+#search = '037__a:fermilab-thesis* -245__a:/\$/'
+#search = 'refersto:author:Giorgio.Bellettini.1 245__a:/\\pi/ -245__a:/\$/'
 #search = '001:1339902'
-x = perform_request_search(p=search,cc='HEP')
-#print search, len(x)
+#x = perform_request_search(p=search,cc='HEP')
+search = '119__a:FNAL*'
+if VERBOSE: print search
+x = perform_request_search(p=search,cc='Experiments')
+if VERBOSE: print search, len(x)
 title = 'Meas alpha f the chi_c and chi_b quarkonium states in pp collisions with the ATLAS experiment'
 print "<?xml version=\"1.0\" ?>"
 print "<collection>"
 
+iter_flag = 1
 for r in x:
-  #print r
+  if VERBOSE: print r, iter_flag
   title = get_fieldvalues(r,'245__a')[0]
+  if re.search(r'[aeiou]', title):
+      continue
+  if iter_flag > 50:
+      continue
   oldTitle = title
   oldTitle = re.sub(r'&',r' and ',oldTitle) 
   oldTitle = re.sub(r'\s+',' ',oldTitle)
   for word in words:
     wordCheck = "\\b" + word + "\\b" 
     #if re.search(wordCheck,title):
-    if title:
-      title = titleFix(title)
+    if title:     
+      iter_flag += 1
+      title = titleFix_case(title)
       print '<record>'
       print '  <controlfield tag="001">'+str(r)+'</controlfield>'
       print '  <datafield tag="245" ind1=" " ind2=" ">'
       print '    <subfield code="a">' + title + '</subfield>'
       print '  </datafield>'
-      print '  <datafield tag="246" ind1=" " ind2=" ">'
-      print '    <subfield code="a">' + oldTitle + '</subfield>'
-      print '  </datafield>' 
+      #print '  <datafield tag="246" ind1=" " ind2=" ">'
+      #print '    <subfield code="a">' + oldTitle + '</subfield>'
+      #print '  </datafield>' 
       print '</record>'
       break
 print "</collection>"  

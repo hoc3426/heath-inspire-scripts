@@ -8,14 +8,15 @@ from invenio.search_engine import search_unit
 from invenio.search_engine import get_collection_reclist
 
 VERBOSE = False
-#VERBOSE = True
+VERBOSE = True
+LETTER = 'X'
 
 def main():
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     output = open(filename,'w')
     sys.stdout = output
-    hepnames_search_ids()
+    hepnames_search_ids(LETTER)
     output.close()
 
 def email_search(email):
@@ -23,8 +24,8 @@ def email_search(email):
     email_fields += ' or 595__o:"{0}" or 595__m:"{0}"'
     return  email_fields.format(email)
 
-def hepnames_search_ids():
-    name_letter = 'S*'
+def hepnames_search_ids(letter):
+    name_letter = letter + '*'
     id_search = '035__9:bai or 035__9:inspire'
     id_search += ' or 035__9:orcid or 035__9:jacow'
     field_search_list = [['035__a', id_search, 'HepNames'],
@@ -32,11 +33,14 @@ def hepnames_search_ids():
                          ['371__m', r'/\,/', 'HepNames'],
                          ['100__a', r'/[\{\}\\]/', 'HepNames'],
                          ['100__a', name_letter, 'HepNames'],
+                         ['100__j', r'*0000*', 'HEP'],
+                         ['700__j', r'*0000*', 'HEP'],
                          ['541__a', r'*0000*', 'HEP'],
                          ['541__b', r'*\@*', 'HEP']]
 
-    field_search_list = [['541__a', r'*0000*', 'HEP'],
-                         ['541__b', r'*\@*', 'HEP']]
+    #field_search_list = [['100__a', name_letter, 'HepNames']]
+    #field_search_list = [['541__a', r'*0000*', 'HEP'],
+    #                     ['541__b', r'*\@*', 'HEP']]
 
     for field_search in field_search_list:
         examine(field_search)
@@ -45,15 +49,17 @@ def examine(field_search):
     field = field_search[0]
     search = field_search[1]
     collection = field_search[2]
+    core = perform_request_search(p='980:CORE', cc='HEP')
     if re.search(r'541.*', field):
         result = search_unit(p = search, m = 'a', f = field)
         result = result & get_collection_reclist('HEP')
+        
     else:
         if not re.search(r'\:', search):
             search = field + ':' + search
         result = perform_request_search(p = search, cc = collection)
     if VERBOSE:
-        print 'VERBOSE', search, collection, len(result)
+        print 'VERBOSE', field, search, collection, len(result)
     already_seen_field_values = []
     for recid in result:
         recid_print = ""
@@ -79,14 +85,17 @@ def examine(field_search):
                     field_value_mod = \
                         re.sub(r"\'", r".", field_value)
                     search_dup = email_search(field_value_mod)
-            elif field == '541__a':
+            elif collection == 'HEP':
+#field == '541__a' or field == '100__j' \
+#                                   or field == '700__j':
                 ignore = r'(CCID|JACoW|uid|arxiv)'
                 if re.search(ignore, field_value):
                     continue
                 field_value = re.sub(r'^\w+:', r'', field_value)
                 search_dup = '035__a:' + field_value
-                collection = 'HepNames'
-            if field == '541__a' or field == '541__b':
+                #collection = 'HepNames'
+            if collection == 'HEP':
+#field == '541__a' or field == '541__b':
                 recid_print = "http://inspirehep.net/record/" \
                               + str(recid) + "/export/xm"
             #print search_dup
@@ -104,13 +113,14 @@ def examine(field_search):
                 else:
                     if len(result_dup) == 0:
                         print_field_value = field_value
-                        if field == '541__a':
+                        if collection == 'HEP' and \
+                               re.search(r'^0000-', field_value):
                             print_field_value = 'http://orcid.org/' + \
                                           field_value
                         print '{0:40s} {1:30s}'. \
                               format(print_field_value, recid_print)
                     else:
-                        print search_dup, recid_print
+                        print search_dup, recid_print, result_dup, bad_id
                 if field == '035__a':
                     author_search = r'100__a:"{0}" or 700__a:"{0}"'
                     search_hep = author_search.format(field_value)
