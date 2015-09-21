@@ -142,11 +142,9 @@ def create_xml(recid, tags, experiment):
 
 def find_records_with_no_id(experiment):
    print experiment
-   osearch = "find exp " + experiment + " and date > 2011"
    osearch = "find exp " + experiment
-   #osearch = "693__e:fnal-e-0740 -693__e:fnal-e-0823 -693__:fnal-e-0741"
    oresult = perform_request_search(p=osearch, cc='HEP')
-   psearch = '693__e:' + experiment + ' -100__i:INSPIRE* -700__i:INSPIRE*'
+   psearch = 'authorcount:1->900' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
    if VERBOSE: print psearch
    presult = perform_request_search(p=psearch, cc='HEP')
    oresult = intbitset(oresult)
