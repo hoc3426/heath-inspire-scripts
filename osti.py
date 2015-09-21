@@ -26,7 +26,8 @@ def main(search):
     fermilabconf    = intbitset(perform_request_search(p="8564_y:fermilabconf", cc='HEP'))
     fermilabtm      = intbitset(perform_request_search(p="8564_y:fermilabtm", cc='HEP'))
     scoap           = intbitset(perform_request_search(p="8564_y:'Article from SCOAP3'", cc='HEP'))
-    ok = fermilab - fermilabtoday | fermilabpub | fermilabthesis | fermilabconf | fermilabtm | scoap
+    cms = intbitset(perform_request_search(p="find r fermilab and cn cms", cc='HEP'))
+    ok = fermilab - fermilabtoday | fermilabpub | fermilabthesis | fermilabconf | fermilabtm | scoap | cms
     print 'Total number of Fermilab links:', len(ok)
     x = x & ok
     print 'Intersection:', len(x), x
@@ -71,7 +72,7 @@ def main(search):
                 url_oa = False
                 try:
                     doi = get_fieldvalues(recid, '0247_a')[0]
-                    search_oa = 'find recid ' + str(recid) + ' and exp cern-lhc-cms'
+                    search_oa = 'find recid ' + str(recid) + ' and exp cern-lhc-cms'                    
                     if VERBOSE:
                         print "doi =", doi
                         print "search_oa =", search_oa
@@ -91,6 +92,9 @@ def main(search):
                     for url in urls:
                         if re.search('scoap3-fulltext.pdf', url):
                             url_oa = url
+                        elif re.search(r'record/\d+/files/arXiv', url) and recid in cms and not url_oa:
+                            #This is to catch the CMS papers
+                            url_oa = url 
                 except:
                     pass
                 if url_oa:
