@@ -11,6 +11,10 @@ import re
 import sys
 import cgi
 
+
+VERBOSE = True
+VERBOSE = False
+
 def xml_frontmatter(experiment, collaboration):
     output = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE collaborationauthorlist SYSTEM "http://www.slac.stanford.edu/spires/hepnames/authors_xml/author.dtd">
@@ -40,10 +44,14 @@ def xml_affiliations(affiliations):
         country = ''
         zip     = '' 
         address = ''
+        if VERBOSE:
+            print affiliation
         try:
             search = '110__u:"' + affiliation + '"'
         except:
             print 'Problem affiliation', affiliation
+        if VERBOSE:
+            print search
         x = perform_request_search(p = search, cc = 'Institutions') 
         if len(x) == 1:
             y = get_fieldvalues(x[0], '110__a')
@@ -119,6 +127,8 @@ def main(experiment, collaboration):
         foaf_givenName  = re.sub(r'.*\, ', '', name)
         foaf_familyName =  re.sub(r'\,.*', '', name)
         author_id = find_inspire_id_from_record(r)
+        if VERBOSE:
+            print r
         affiliation = get_hepnames_affiliation_from_recid(r, 'Current')
         if not affiliation: print 'find recid', r
         d = {}

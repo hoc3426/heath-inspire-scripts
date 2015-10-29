@@ -16,6 +16,7 @@ author = 'Vellidis'
 author = 'Bellettini, Giorgio'
 author = 'Damgov, Jordan V.'
 author = 'Stoynev, Stoyan'
+author = 'Betancourt, Minerba'
 fileName = re.sub(r'(.*)\,.*',r'\1',author)
 fileName = fileName.replace(' ','_')
 fileName = 'www/texfiles/' + fileName + '.tex'
@@ -28,6 +29,7 @@ search = 'find a Vellidis'
 search = 'find ea Giorgio.Bellettini.1'
 search = 'find ea J.Damgov.1'
 search = 'find ea Stoyan.Stoynev.1'
+search = 'find ea M.Betancourt.1'
 
 print search
 

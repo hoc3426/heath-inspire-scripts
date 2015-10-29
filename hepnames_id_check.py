@@ -9,7 +9,7 @@ from invenio.search_engine import get_collection_reclist
 
 VERBOSE = False
 VERBOSE = True
-LETTER = 'X'
+LETTER = 'Y'
 
 def main():
     filename = 'tmp_' + __file__
