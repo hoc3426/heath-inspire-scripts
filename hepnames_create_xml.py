@@ -13,7 +13,7 @@ import cgi
 
 
 VERBOSE = True
-VERBOSE = False
+#VERBOSE = False
 
 def xml_frontmatter(experiment, collaboration):
     output = """<?xml version="1.0" encoding="UTF-8"?>
@@ -77,7 +77,8 @@ def xml_affiliations(affiliations):
         output += '      <cal:orgName source="INSPIRE">' + affiliation
         output += '</cal:orgName>\n'
         output += '      <cal:orgStatus collaborationid="c1">member</cal:orgStatus>\n'
-        output += '      <cal:orgAddress>' + address + '</cal:orgAddress>\n'
+        if address:
+            output += '      <cal:orgAddress>' + address + '</cal:orgAddress>\n'
         output += '    </foaf:Organization>\n'
     output += '  </cal:organizations>'
     return output

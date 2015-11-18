@@ -9,6 +9,7 @@ from invenio.search_engine import get_fieldvalues
 from invenio.search_engine import print_record
 from invenio.intbitset import intbitset
 from check_url import checkURL
+from osti_web_service import get_url
 
 VERBOSE = False
 #VERBOSE = True
@@ -62,6 +63,7 @@ def main(search):
             matchObj = re.match(r'.*<accession_num>(\d+)</accession_num>.*', i)
             if matchObj:
                 doctype_flag = False
+                accepted = False
                 accession_num = matchObj.group(1)
                 search = "find recid " + accession_num + " or irn " + accession_num + " and r fermilab"
                 y = perform_request_search(p=search, cc='HEP')
@@ -88,17 +90,24 @@ def main(search):
                 except:
                     pass
                 try:
+                    accepted = get_fieldvalues(recid, '8564_3')
                     urls = get_fieldvalues(recid, '8564_u')
                     for url in urls:
                         if re.search('scoap3-fulltext.pdf', url):
                             url_oa = url
+                            accepted = True
                         elif re.search(r'record/\d+/files/arXiv', url) and recid in cms and not url_oa:
                             #This is to catch the CMS papers
                             url_oa = url 
+                    [url_oa, accepted] = get_url(recid)
                 except:
                     pass
                 if url_oa:
                     i += "  <url>" + url_oa + "</url>\n"
+                if accepted:
+                    i += "  <journal_type>AM</journal_type>\n"
+                else:
+                    i += "  <journal_type>FT</journal_type>\n"
                 authors = get_fieldvalues(recid, '700__a')
                 if len(authors) > 9 :
                     author = get_fieldvalues(recid, '100__a')[0]

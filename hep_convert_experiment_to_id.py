@@ -26,7 +26,7 @@ bad_experiments = ['CERN-LEP-DELPHI',
 
 experiments = [#'AMANDA',
 'AUGER',
-#'BEPC-BES-III',
+'BEPC-BES-III',
 'BNL-RHIC-PHENIX',
 'BNL-RHIC-PHOBOS', 
 'BNL-RHIC-STAR',

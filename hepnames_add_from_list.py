@@ -4,6 +4,7 @@ import unicodedata
 import re
 import os
 import string
+import random
 
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
@@ -20,8 +21,10 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from hepnames_add_from_list_authors import AUTHORS
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
+EXPERIMENT = 'BNL-RHIC-STAR'
+INSPIRE = 537896
 
-def create_xml(author,email,af,experiment):
+def create_xml(author,email,af,experiment,inspire_id):
     common_fields = {}
     common_tags = {}
     author2 = re.sub(r'(.*)\, (.*)',r'\2 \1', author)
@@ -29,12 +32,17 @@ def create_xml(author,email,af,experiment):
     common_tags['100__'] = [('a', author), ('q', author2), ('g', 'ACTIVE')]
     common_tags['371__'] = [('m', email),('a', af),('z', 'current')]
     common_tags['693__'] = [('e', experiment),('z', 'current')]
+
+    #inspire_id = 'INSPIRE-' + str(INSPIRE) + str(random.randint(1, 9))
+    common_tags['035__'] = [('9', 'INSPIRE'), ('a', inspire_id)]
+    #INSPIRE += 1
+
     for key in common_tags:
         tag = key
         record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
             subfields=common_tags[key])
     #return common_fields
-    print print_rec(common_fields)
+    return print_rec(common_fields)
 
 
 
@@ -46,7 +54,7 @@ x = perform_request_search(p=search,cc='HepNames')
 #x = x[:5]
 #print len(x)
 
-fileName = 'tmp_junk.out'
+fileName = 'tmp_hepnames_add_from_list.out'
 output = open(fileName,'w')
 for author in AUTHORS:
     #print author
@@ -58,8 +66,8 @@ for author in AUTHORS:
     #au = re.sub(r'(.*[A-Z][A-Z]) ([A-Z][a-z].*)',r'\1, \2',au)
     #au = re.sub(r'(.*[a-z]) ([A-Z][A-Z].*)',r'\2, \1',au)
     #au = string.capwords(au)    
-    au = re.sub(r'\s+', r' ', au)
-    au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
+    #au = re.sub(r'\s+', r' ', au)
+    #au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
     search = "find a " + au
     x = perform_request_search(p=search,cc='HepNames')
     hepnames_record = get_hepnames_recid_from_email(email)
@@ -68,15 +76,17 @@ for author in AUTHORS:
         search = "001:" + str(hepnames_record) + " -693__e:" + EXPERIMENT
         x = perform_request_search(p=search,cc='HepNames')
         if len(x) == 1:
-            #print x[0]
+            print 'or ', x[0]
             pass
     elif len(x) < 1 and not hepnames_record:
         if af:
             bm = bestmatch(af,'ICN')
             aflist = bm[0]
             af = aflist[1]
-        create_xml(au, email, af, EXPERIMENT)
-
+        inspire_id = 'INSPIRE-' + str(INSPIRE) + str(random.randint(1, 9))
+        output.write(create_xml(au, email, af, EXPERIMENT, inspire_id))
+        INSPIRE += 1          
+        print INSPIRE
     #output.write(print_record(r,ot=['001','371'],format='xm'))
 output.close()
 
