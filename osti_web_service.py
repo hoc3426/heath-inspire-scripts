@@ -49,30 +49,12 @@ def get_url(recid):
                     accepted = True
     else:
         urls = get_fieldvalues(recid, '8564_u')
-        for url in urls:
-            if re.search(r'fermilab\-.*pdf', url):
-                url_fermilab = url
-            elif re.search(r'record/\d+/files/arXiv', url):
-                url_arxiv = url
+        for url_i in urls:
+            if re.search(r'fermilab\-.*pdf', url_i):
+                url_fermilab = url_i
+            elif re.search(r'record/\d+/files/arXiv', url_i):
+                url_arxiv = url_i
             
-
-    #tag_3 = get_fieldvalues(recid, '8564_3')
-    #if 'postprint' in tag_3 or 'openaccess' in tag_3:
-    #    accepted = True
-    #if not accepted:
-    #    urls = get_fieldvalues(recid, '8564_u')
-    #    for url in urls:
-    #    if re.search('scoap3-fulltext.pdf', url):
-    #        url_scoap = url
-    #        accepted = True
-    #    elif re.search('openaccess', url):
-    #        url_openaccess = url
-    #        accepted = True
-    #        if re.search(r'fermilab\-.*pdf', url):
-    #            url_fermilab = url
-    #        elif re.search(r'record/\d+/files/arXiv', url):
-    #            url_arxiv = url
-
     if url_openaccess:
         url = url_openaccess
     elif url_postprint:
@@ -81,7 +63,10 @@ def get_url(recid):
         url = url_fermilab
     elif url_arxiv and recid in cms:
         url = url_arxiv
-    return [url, accepted]
+    if url:
+        return [url, accepted]
+    else:
+        return None
 
 def get_title(recid):
     title = get_fieldvalues(recid, '245__a')[0]
@@ -212,7 +197,6 @@ def create_xml(recid, records):
     else:
         journal_type.text = 'FT'
     file_format.text = 'PDF/A'
-
     #print prettify(records)
 
 
@@ -220,7 +204,8 @@ def main(recids):
     #recids = [1400805, 1373745, 1342808, 1400935]
     records = ET.Element('records')
     for recid in recids:
-        create_xml(recid, records)
+        if get_url(recid):
+            create_xml(recid, records)
     print prettify(records)
     
 

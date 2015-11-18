@@ -27,8 +27,9 @@ def main(search):
     fermilabconf    = intbitset(perform_request_search(p="8564_y:fermilabconf", cc='HEP'))
     fermilabtm      = intbitset(perform_request_search(p="8564_y:fermilabtm", cc='HEP'))
     scoap           = intbitset(perform_request_search(p="8564_y:'Article from SCOAP3'", cc='HEP'))
+    oa              = intbitset(perform_request_search(p="8564_3:postprint or 8564_3:openaccess", cc='HEP'))
     cms = intbitset(perform_request_search(p="find r fermilab and cn cms", cc='HEP'))
-    ok = fermilab - fermilabtoday | fermilabpub | fermilabthesis | fermilabconf | fermilabtm | scoap | cms
+    ok = fermilab - fermilabtoday | fermilabpub | fermilabthesis | fermilabconf | fermilabtm | scoap | cms | oa
     print 'Total number of Fermilab links:', len(ok)
     x = x & ok
     print 'Intersection:', len(x), x
