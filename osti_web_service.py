@@ -21,7 +21,7 @@ VERBOSE = True
 RECIDS = False
 
 
-cms = intbitset(perform_request_search(p="find r fermilab and cn cms", \
+CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
 def get_url(recid):
@@ -32,22 +32,20 @@ def get_url(recid):
     url_postprint = None
     accepted = False
 
-    tag_3 = get_fieldvalues(recid, '8564_3')
-    if 'postprint' in tag_3 or 'openaccess' in tag_3:
-        accepted = True
-        for item in BibFormatObject(recid).fields('8564_'):
-            if item.has_key('y'):
-                if item['y'] == 'Article from SCOAP3':
-                    url_openaccess = item['u']
-                    accepted = True
-            if item.has_key('3') and not url_openaccess:
-                if item['3'] == 'openaccess':
-                    url_openaccess = item['u']
-                    accepted = True
-                elif item['3'] == 'postprint':
-                    url_postprint = item['u']
-                    accepted = True
-    else:
+    for item in BibFormatObject(recid).fields('8564_'):
+        if item.has_key('y'):
+            if item['y'] == 'Article from SCOAP3':
+                url_openaccess = item['u']
+                accepted = True
+        if item.has_key('3') and not url_openaccess:
+            if item['3'] == 'openaccess':
+                url_openaccess = item['u']
+                accepted = True    
+            elif item['3'] == 'postprint':
+                url_postprint = item['u']
+                accepted = True
+ 
+    if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
             if re.search(r'fermilab\-.*pdf', url_i):
@@ -61,7 +59,7 @@ def get_url(recid):
         url = url_postprint
     elif url_fermilab:
         url = url_fermilab
-    elif url_arxiv and recid in cms:
+    elif url_arxiv and recid in CMS:
         url = url_arxiv
     if url:
         return [url, accepted]
