@@ -22,6 +22,7 @@ from hepnames_add_from_list_authors import AUTHORS
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
 EXPERIMENT = 'BNL-RHIC-STAR'
+EXPERIMENT = 'DUNE'
 INSPIRE = 537896
 
 def create_xml(author,email,af,experiment,inspire_id):

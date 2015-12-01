@@ -9,74 +9,73 @@ from invenio.search_engine import get_fieldvalues
 from invenio.search_engine import print_record
 from invenio.bibrecord import print_rec, record_add_field
 
-def osti_add_url(string):
-    osti_base_url = 'http://www.osti.gov/scitech/biblio/'
-    matchObj = re.match(r'^(\d+)\s+(\d+)', string)
-    if matchObj :
-        inspire_id = matchObj.group(1)
-        osti_id    = matchObj.group(2)
-        #print "Check: " + inspire_id + " " + osti_id
-        search_id = "001:" + inspire_id + " or 970__a:SPIRES-" + inspire_id
-        search_id  = search_id + " 037__a:FERMILAB* "
-        search_osti_url = " 8564_y:OSTI "
-        search_osti_id  = " 8564_u:/" + osti_id + "/"      
-        search = search_id + search_osti_url + search_osti_id
-        x = perform_request_search(p = search, cc = 'HEP')
-        if len(x) == 1:
-            #print "       " + inspire_id + " " + osti_id + " match"
-            return
-        if len(x) == 0:
-            search = search_id + search_osti_url
-            y = perform_request_search(p = search, cc = 'HEP')
-            if len(y) == 1:
-                #print 'Duplicate OSTI ID?', osti_id, search
-                recid = y[0]
-                reportValues = get_fieldvalues(recid,'037__a')
-                report = ''
-                existing_osti_id = ''
-                for y in reportValues:
-                    if re.search('FERMILAB', y): report = y
-                for u in get_fieldvalues(recid, '8564_u'):
-                    if re.search('osti.gov', u):
-                        matchObj = re.search(r'(\d+)', u)
-                        if matchObj :
-                            existing_osti_id = matchObj.group(1)
-                print report, existing_osti_id, osti_id
-            elif len(y) == 0:
-                search = search_id
-                z =  perform_request_search(p = search, cc = 'HEP')
-                if len(z) == 1:
-                    recid = z[0]
-                    record = {}
-                    record_add_field(record, '001', controlfield_value=str(recid))
-                    osti_url = osti_base_url + osti_id
-                    new_id  = [('a', osti_id), ('9', 'OSTI')]
-                    new_url = [('u', osti_url), ('y', 'OSTI')]
-                    record_add_field(record, '035', '', '', subfields=new_id)
-                    record_add_field(record, '856', '4', '', subfields=new_url)
-                    return print_rec(record)
-                else:
-                    print "Something wrong: " + search                    
+VERBOSE = True
+VERBOSE = False
+RECIDS = []
+
+def find_recid(id):
+    if not id.isdigit():
+       print "Invalid ID: " , id
+       return False
+    search = "001:" + id + " or 970__a:SPIRES-" + id + " 037:FERMILAB*"        
+    x = perform_request_search(p = search, cc = 'HEP')
+    if len(x) == 1:
+        recid = x[0]
+        if recid in RECIDS:
+            return False
         else:
-            #print "Check this one: \n  ", search, "\n  ",string 
-            #search = "001:" + inspire_id + " or 970__a:SPIRES-" + inspire_id
-            #search = search + " and 037__a:FERMILAB*"
-            #x = perform_request_search(p = search, cc = 'HEP')
-            print len(x), search
+            RECIDS.append(recid)
+            return recid
+    else:
+        return False
+
+def add_osti_id(string):
+    matchObj = re.match(r'^\s*(\d+)\s+(\d+)', string)
+    if not matchObj:
+        return False
+    id_1 = matchObj.group(1)
+    id_2 = matchObj.group(2)
+    recid_guess_1 = find_recid(id_1)
+    recid_guess_2 = find_recid(id_2)
+    if recid_guess_1:
+        recid = recid_guess_1
+        osti_id = id_2
+    elif recid_guess_2:
+        recid = recid_guess_2
+        osti_id = id_1
+    else:
+        return False    
+    search = "001:" + str(recid) + " -035__9:OSTI"
+    if VERBOSE:
+        print search
+    result = perform_request_search(p = search, cc = 'HEP')
+    if not len(result) == 1:
+        return False   
+    if VERBOSE:
+        print result
+    record = {}
+    record_add_field(record, '001', controlfield_value=str(recid))
+    new_id  = [('a', osti_id), ('9', 'OSTI')]
+    record_add_field(record, '035', '', '', subfields=new_id)
+    try:
+        return print_rec(record)
+    except:
+        print "Something wrong: " + search                    
+        return False
 
 def main(input):
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '.out', filename)
+    filename = re.sub('.py', '_append.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
     if input:
-        output_data = osti_add_url(input)
+        output_data = add_osti_id(input)
         if output_data:
             output.write(output_data)
     else:
         try:
             for i in open('osti.in','r').readlines():
-                output_data = osti_add_url(i)
+                output_data = add_osti_id(i)
                 if output_data:
                     output.write(output_data)
         except IOError as e:
