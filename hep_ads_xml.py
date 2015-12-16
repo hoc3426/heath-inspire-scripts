@@ -8,7 +8,6 @@ http://ads.harvard.edu/pubs/arXiv/ADSmatches_updates.xml
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
-from hep_ads_xml_bibcodes import JOURNAL_DICT
 from hep_ads_xml_bibcodes import BIBCODE_DICT
 from hep_published import JOURNAL_PUBLISHED_DICT
 
@@ -16,17 +15,19 @@ import xml.etree.ElementTree as ET
 import re
 
 TEST = False
+#TEST = True
 VERBOSE = False
 DEBUG = False
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
 #DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
-
+#DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/test.xml'
 
 if TEST:
     VERBOSE = 1
     DEBUG = 1
-    DOCUMENT = 'test.xml'
+    DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/test.xml'
+    #DOCUMENT = 'test.xml'
     #DOCUMENT = 'ADS_astro2.xml'
     #DOCUMENT = 'ADS_cond.xml'
     #DOCUMENT = 'ADS_math.xml'
@@ -34,12 +35,14 @@ if TEST:
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
 BADRECS = []
+
+BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
 #INPUT_COUNTER = 66885
 #INPUT_COUNTER = 891510
 #INPUT_COUNTER = 79900
 INPUT_COUNTER = 1
 OUTPUT_COUNTER = 501
-
+OUTPUT_COUNTER = 11
 
 
 def journal_fix(journal):
@@ -52,19 +55,7 @@ def journal_fix(journal):
         for key in BIBCODE_DICT:
             if journal == key:
                 return BIBCODE_DICT[key]
-    #for key in JOURNAL_DICT:
-    #        if journal == key:
-    #            return JOURNAL_DICT[key]
-    #journal = re.sub(r'^Acta\.', r'Acta ', journal)
-    #search = '711__a:"' + journal + '"'
-    #result = perform_request_search(p=search, cc='Journals')
-    #if len(result) == 1:
-    #    return journal
-    #elif re.search(r'\.$', journal):
-    #    journal = re.sub(r'\.$', r'', journal)
-    #    journal_iter = journal_fix(journal)
-    #    return journal_iter   
-    #else:
+    else:
         if VERBOSE > 0:
             print 'BAD JOURNAL', journal
     return None
@@ -75,9 +66,16 @@ def create_xml(input_dict):
     checks to see if it has information that should be added to INSPIRE.
     If so, it builds up that information.
     """
- 
+
+    need_bibcode   = False
+    need_doi       = False
+    need_pubnote   = False
+    recid_eprint   = 0
+    recid_doi      = 0
+    recid_pubnote  = 0
+
     if TEST:
-        print "In create_xml"  
+        print "In create_xml"
     elements = ['doi', 'preprint_id', 'journal_bibcode', 'journal_ref']
     element_dict = {}
     pubyear = ''
@@ -99,24 +97,40 @@ def create_xml(input_dict):
         print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
-        search  =  '037__a:' + eprint + ' or 037__a:arXiv:' + eprint
-        result_eprint = perform_request_search(p=search, cc='HEP')
+        search  =  'find eprint ' + eprint
+        result = perform_request_search(p=search, cc='HEP')
         if DEBUG == 1:
-            print search, result_eprint
-        if len(result_eprint) == 0:
+            print search, result
+        if len(result) == 0:
             return None
+        elif len(result) == 1:
+            recid_eprint = result[0]
+            for badrec in BADRECS:
+                if recid_eprint == badrec:
+                    return None
+        else:
+            print 'Multiple ', search
+            return None
+    else:
+        return None
     if doi:
         if re.search(r'10.1103/PhysRev[CD]', doi):
             return None
         if re.search(r'10.1016/j.nuclphysb', doi):
             return None
         search  =  '0247_a:' + doi
-        result_doi = perform_request_search(p=search, cc='HEP')
+        result = perform_request_search(p=search, cc='HEP')
         if DEBUG == 1:
-            print search, result_doi
-        if len(result_doi) == 1:
-            if result_doi != result_eprint:
-                print "Check eprint doi mismatch", result_eprint, result_doi
+            print search, result
+        if len(result) == 1:
+            recid_doi = result[0]
+            if recid_doi != recid_eprint:
+                print "Check eprint doi mismatch", recid_eprint, recid_doi
+                return None
+        elif len(result) == 0:
+            need_doi = True
+        else:
+            print 'Multiple ', search
             return None
         match_obj = re.search(r'10.1051/epjconf/(\d{4})(\d\d)(\d{5})', doi)
         if match_obj:
@@ -130,12 +144,21 @@ def create_xml(input_dict):
                 page    = match_obj.group(1)
                 #print 'DOI match', page
     if bibcode:
+        if not BIBCODERE.match(bibcode):
+            print "Bad bibcode", bibcode, recid_eprint
+            return None
         search  = '035__a:' + bibcode
         result = perform_request_search(p=search, cc='HEP')
+        if TEST:
+            print search, result
         if len(result) == 1:
-            return None
-        if re.search(r'PhRv[CD]', bibcode):
-            return None
+            recid_bibcode = result[0]
+            if recid_bibcode != recid_eprint:
+                print "Check eprint bibcode mismatch", recid_eprint, \
+                                                       recid_bibcode
+                return None
+        elif len(result) == 0:
+            need_bibcode = True
         #2015IJMPA..3050059N
         match_obj = re.match(r'^(\d{4})IJMP(\w)\.\.(\d{7})\w', bibcode)
         if match_obj:
@@ -188,43 +211,53 @@ def create_xml(input_dict):
                     print journal
         if DEBUG == 1:
             print journal, volume, page, pubyear
-    if eprint and journal and volume and page and pubyear:
+    if journal == 'JHEP' or journal == 'JCAP':
+        volume = pubyear[-2:]  + volume
+    if journal and volume and page and pubyear:
         volume  = volume_letter + volume
         page    = page_letter + page
         search = 'find j "' + journal + ',' + volume + ',' + page + '"'
         result = perform_request_search(p=search, cc='HEP')
         if len(result) == 1:
+            recid_pubnote = result[0]
+            if recid_pubnote != recid_eprint:
+                print "Check eprint pubnote mismatch", recid_eprint, \
+                                                       recid_pubnote
+                return None
+        elif len(result) == 0:
+            need_pubnote = True
+        else:
+            print 'Multiple ', search
             return None
-        search = "find eprint " + eprint + " not tc p"
-        if DEBUG == 1:
-            print search
-        result = perform_request_search(p=search, cc='HEP')
-        if len(result) == 1 :
-            recid = result[0]
-            for badrec in BADRECS:
-                if recid == badrec:
-                    return None
-            record = {}
-            record_add_field(record, '001', controlfield_value=str(recid))
-            pubnote = [('p', journal), ('v', volume), ('c', page)]
-            if journal == 'ICRC':
-                journal = journal + ' ' + pubyear
-                pubnote = [('q', journal), ('v', volume), ('c', page)]
-            else:
-                pubnote.append(('y', pubyear))
+        if recid_pubnote and not need_bibcode and not need_doi:
+            return None
+
+    if need_doi or need_bibcode or need_pubnote:
+        record = {}
+        record_add_field(record, '001', controlfield_value=str(recid_eprint))
+        pubnote = [('p', journal), ('v', volume), ('c', page)]
+        if journal == 'ICRC':
+            journal = journal + ' ' + pubyear
+            pubnote = [('q', journal), ('v', volume), ('c', page)]
+        else:
+            pubnote.append(('y', pubyear))
+        if need_pubnote:
             record_add_field(record, '773', '', '', subfields=pubnote)
-            if journal in JOURNAL_PUBLISHED_DICT:
+        if journal in JOURNAL_PUBLISHED_DICT:
+            search = "001:" + str(recid_eprint) + " -980__a:Published"
+            result = perform_request_search(p=search, cc='HEP')
+            if len(result) == 1:
                 collection = [('a', 'Published')]
                 record_add_field(record, '980', '', '', subfields=collection)
-            if doi:
-                doi  = [('a', doi), ('2', 'DOI'), ('9', 'ADS')]
-                record_add_field(record, '024', '7', '', subfields=doi)
-            if bibcode:
-                bibcode  = [('a', bibcode), ('9', 'ADS')]
-                record_add_field(record, '035', '', '', subfields=bibcode)
-            return print_rec(record)
-        else:
-            return None
+        if need_doi:
+            doi  = [('a', doi), ('2', 'DOI'), ('9', 'ADS')]
+            record_add_field(record, '024', '7', '', subfields=doi)
+        if need_bibcode:
+            bibcode  = [('a', bibcode), ('9', 'ADS')]
+            record_add_field(record, '035', '', '', subfields=bibcode)
+        print 'doi, bibcode, pbn', need_doi, need_bibcode, need_pubnote, \
+                                   recid_eprint
+        return print_rec(record)
     else:
         return None
 
@@ -241,7 +274,8 @@ def main():
         if input_counter < INPUT_COUNTER:
             input_counter  += 1
         else:
-            if output_counter == OUTPUT_COUNTER: break
+            if output_counter == OUTPUT_COUNTER:
+                break
             if 'doi' in child.attrib:
                 record_update = create_xml(child.attrib)
                 if record_update:

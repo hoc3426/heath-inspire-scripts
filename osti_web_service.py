@@ -32,7 +32,7 @@ def get_url(recid):
     url_postprint = None
     accepted = False
 
-    for item in BibFormatObject(recid).fields('8564_'):
+    for item in BibFormatObject(int(recid)).fields('8564_'):
         if item.has_key('y'):
             if item['y'] == 'Article from SCOAP3':
                 url_openaccess = item['u']
