@@ -14,10 +14,16 @@ VERBOSE = False
 RECIDS = []
 
 def find_recid(id):
-    if not id.isdigit():
-       print "Invalid ID: " , id
-       return False
-    search = "001:" + id + " or 970__a:SPIRES-" + id + " 037:FERMILAB*"        
+    id = re.sub(r';', '', id)
+    if id.isdigit():
+        #print "Invalid ID: " , id
+        #return False
+        search = "001:" + id + " or 970__a:SPIRES-" + id + " 037:FERMILAB*"        
+    elif re.search(r'FERMILAB', id):
+        id = re.sub(r'\/', '-', id)
+        search = "037:" + id
+    elif re.search(r'10\.\d+\/', id):
+        search = "0247_a:" + id
     x = perform_request_search(p = search, cc = 'HEP')
     if len(x) == 1:
         recid = x[0]
@@ -30,21 +36,41 @@ def find_recid(id):
         return False
 
 def add_osti_id(string):
-    matchObj = re.match(r'^\s*(\d+)\s+(\d+)', string)
-    if not matchObj:
+    if re.search(r'\s*Video\s*NA\s*NA', string):
         return False
-    id_1 = matchObj.group(1)
-    id_2 = matchObj.group(2)
-    recid_guess_1 = find_recid(id_1)
-    recid_guess_2 = find_recid(id_2)
-    if recid_guess_1:
-        recid = recid_guess_1
-        osti_id = id_2
-    elif recid_guess_2:
-        recid = recid_guess_2
-        osti_id = id_1
+    elif re.search(r'duplicat[eion]+ of OSTI ID', string):    
+        return False
+    elif re.search(r'\tSoftware\t', string):
+        return False
+    match_obj_1 = re.match(r'^\s*(\d+)\s+(\d+)', string)
+    match_obj_2 = re.match(r'^\s*(\d+).*(FERMILAB[\-A-z0-9\/]+)', string)
+    match_obj_3 = re.match(r'^\s*(\d+).*(10\.\d+\/\S+)', string)
+    
+    if match_obj_1:
+        id_1 = match_obj_1.group(1)
+        id_2 = match_obj_1.group(2)
+        recid_guess_1 = find_recid(id_1)
+        recid_guess_2 = find_recid(id_2)
+        if recid_guess_1:
+            recid = recid_guess_1
+            osti_id = id_2
+        elif recid_guess_2:
+            recid = recid_guess_2
+            osti_id = id_1
+    elif match_obj_2:
+        osti_id = match_obj_2.group(1) 
+        report_num = match_obj_2.group(2)
+        recid = find_recid(report_num)
+    elif match_obj_3:
+        osti_id = match_obj_3.group(1)
+        doi = match_obj_3.group(2)
+        recid = find_recid(doi)
     else:
-        return False    
+        print "Cannot find valid ID:", string
+        return False
+    if not recid:
+        print "Cannot find valid recid:", string
+        return False
     search = "001:" + str(recid) + " -035__9:OSTI"
     if VERBOSE:
         print search

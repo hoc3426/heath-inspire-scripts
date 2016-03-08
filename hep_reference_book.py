@@ -36,7 +36,7 @@ books = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 ['W5013','w5013','CERN-W5013','863473']]
 #books = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
 #['W5013','w5013','CERN-W5013','863473']]
-books = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
+#books = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
 for book in books:
     referenceFlag = False
     date = False

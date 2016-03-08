@@ -61,7 +61,9 @@ def main():
     for key in BIBCODE_DICT:
         journal = BIBCODE_DICT[key]
         print journal
-        search = '773__p:"' + journal + '" 035__9:ads -773__m:erratum'
+        search = '773__p:"' + journal + '" 980:core \
+                  035__9:ads -773__m:erratum \
+                  -773__m:addendum date:2016'
         result = perform_request_search(p=search, cc = 'HEP')
         output_counter = 1
         if len(result):

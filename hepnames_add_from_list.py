@@ -18,7 +18,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 #from afftranslator2 import bestmatch
 from hepnames_fermilab_aff_from_email import *
-
+from tmp_email import EMAILS
 
 from hepnames_add_from_list_authors import AUTHORS
 EXPERIMENT = 'FNAL-E-0974'
@@ -28,6 +28,19 @@ EXPERIMENT = 'DUNE'
 #INSPIRE = 537896
 #INSPIRE = 52682
 INSPIRE =  52765
+
+#for email in EMAILS:
+if False:
+    recid = get_hepnames_recid_from_email(email)
+    if recid:  
+        search = '001:' + str(recid)  + ' 693__e:DUNE'
+        result = perform_request_search(p=search, cc='HepNames')
+        if len(result) == 0:
+            print 'or', recid
+    else:
+        print email
+    print 'FINISHED'
+
 
 def create_xml(author,email,af,experiment,inspire_id):
     common_fields = {}
@@ -54,15 +67,43 @@ def create_xml(author,email,af,experiment,inspire_id):
 
 search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 
+fileName = 'tmp_hepnames_add_from_list.out'
+input = open('tmp.bnl.in', 'r')
+output = open(fileName,'w')
+for line in input.readlines():
+    line = re.sub(r'\n', '', line)
+    try:
+        match_object = re.match(r'(.*)\t+(.*)\t+(.*)\t+(.*)\t+(.*)', line)
+        fname = match_object.group(1)
+        lname = match_object.group(2)
+        id    = match_object.group(3)
+        aff   = match_object.group(4)
+        email = match_object.group(5)
+        recid = get_hepnames_recid_from_email(email)
+        inspire = find_inspire_id_from_record(recid)
+        line = line + '\t' + inspire
+        #print line
+        #output.write(line)
+    except TypeError:
+        print line
+        pass
+    except AttributeError:
+        print line
+        pass
+    line = line + '\n'
+    output.write(line)
+input.close()
+output.close()
 
 
 x = perform_request_search(p=search,cc='HepNames')
 #x = x[:5]
 #print len(x)
 
-fileName = 'tmp_hepnames_add_from_list.out'
-output = open(fileName,'w')
-for author in AUTHORS:
+#fileName = 'tmp_hepnames_add_from_list.out'
+#output = open(fileName,'w')
+#for author in AUTHORS:
+if False:
     #print author
     au = author[0] 
     email = author[1]
@@ -96,7 +137,7 @@ for author in AUTHORS:
         INSPIRE += 1          
         #print INSPIRE
     #output.write(print_record(r,ot=['001','371'],format='xm'))
-output.close()
+#output.close()
 
 
 if False:

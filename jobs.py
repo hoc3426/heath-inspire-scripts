@@ -18,14 +18,14 @@ def main(recids):
         title = title[:50]
         try:
             contact_email = get_fieldvalues(recid, '270__m')[0]
-        except:
+        except IndexError:
             contact_email = 'hoc@fnal.gov'
         try:
             contact_name = get_fieldvalues(recid, '270__p')[0]
             if "," in contact_name:
                 contact_name = " ".join(contact_name.split(", ")[::-1])
             #contact_name = contact_name
-        except:
+        except IndexError:
             contact_name = 'Sir or Madam'
         if contact_email == 'employ@fnal.gov':
             contact_email = 'kvb@fnal.gov'
@@ -43,7 +43,7 @@ def main(recids):
 
         try:      
             deadline = get_fieldvalues(recid, '046__i')[0]
-        except:
+        except IndexError:
             print 'PROBLEM: no deadline'
             print recid, contact_email, contact_name, title
             print ''
@@ -130,6 +130,7 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
     msg['Subject'] = subject_sender
     msg['From'] = hepjobs_email
     msg['To'] = email
+    msg['X-Auto-Response-Suppress'] = 'OOF, DR, RN, NRN'
 
     # Record the MIME types of both parts - text/plain and text/html.
     #part1 = MIMEText(text, 'plain')

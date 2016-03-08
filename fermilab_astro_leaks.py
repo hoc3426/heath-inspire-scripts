@@ -1,7 +1,3 @@
-import re
-from invenio.search_engine import perform_request_search
-from invenio.search_engine import get_fieldvalues
-
 search = "find a Adam Anderson \
 or a Jim Annis \
 or a Dan Bauer \
@@ -33,6 +29,7 @@ or a Dan Hooper \
 or a Steve Kent \
 or a Rich Kron \
 or a Donna Kubik \
+or a Krnjaic, Gordan \
 or a Nikolay Kuropatkin \
 or a Connie Lang \
 or a Cathryn Laue \
@@ -68,5 +65,51 @@ search += " and (primarch astro-ph or astro-ph.he \
 or astro-ph.co or astro-ph.GA \
 or astro-ph.EP or astro-ph.IM \
 or astro-ph.sr)"
+print search
+
+print '\n'
+
+search = "find a John Campbell \
+or a Marcela Carena \
+or a Bogdan Dobrescu \
+or a Estia Eichten \
+or a Patrick Fox \
+or a Walter Giele \
+or a Roni Harnik \
+or a Christopher Hill \
+or a Andreas Kronfeld \
+or a Joseph Lykken \
+or a Paul Mackenzie \
+or a Stephen Parke \
+or a Chris Quigg \
+or a Ruth Van de Water \
+or a Pilar Coloma \
+or a Kiel Howe \
+or a Seyda Ipek \
+or a Jack Kearney \
+or a Ye Li \
+or a Zhen Liu \
+or a Aarti Veernala \
+or a Ran Zhou \
+or a Nilanjan Banik \
+or a Peter Denton \
+or a Felix Kling \
+or a Aaron Meyer \
+or a Gopolang Mohlabeng \
+or a Ananth Tenneti \
+or a Carl Albright \
+or a Bill Bardeen \
+or a Jon Bailey \
+or a Andre de Gouvea \
+or a Elizabeth Freeland \
+or a Richard Hill \
+or a Boris Kayser \
+or a Wai-Yee Keung \
+or a Stephen Martin \
+or a Stephen Mrenna \
+or a Jim Simone"
+search += " not r fermilab"
+search += " and (primarch hep-ph or primarch hep-th or primarch hep-lat)"
+
 print search
 

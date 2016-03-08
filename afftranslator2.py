@@ -34,6 +34,7 @@ from sets import Set
 #settings
 knowledgebasepath = "/home/fschwenn/afftranslator/version2"
 knowledgebasepath = "/afs/desy.de/user/l/library/proc/aff-translation/version2"
+knowledgebasepath = "/afs/desy.de/user/l/library/proc/aff-translation"
 
 #bonus for matching acronyms #opt 100412
 acronymbonus = 1.2 

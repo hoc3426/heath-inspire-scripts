@@ -8,7 +8,7 @@ http://ads.harvard.edu/pubs/arXiv/ADSmatches_updates.xml
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
-from hep_ads_xml_bibcodes import BIBCODE_DICT
+from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS
 from hep_published import JOURNAL_PUBLISHED_DICT
 
 import xml.etree.ElementTree as ET
@@ -18,10 +18,14 @@ TEST = False
 #TEST = True
 VERBOSE = False
 DEBUG = False
+UPDATE = True
+UPDATE = False
+
+STARTING_COUNTER = 197188
+ENDING_COUNTER = 2001
+
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
-#DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
-#DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/test.xml'
 
 if TEST:
     VERBOSE = 1
@@ -34,15 +38,14 @@ if TEST:
     #DOCUMENT = 'ADSmatches.xml'
 
 BADRECS = [1299943, 1263270, 782224, 799038, 834458]
-BADRECS = []
+BADRECS = [1202336, 744283, 419659, 535573, 535574, 535581, 799568, 536276,
+           650007, 631684]
 
 BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
-#INPUT_COUNTER = 66885
-#INPUT_COUNTER = 891510
-#INPUT_COUNTER = 79900
-INPUT_COUNTER = 1
-OUTPUT_COUNTER = 501
-OUTPUT_COUNTER = 11
+
+if UPDATE:
+    DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
+    STARTING_COUNTER = 1
 
 
 def journal_fix(journal):
@@ -50,6 +53,8 @@ def journal_fix(journal):
     Puts the journal name into INSPIRE form.
     """
     if journal == 'PhDT':
+        return None
+    elif journal == 'IJGMM':
         return None
     if re.match(r'^[A-Z]\w*\&?\w+$', journal):
         for key in BIBCODE_DICT:
@@ -139,10 +144,11 @@ def create_xml(input_dict):
             page    = match_obj.group(3)
             pubyear = match_obj.group(1)
         else:
-            match_obj = re.search(r'10.1142\/S0217751X(\d{7})\w', doi)
-            if match_obj:
-                page    = match_obj.group(1)
-                #print 'DOI match', page
+            pass
+            #match_obj = re.search(r'10.1142\/S0217751X(\d{7})\w', doi)
+            #if match_obj:
+                #page    = match_obj.group(1)
+                ##print 'DOI match', page
     if bibcode:
         if not BIBCODERE.match(bibcode):
             print "Bad bibcode", bibcode, recid_eprint
@@ -162,6 +168,8 @@ def create_xml(input_dict):
         #2015IJMPA..3050059N
         match_obj = re.match(r'^(\d{4})IJMP(\w)\.\.(\d{7})\w', bibcode)
         if match_obj:
+            if TEST:
+                print 'IJMP = ', bibcode 
             if not page:
                 return None
             journal        = 'Int.J.Mod.Phys.'
@@ -171,7 +179,10 @@ def create_xml(input_dict):
                 print 'IJMP', journal, pubyear, volume, page
         match_obj = re.match(r'^\d{4}(\w+\&?\w+)', bibcode)
         if match_obj:
-            journal = journal_fix(match_obj.group(1))
+            journal = match_obj.group(1)
+            if DEBUG == 1:
+                print journal
+            journal = journal_fix(journal)
             if DEBUG == 1:
                 print journal
             if journal:
@@ -213,11 +224,20 @@ def create_xml(input_dict):
             print journal, volume, page, pubyear
     if journal == 'JHEP' or journal == 'JCAP':
         volume = pubyear[-2:]  + volume
+    elif journal == 'JINST':
+        # or journal == 'Comptes Rendus Physique':
+        journal = None
     if journal and volume and page and pubyear:
         volume  = volume_letter + volume
         page    = page_letter + page
-        search = 'find j "' + journal + ',' + volume + ',' + page + '"'
+        #search = 'find j "' + journal + ',' + volume + ',' + page + '"'        
+        #search = '773__p:"' + journal + '" 773__v:' + volume + ' 773__c:' + page
+        #search += ' or (773__p:"' + journal + '" 773__v:' + volume + \
+        #           ' 773__c:"' + page + '\-*")'
+        search = 'journal:"' + journal + ',' + volume + ',' + page + '"'
         result = perform_request_search(p=search, cc='HEP')
+        if DEBUG:
+            print search, result
         if len(result) == 1:
             recid_pubnote = result[0]
             if recid_pubnote != recid_eprint:
@@ -229,9 +249,17 @@ def create_xml(input_dict):
         else:
             print 'Multiple ', search
             return None
+        #Can't always trust weird page numbers, check the pub year
+        search = '001:' + str(recid_eprint) + ' 773__y:' + pubyear
+        result = perform_request_search(p=search, cc='HEP')
+        if TEST:
+            print search, result
+        if len(result) == 1:
+            need_pubnote = False
         if recid_pubnote and not need_bibcode and not need_doi:
-            return None
-
+            return None   
+    if need_pubnote and not need_doi and journal in TRICKY_JOURNALS:
+        need_pubnote = False
     if need_doi or need_bibcode or need_pubnote:
         record = {}
         record_add_field(record, '001', controlfield_value=str(recid_eprint))
@@ -255,7 +283,8 @@ def create_xml(input_dict):
         if need_bibcode:
             bibcode  = [('a', bibcode), ('9', 'ADS')]
             record_add_field(record, '035', '', '', subfields=bibcode)
-        print 'doi, bibcode, pbn', need_doi, need_bibcode, need_pubnote, \
+        if TEST:
+            print 'doi, bibcode, pbn', need_doi, need_bibcode, need_pubnote, \
                                    recid_eprint
         return print_rec(record)
     else:
@@ -268,13 +297,15 @@ def main():
     output.write('<collection>')
     tree = ET.parse(DOCUMENT)
     root = tree.getroot()
-    input_counter  = 1
+    line_counter   = 1
     output_counter = 1
     for child in root:
-        if input_counter < INPUT_COUNTER:
-            input_counter  += 1
+        line_counter += 1
+        if line_counter < STARTING_COUNTER:
+            pass
         else:
-            if output_counter == OUTPUT_COUNTER:
+            if output_counter == ENDING_COUNTER:
+                print 'line_counter =', line_counter
                 break
             if 'doi' in child.attrib:
                 record_update = create_xml(child.attrib)
@@ -283,7 +314,8 @@ def main():
                         if DEBUG == 1:
                             print record_update
                         else:
-                            output.write(record_update)
+                            if not TEST:
+                                output.write(record_update)
                             output_counter += 1
                     except:
                         print 'CANNOT print record', child.attrib

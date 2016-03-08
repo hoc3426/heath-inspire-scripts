@@ -27,7 +27,7 @@ def main(search):
     fermilabconf    = intbitset(perform_request_search(p="8564_y:fermilabconf", cc='HEP'))
     fermilabtm      = intbitset(perform_request_search(p="8564_y:fermilabtm", cc='HEP'))
     scoap           = intbitset(perform_request_search(p="8564_y:'Article from SCOAP3'", cc='HEP'))
-    oa              = intbitset(perform_request_search(p="8564_3:postprint or 8564_3:openaccess", cc='HEP'))
+    oa              = intbitset(perform_request_search(p="8564_z:postprint or 8564_z:openaccess", cc='HEP'))
     cms = intbitset(perform_request_search(p="find r fermilab and cn cms", cc='HEP'))
     ok = fermilab - fermilabtoday | fermilabpub | fermilabthesis | fermilabconf | fermilabtm | scoap | cms | oa
     print 'Total number of Fermilab links:', len(ok)
@@ -132,9 +132,16 @@ def main(search):
 
                 phd_date = get_fieldvalues(recid, '502__d')
                 normal_date = get_fieldvalues(recid, '269__c')
+                try:
+                    published_date = get_fieldvalues(recid, '260__c')[0]
+                except IndexError:
+                    published_date = False
                 if phd_date and not normal_date:
                     phd_date = "    <date>" + phd_date[0] + "</date>\n"
                     i = i + phd_date
+                elif published_date and not normal_date:
+                    published_date = "    <date>" + published_date + "</date>\n"
+                    i = i + published_date
             if VERBOSE:
                 print i
         #if arXiv_flag and re.search("<availability>http://arXiv.org", i) :

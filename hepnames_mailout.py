@@ -136,6 +136,7 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
     msg['Subject'] = subject_sender
     msg['From'] = hepnames_email
     msg['To'] = email
+    msg['X-Auto-Response-Suppress'] = 'OOF, DR, RN, NRN'
 
     # Record the MIME types of both parts - text/plain and text/html.
     #part1 = MIMEText(text, 'plain')
@@ -196,7 +197,10 @@ if __name__ == '__main__':
         except:
             RECIDS = find_records()
     try:
-        main(RECIDS)
+        if RECIDS:
+            main(RECIDS)
+        else:
+            print "Nothing to do."
     except KeyboardInterrupt:
         print 'Exiting'
 

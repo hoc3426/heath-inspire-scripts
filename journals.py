@@ -12,6 +12,7 @@ for eprint in eprints :
     search = "find primarch " + eprint + " and tc p and (jy 2012 not jy 2011 not jy 2010 not jy 2009 not jy 2008 not jy 2007)"
     search = "035__9:ads - 035__a:/ICRC/"
     search = "773__v:/[0-9]N[0-9]/"
+    search = "100__j:ORCID* or 700__j:ORCID*"
     x = perform_request_search(p=search,cc='HEP')
     journals = []
     for r in x :    
@@ -27,7 +28,7 @@ for eprint in eprints :
     sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1))
     for recid_count, count in sorted_count:
         url = "http://inspirehep.net/search?p=773__p:\"" + recid_count 
-        url = url + "\" 773__v:/[0-9]N[0-9]/"
+        url = url + "\" (" + search + ")"
         url = re.sub(' ', '+', url)
         print count, recid_count, url
 

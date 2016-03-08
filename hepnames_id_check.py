@@ -6,10 +6,11 @@ from invenio.search_engine import get_fieldvalues
 from hep_convert_email_to_id import find_inspire_id_from_record
 from invenio.search_engine import search_unit
 from invenio.search_engine import get_collection_reclist
+from invenio.intbitset import intbitset
 
 VERBOSE = False
-VERBOSE = True
-LETTER = 'Z'
+#VERBOSE = True
+LETTER = 'G'
 
 def main():
     filename = 'tmp_' + __file__
@@ -35,8 +36,9 @@ def hepnames_search_ids(letter):
                          ['100__a', name_letter, 'HepNames'],
                          ['100__j', r'*0000*', 'HEP'],
                          ['700__j', r'*0000*', 'HEP'],
-                         ['541__a', r'*0000*', 'HEP'],
-                         ['541__b', r'*\@*', 'HEP']]
+                         #['541__a', r'*0000*', 'HEP'],
+                         #['541__b', r'*\@*', 'HEP']
+                        ]
 
     #field_search_list = [['100__a', name_letter, 'HepNames']]
     #field_search_list = [['541__a', r'*0000*', 'HEP'],
@@ -50,14 +52,18 @@ def examine(field_search):
     search = field_search[1]
     collection = field_search[2]
     core = perform_request_search(p='980:CORE', cc='HEP')
+    search_theory = 'find fc p or fc t or fc l or fc n or fc g 980:core'
+    core = perform_request_search(p=search_theory, cc='HEP')
     if re.search(r'541.*', field):
         result = search_unit(p = search, m = 'a', f = field)
-        result = result & get_collection_reclist('HEP')
-        
+        #result = result & get_collection_reclist('HEP')
+        result = result & intbitset(core)
     else:
         if not re.search(r'\:', search):
             search = field + ':' + search
         result = perform_request_search(p = search, cc = collection)
+        if collection == 'HEP':
+            result = intbitset(result) & intbitset(core)
     if VERBOSE:
         print 'VERBOSE', field, search, collection, len(result)
     already_seen_field_values = []

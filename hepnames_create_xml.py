@@ -13,7 +13,7 @@ import cgi
 
 
 VERBOSE = True
-#VERBOSE = False
+VERBOSE = False
 
 def xml_frontmatter(experiment, collaboration):
     output = """<?xml version="1.0" encoding="UTF-8"?>
@@ -42,7 +42,7 @@ def xml_affiliations(affiliations):
         town    = ''
         state   = ''
         country = ''
-        zip     = '' 
+        zip     = ''
         address = ''
         if VERBOSE:
             print affiliation
@@ -52,7 +52,7 @@ def xml_affiliations(affiliations):
             print 'Problem affiliation', affiliation
         if VERBOSE:
             print search
-        x = perform_request_search(p = search, cc = 'Institutions') 
+        x = perform_request_search(p = search, cc = 'Institutions')
         if len(x) == 1:
             y = get_fieldvalues(x[0], '110__a')
             if y: name = cgi.escape(y[0])
@@ -65,12 +65,12 @@ def xml_affiliations(affiliations):
             y = get_fieldvalues(x[0], '371__c')
             if y: state = y[0] + ', '
             y = get_fieldvalues(x[0], '371__d')
-            if y: country = y[0] 
+            if y: country = y[0]
             y = get_fieldvalues(x[0], '371__e')
             if y: zip = y[0]+ ', '
             address = name + ', ' + street + town + state + zip + country
             address = cgi.escape(address)
-        output += '    <foaf:Organization id="a' 
+        output += '    <foaf:Organization id="a'
         output += str(affiliations.index(affiliation) + 1) + '">\n'
         output += '      <cal:orgDomain>' + domain + '</cal:orgDomain>\n'
         output += '      <foaf:name>' + name + '</foaf:name>\n'
@@ -92,10 +92,10 @@ def xml_authors(authors):
         output += ' ' + authors[key]['foaf_familyName'] + '</foaf:name>\n'
         output += '      <foaf:givenName>' + authors[key]['foaf_givenName'] + '</foaf:givenName>\n'
         output += '      <foaf:familyName>' + authors[key]['foaf_familyName'] + '</foaf:familyName>\n'
-        output += '      <cal:authorNamePaper>' + initial 
-        output += ' ' + authors[key]['foaf_familyName'] + '</cal:authorNamePaper>\n' 
+        output += '      <cal:authorNamePaper>' + initial
+        output += ' ' + authors[key]['foaf_familyName'] + '</cal:authorNamePaper>\n'
         output += '      <cal:authorAffiliations>\n'
-        output += '        <cal:authorAffiliation organizationid="a' 
+        output += '        <cal:authorAffiliation organizationid="a'
         output += str(authors[key]['affiliation_id']) + '" connection="member"/>\n'
         output += '      </cal:authorAffiliations>\n'
         output += '      <cal:authorids>\n'
@@ -136,7 +136,7 @@ def main(experiment, collaboration):
         d['foaf_givenName']  = foaf_givenName
         d['foaf_familyName'] = foaf_familyName
         d['affiliation']     = affiliation
-        d['author_id']       = author_id 
+        d['author_id']       = author_id
         authors[name.lower()] = d
         affiliations.append(affiliation)
     affiliations = affiliations_process(affiliations)

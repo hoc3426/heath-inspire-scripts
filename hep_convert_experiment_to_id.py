@@ -15,6 +15,8 @@ from hep_convert_email_to_id import find_inspire_id_from_record
 VERBOSE = False
 #VERBOSE = True
 
+COUNT_MAX = 10
+
 bad_experiments = ['CERN-LEP-DELPHI',
 'BIGBOSS',
 'BOREXINO',
@@ -93,7 +95,11 @@ experiments = [#'AMANDA',
 
 #experiments = ['FNAL-E-0740', 'DES']
 #experiments = ['FNAL-E-0740']
-#experiments = ['JUNO']
+experiments = ['CERN-LHC-LHCB']
+experiments = ['DES', 'FNAL-E-0929', 'DUNE']
+experiments = ['BNL-RHIC-STAR']
+experiments = ['FNAL-E-0823']
+experiments = ['FERMI-LAT']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')
@@ -143,9 +149,10 @@ def create_xml(recid, tags, experiment):
 
 def find_records_with_no_id(experiment):
    print experiment
-   osearch = "find exp " + experiment
+   osearch = "001:1416784 693__e:" + experiment
    oresult = perform_request_search(p=osearch, cc='HEP')
-   psearch = 'authorcount:1->900' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
+   #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
+   psearch = ' -100__i:INSPIRE* -700__i:INSPIRE*'
    if VERBOSE: print psearch
    presult = perform_request_search(p=psearch, cc='HEP')
    oresult = intbitset(oresult)
@@ -163,7 +170,7 @@ def experiment_convert(experiment):
         fileName = 'tmp_hep_convert_experiment_to_id_' + experiment + '_correct.out'
         output = open(fileName,'w')
         for record in recordlist:
-            if i_count > 20:
+            if i_count > COUNT_MAX:
                 break
             if VERBOSE > 0: print "%d doing %d" % (i_count, record)
             #print create_xml(record,['100__','700__'])

@@ -9,8 +9,9 @@ import re
 
 fileName = "directory.html"
 search = '110:/carleton/'
-
-x = perform_request_search(p="find exp bnl-rhic-phenix", cc='HepNames')
+EXPERIMENT = 'DES'
+search = '693__e:' + EXPERIMENT
+x = perform_request_search(p=search, cc='HepNames')
 
 
 fileName = 'tmp_hepnames_collaboration_check.out'

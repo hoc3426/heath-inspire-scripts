@@ -1,12 +1,29 @@
-DOE_NUMBER = 'AC02-07CH11359'
+OSTI_URL = 'https://www.osti.gov/elink/docs/2411dtd.htm'
+XML_PREAMBLE  = '<?xml version="1.0" encoding="UTF-8" ?>'
+XML_PREAMBLE += '<!DOCTYPE records SYSTEM "' + OSTI_URL + '">'
 
-SITE = 'FNAL'
+DOE_SUBJECT_CATEGORIES_DICT = {
+'acc':'43 PARTICLE ACCELERATORS',
+'ins':'46 INSTRUMENTATION RELATED TO NUCLEAR SCIENCE AND TECHNOLOGY',
+'hep':'72 PHYSICS OF ELEMENTARY PARTICLES AND FIELDS',
+'nucl':'73 NUCLEAR PHYSICS AND RADIATION PHYSICS',
+'astro':'79 ASTRONOMY AND ASTROPHYSICS',
+'math':'97 MATHEMATICS AND COMPUTING'
+}
 
-LANGUAGE = 'English'
-
-COUNTRY = 'US'
-
-SPONSOR = 'USDOE Office of Science (SC), High Energy Physics (HEP) (SC-25)'
+DOE_FERMILAB_DICT = {
+'doe_contract_nos':'AC02-07CH11359',
+'site_input_code':'FNAL',
+'language':'English',
+'country_publication_code':'US',
+'sponsor_org':'USDOE Office of Science (SC), High Energy Physics (HEP) (SC-25)',
+'released_by':"Heath O'Connell",
+'released_by_email':'hoc@fnal.gov',
+'released_by_phone':'630-840-6017',
+#'access_limitation':'unl',
+'medium_code':'ED',
+'file_format':'PDF/A'
+}
 
 DOE_AFF_DICT = {
 'ARC':'Albany Research Center (ARC), Albany, OR (United States)',
@@ -68,5 +85,20 @@ DOE_AFF_DICT = {
 'S-N':'Stoller-Navarro Joint Venture (United States)',
 'TJNAF':'Thomas Jefferson National Accelerator Facility (TJNAF), Newport News, VA (United States)',
 'WIPP':'Waste Isolation Pilot Plant (WIPP), Carlsbad, NM (United States)'
+}
+
+INSPIRE_AFF_DICT = {'Argonne':'ANL',
+                    'Brookhaven':'BNL',
+                    'Fermilab':'FNAL',
+                    'LBL, Berkeley':'LBNL',
+                    'LLNL, Livermore':'LLNL',
+                    'Los Alamos':'LANL',
+                    'Oak Ridge':'ORNL',
+                    'PNL, Richland':'PNNL',
+                    'Princeton U., Plasma Physics Lab.':'PPPL',
+                    'SLAC':'SLAC',
+                    'Sandia':'SNL-CA',
+                    'Sandia, Livermore':'SNL-NM',
+                    'Jefferson Lab':'TJNAF'
 }
 

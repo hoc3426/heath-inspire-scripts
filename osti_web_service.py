@@ -1,30 +1,53 @@
+"""
+Script to push information on Fermilab publications
+to OSTI using the webservice AN241.1.
+"""
+
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
 import re
 import cgi
 import sys
-from datetime import datetime
-import time
+import datetime
+import pytz
 
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
-from invenio.search_engine import print_record
 from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from check_url import checkURL
 
-from osti_web_service_constants import *
+from osti_web_service_constants import DOE_FERMILAB_DICT, \
+                                       DOE_AFF_DICT, \
+                                       INSPIRE_AFF_DICT, \
+                                       DOE_SUBJECT_CATEGORIES_DICT, \
+                                       XML_PREAMBLE
+
+CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
+
 
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
+TEST = False
+#TEST = True
 RECIDS = False
 
 
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
+def get_osti_id(recid):
+    osti_id = None
+    return osti_id
+    for item in BibFormatObject(int(recid)).fields('035__'):
+        if item.has_key('9') and item.has_key('a'):
+            if item['9'].lower() == 'osti':
+                osti_id = item['a']
+    return osti_id
+
 def get_url(recid):
+    """Is there a valid url? Is it to an accepted PDF?"""
     url = None
     url_fermilab = None
     url_arxiv = None
@@ -37,22 +60,22 @@ def get_url(recid):
             if item['y'] == 'Article from SCOAP3':
                 url_openaccess = item['u']
                 accepted = True
-        if item.has_key('3') and not url_openaccess:
-            if item['3'] == 'openaccess':
+        if item.has_key('z') and not url_openaccess:
+            if item['z'] == 'openaccess':
                 url_openaccess = item['u']
-                accepted = True    
-            elif item['3'] == 'postprint':
+                accepted = True
+            elif item['z'] == 'postprint':
                 url_postprint = item['u']
                 accepted = True
- 
+
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
-            if re.search(r'fermilab\-.*pdf', url_i):
+            if re.search(r'lss.*fermilab\-.*pdf', url_i):
                 url_fermilab = url_i
             elif re.search(r'record/\d+/files/arXiv', url_i):
                 url_arxiv = url_i
-            
+
     if url_openaccess:
         url = url_openaccess
     elif url_postprint:
@@ -62,29 +85,78 @@ def get_url(recid):
     elif url_arxiv and recid in CMS:
         url = url_arxiv
     if url:
-        return [url, accepted]
+        if checkURL(url):
+            return [url, accepted]
+        else:
+            print "Problem with", url
+            return None
     else:
         return None
 
 def get_title(recid):
+    """Get title with in xml compliant form."""
     title = get_fieldvalues(recid, '245__a')[0]
     title = cgi.escape(title)
     return title
 
+def get_pubnote(recid):
+    """Gets publication information"""
+    try:
+        journal = get_fieldvalues(recid, "773__p")[0]
+    except IndexError:
+        journal = None
+    try:
+        volume = get_fieldvalues(recid, "773__v")[0]
+    except IndexError:
+        volume = None
+    try:
+        issue = get_fieldvalues(recid, "773__n")[0]
+    except IndexError:
+        issue = None
+    try:
+        pages  = get_fieldvalues(recid, "773__c")[0]
+    except IndexError:
+        pages = None
+    try:
+        doi = get_fieldvalues(recid, "0247_a")[0]
+    except IndexError:
+        doi = None
+    return [journal, volume, issue, pages, doi]
+
 def get_authors(recid):
+    """Get authors as a long string, truncate at 10."""
     authors = get_fieldvalues(recid, "100__a") \
             + get_fieldvalues(recid, "700__a")
     if len(authors) <= 10 and len(authors) > 0:
-       return '; '.join([unicode(a, "utf-8") for a in authors])
+        return '; '.join([unicode(a, "utf-8") for a in authors])
     elif len(authors) > 10:
-       return authors[0] + "; et al."
+        return authors[0] + "; et al."
+
+def get_collaborations(recid):
+    try:
+        collaborations = get_fieldvalues(recid, "710__g")
+        return '; '.join([unicode(a, "utf-8") for a in collaborations])
+    except:
+        return None
+
+def get_abstract(recid):
+    """Get abstract if it exists."""
+    try:
+        abstract = get_fieldvalues(recid, "520__a")[0]
+        if len(abstract) > 4990:
+            abstract = abstract[:4990] + '...'
+        return abstract
+    except IndexError:
+        return None
 
 def get_reports(recid):
+    """Get reports as a long string."""
     reports = get_fieldvalues(recid, "037__z") \
             + get_fieldvalues(recid, "037__a")
     return '; '.join(r for r in reports)
 
 def get_product_type(recid):
+    """Get product type in OSTI format."""
     type_dict = {'TM':'TR', 'CONF':'CO', 'PUB':'JA', 'THESIS':'TD',
                  'MASTERS':'TD', 'BACHELORS':'TD', 'HABILITATION':'TD',
                  'DESIGN':'PD'}
@@ -95,55 +167,61 @@ def get_product_type(recid):
         if re.search(pattern, report_string):
             product_type = type_dict[key]
     return product_type
-    
 
-def get_affiliations(recid, long):
+def get_subject_categories(recid):
+    """Convert INSPIRE subject codes to OSTI codes."""
+    categories = get_fieldvalues(recid, '65017a')
+    try:
+        osti_categories = []
+        for category in categories:
+            for key in DOE_SUBJECT_CATEGORIES_DICT:
+                if re.search(key, category.lower()):
+                    osti_categories.append(DOE_SUBJECT_CATEGORIES_DICT[key])
+        return '; '.join(c for c in set(osti_categories))
+    except IndexError:
+        return None                
+
+def get_affiliations(recid, long_flag):
+    """Get affiliations using OSTI institution names."""
     affiliations = get_fieldvalues(recid, "100__u") \
                  + get_fieldvalues(recid, "700__u")
-    aff_dict= {'Argonne':'ANL', 
-               'Brookhaven':'BNL', 
-               'Fermilab':'FNAL',
-               'LBL, Berkeley':'LBNL', 
-               'LLNL, Livermore':'LLNL',
-               'Los Alamos':'LANL', 
-               'Oak Ridge':'ORNL',
-               'PNL, Richland':'PNNL', 
-               'Princeton U., Plasma Physics Lab.':'PPPL',
-               'SLAC':'SLAC',
-               'Sandia':'SNL-CA',
-               'Sandia, Livermore':'SNL-NM',
-               'Jefferson Lab':'TJNAF'}
+    affiliations.append("Fermilab")
     doe_affs = []
     doe_affs_long = []
-    for aff in affiliations:
-        if aff in aff_dict and not aff_dict[aff] in doe_affs:
-            doe_affs.append(aff_dict[aff])
-            doe_affs_long.append(DOE_AFF_DICT[aff_dict[aff]])
-    if long:
-        return '; '.join([a for a in doe_affs_long])        
+    for aff in set(affiliations):
+        #if aff in INSPIRE_AFF_DICT and not INSPIRE_AFF_DICT[aff] in doe_affs:
+        if aff in INSPIRE_AFF_DICT:
+            doe_affs.append(INSPIRE_AFF_DICT[aff])
+            doe_affs_long.append(DOE_AFF_DICT[INSPIRE_AFF_DICT[aff]])
+    if long_flag:
+        return '; '.join([a for a in doe_affs_long])
     else:
         return '; '.join([a for a in doe_affs])
 
-def get_date(recid):
+def get_date(recid, product_type):
+    """Get date in format mm/dd/yyyy, yyyy or yyyy Month."""
     try:
-        date = get_fieldvalues(recid, '269__c')[0]
-    except:
+        date = get_fieldvalues(recid, '260__c')[0]
+    except IndexError:
         try:
-            date = get_fieldvalues(recid, '260__c')[0]
-        except:
-           try:
-               date = get_fieldvalues(recid, '502__d')[0]
-           except:
-               date = 1900
+            date = get_fieldvalues(recid, '269__c')[0]
+        except IndexError:
+            try:
+                date = get_fieldvalues(recid, '502__d')[0]
+            except IndexError:
+                date = '1900'
     try:
-        date_object = datetime.strptime(date, '%Y-%m-%d')
+        date_object = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = date_object.strftime('%m/%d/%Y')
     except:
         try:
-            date_object = datetime.strptime(date, '%Y-%m')
+            date_object = datetime.datetime.strptime(date, '%Y-%m')
             date = date_object.strftime('%Y %B')
+            if product_type in ['TR', 'TD', 'JA']:
+                date = date_object.strftime('%m/01/%Y')
         except:
-            pass
+            if product_type in ['TR', 'TD', 'JA']:
+                date = '01/01/' + str(date)
     return date
 
 def prettify(elem):
@@ -154,59 +232,76 @@ def prettify(elem):
     return reparsed.toprettyxml(indent="  ")
 
 def create_xml(recid, records):
-    #records = ET.Element('records')
-    record = ET.SubElement(records, 'record')
-    #osti_id = ET.SubElement(record, 'osti_id')
-    site_input_code = ET.SubElement(record, 'site_input_code')
-    product_type = ET.SubElement(record, 'product_type')
-    journal_type = ET.SubElement(record, 'journal_type')
-    title = ET.SubElement(record, 'title')
-    author = ET.SubElement(record, 'author')
-    report_nos = ET.SubElement(record, 'report_nos')
-    doe_contract_nos = ET.SubElement(record, 'doe_contract_nos')
-    originating_research_org = \
-               ET.SubElement(record, 'originating_research_org')
-    publicaton_date = ET.SubElement(record, 'publicaton_date')
-    language = ET.SubElement(record, 'language')
-    country_publication_code = ET.SubElement(record, 'country_publication_code')
-    sponsor_org = ET.SubElement(record, 'sponsor_org')
-    access = ET.SubElement(record, 'access.limitation')
-    medium_code = ET.SubElement(record, 'medium_code')
-    site_url = ET.SubElement(record, 'site_url')
-    file_format = ET.SubElement(record, 'file_format')
+    """Creates xml entry for a recid and feeds it to list of records."""
 
-    site_input_code.text = SITE    
-    product_type.text = get_product_type(recid)
-    title.text = get_title(recid)
-    author.text = get_authors(recid)
-    report_nos.text = get_reports(recid)
-    doe_contract_nos.text = DOE_NUMBER
-    originating_research_org.text = get_affiliations(recid, True)
-    publicaton_date.text = get_date(recid)
-    language.text = LANGUAGE
-    country_publication_code.text = COUNTRY
-    sponsor_org.text = SPONSOR
-    access.text = 'UNL'
-    medium_code.text = 'ED'
-    [url, accepted] = get_url(recid)
-    site_url.text = url
-    if accepted:
-        journal_type.text = 'AM'
+    record = ET.SubElement(records, 'record')
+
+    osti_id = get_osti_id(recid)
+    if osti_id:
+        ET.SubElement(record, 'osti_id').text = osti_id
+        dict_osti_id = {'osti_id':osti_id}
+        ET.SubElement(record, 'revdata', dict_osti_id)
+        ET.SubElement(record, 'revprod', dict_osti_id)
     else:
-        journal_type.text = 'FT'
-    file_format.text = 'PDF/A'
-    #print prettify(records)
+        ET.SubElement(record, 'new')
+    ET.SubElement(record, 'site_input_code').text = \
+        DOE_FERMILAB_DICT['site_input_code']
+    product_type = get_product_type(recid)
+    ET.SubElement(record, 'product_type').text = product_type
+    access_limitation = ET.SubElement(record, 'access_limitation')
+    ET.SubElement(access_limitation, 'unl')
+    [url, accepted] = get_url(recid)
+    if accepted:
+        ET.SubElement(record, 'journal_type').text = 'AM'
+    else:
+        ET.SubElement(record, 'journal_type').text = 'FT'
+    ET.SubElement(record, 'site_url').text = url
+    ET.SubElement(record, 'title').text = get_title(recid)
+    ET.SubElement(record, 'author').text = get_authors(recid)
+    ET.SubElement(record, 'contributor_organizations').text = \
+        get_collaborations(recid)
+    ET.SubElement(record, 'report_nos').text = get_reports(recid)
+    for key in DOE_FERMILAB_DICT:
+        ET.SubElement(record, key).text = DOE_FERMILAB_DICT[key]
+    ET.SubElement(record, 'description').text = get_abstract(recid)
+    ET.SubElement(record, 'originating_research_org').text = \
+        get_affiliations(recid, True)
+    journal_info = get_pubnote(recid)
+    journal_elements = ['journal_name', 'journal_volume', 'journal_issue',
+                        'product_size', 'doi']
+    i_count = 0
+    for journal_element in journal_elements:
+        ET.SubElement(record, journal_element).text = journal_info[i_count]
+        i_count += 1
+    ET.SubElement(record, 'other_identifying_nos').text = str(recid)    
+    ET.SubElement(record, 'publication_date').text = \
+        get_date(recid, product_type)
+    ET.SubElement(record, 'subject_category_code').text = \
+        get_subject_categories(recid)
+    ET.SubElement(record, 'released_date').text = \
+          CHICAGO_TIMEZONE.fromutc(datetime.datetime.utcnow()).\
+          strftime('%m/%d/%Y')
 
 
 def main(recids):
+    if not recids:
+        print "No, that search did not work"
+        return None
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '.out', filename)
+    output = open(filename,'w')
+
     #recids = [1400805, 1373745, 1342808, 1400935]
-    records = ET.Element('records')
+    records = ET.Element('records')    
     for recid in recids:
         if get_url(recid):
             create_xml(recid, records)
-    print prettify(records)
-    
-
+    if TEST:
+        print prettify(records)
+    else:
+        #output.write(XML_PREAMBLE)
+        output.write(prettify(records))
+    output.close()
 
 def find_records():
     """
@@ -219,7 +314,7 @@ def find_records():
     search_input = raw_input("Your search? ")
     if len(search_input) > 3:
     # and re.search(r':', search_input):
-        search = search_input
+        search = '037:fermilab* ' + search_input
     else:
         print "That's not a search. Game over."
         return None
@@ -227,7 +322,9 @@ def find_records():
     result = perform_request_search(p=search, cc='HEP')
     if len(result) > 0:
         log = open(LOGFILE, 'a')
-        date_time_stamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        date_time_stamp = \
+            CHICAGO_TIMEZONE.fromutc(datetime.datetime.utcnow()).\
+            strftime('%Y-%m-%d %H:%M:%S')
         date_time_stamp = date_time_stamp + ' ' + search + ' : '\
                     + str(len(result)) + '\n'
         log.write(date_time_stamp)

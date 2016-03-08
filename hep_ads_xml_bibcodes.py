@@ -1,6 +1,10 @@
 """The two dictionaries JOURNAL_DICT and BIBCODE_DICT
 convert ADS journal names to INSPIRE journal names."""
 
+TRICKY_JOURNALS = ['Int.J.Mod.Phys.', 'Mod.Phys.Lett.', 'J.Phys.',
+                   'Nucl.Phys.Proc.Suppl.', 'Europhys.Lett.',
+                   'Proc.SPIE Int.Soc.Opt.Eng.']
+
 JOURNAL_DICT = {
     'Acta.':'Acta Astron.',
     'Adv.Space.':'Adv.Space Res.',
@@ -162,7 +166,7 @@ BIBCODE_DICT = {
     'CCoPh':'Commun.Comput.Phys.',
     'CEAB':'Cent.Euro.Astro.Bull.',
     'CEJPh':'Central Eur.J.Phys.',
-    'CeMDA':'Celestial Mech.',
+    'CeMDA':'Celestial Mech.Dyn.Astron.',
     'CG':'Comput.Geosci.',
     'CGIP':'Comput.Vision Graphics Image Proc.',
     'ChA&A':'Chin.Astron.Astrophys.',
@@ -625,7 +629,7 @@ BIBCODE_DICT = {
     'PhRvB':'Phys.Rev.::B',
     'PhRvC':'Phys.Rev.::C',
     'PhRvD':'Phys.Rev.::D',
-    'PhRvE':'Phys.Rev.::A',
+    'PhRvE':'Phys.Rev.::E',
     'PhRvL':'Phys.Rev.Lett.',
     'PhRvS':'Phys.Rev.ST Accel.Beams',
     'PhT':'Phys.Today',
