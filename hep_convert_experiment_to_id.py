@@ -13,9 +13,9 @@ from invenio.intbitset import intbitset
 from hep_convert_email_to_id import find_inspire_id_from_record
 
 VERBOSE = False
-#VERBOSE = True
+VERBOSE = True
 
-COUNT_MAX = 10
+COUNT_MAX = 1000
 
 bad_experiments = ['CERN-LEP-DELPHI',
 'BIGBOSS',
@@ -100,6 +100,7 @@ experiments = ['DES', 'FNAL-E-0929', 'DUNE']
 experiments = ['BNL-RHIC-STAR']
 experiments = ['FNAL-E-0823']
 experiments = ['FERMI-LAT']
+experiments = ['DAYA-BAY']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')
@@ -149,7 +150,7 @@ def create_xml(recid, tags, experiment):
 
 def find_records_with_no_id(experiment):
    print experiment
-   osearch = "001:1416784 693__e:" + experiment
+   osearch = "693__e:" + experiment
    oresult = perform_request_search(p=osearch, cc='HEP')
    #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
    psearch = ' -100__i:INSPIRE* -700__i:INSPIRE*'

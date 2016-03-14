@@ -5,12 +5,11 @@ from invenio.search_engine import get_fieldvalues
 #from hep_convert_email_to_id import get_hepnames_recid_from_email
 from hep_convert_email_to_id import find_inspire_id_from_record
 from invenio.search_engine import search_unit
-from invenio.search_engine import get_collection_reclist
 from invenio.intbitset import intbitset
 
 VERBOSE = False
 #VERBOSE = True
-LETTER = 'G'
+LETTER = 'H'
 
 def main():
     filename = 'tmp_' + __file__
@@ -107,7 +106,7 @@ def examine(field_search):
             #print search_dup
             if field_value in already_seen_field_values:
                 continue
-            result_dup =  perform_request_search(p = search_dup,\
+            result_dup =  perform_request_search(p = search_dup, \
                               cc = 'HepNames')
             if len(result_dup) != 1 or bad_id:
                 if field == '100__a':
@@ -130,7 +129,7 @@ def examine(field_search):
                 if field == '035__a':
                     author_search = r'100__a:"{0}" or 700__a:"{0}"'
                     search_hep = author_search.format(field_value)
-                    result_hep = perform_request_search(p = search_hep,\
+                    result_hep = perform_request_search(p = search_hep, \
                         cc = 'HEP')
                     if len(result_hep) > 0:
                         print 'Bad ID in HEP', search_hep, \

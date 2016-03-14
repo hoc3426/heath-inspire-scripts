@@ -30,7 +30,7 @@ CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
 TEST = False
-#TEST = True
+TEST = True
 RECIDS = False
 
 
@@ -123,6 +123,43 @@ def get_pubnote(recid):
         doi = None
     return [journal, volume, issue, pages, doi]
 
+def get_conference(recid_hep):
+    try:
+        cnum  = get_fieldvalues(recid_hep, "773__w")[0]
+    except IndexError:
+        return None
+    search = '111__g:' + cnum
+    result = perform_request_search(p=search, cc='Conferences')
+    if len(result) != 1:
+        return None
+    recid = result[0]
+    try:
+        conference_note = get_fieldvalues(recid, "111__a")[0]
+    except IndexError:
+        conference_note = ''
+    try:
+        conference_note += ', ' + get_fieldvalues(recid, "111__c")[0]
+    except IndexError:
+        pass
+    try:
+        date = get_fieldvalues(recid, "111__x")[0]
+        date_object = datetime.datetime.strptime(date, '%Y-%m-%d')
+        date = date_object.strftime('%m/%d')
+        conference_note += ', ' + date
+    except IndexError:
+        pass
+    try:
+        date = get_fieldvalues(recid, "111__y")[0]
+        date_object = datetime.datetime.strptime(date, '%Y-%m-%d')
+        date = date_object.strftime('%m/%d/%Y')
+        conference_note += '-' + date
+    except IndexError:
+        pass
+    if conference_note:
+        return conference_note
+    else:
+        return None
+
 def get_authors(recid):
     """Get authors as a long string, truncate at 10."""
     authors = get_fieldvalues(recid, "100__a") \
@@ -179,7 +216,7 @@ def get_subject_categories(recid):
                     osti_categories.append(DOE_SUBJECT_CATEGORIES_DICT[key])
         return '; '.join(c for c in set(osti_categories))
     except IndexError:
-        return None                
+        return None
 
 def get_affiliations(recid, long_flag):
     """Get affiliations using OSTI institution names."""
@@ -273,7 +310,10 @@ def create_xml(recid, records):
     for journal_element in journal_elements:
         ET.SubElement(record, journal_element).text = journal_info[i_count]
         i_count += 1
-    ET.SubElement(record, 'other_identifying_nos').text = str(recid)    
+    if product_type == 'CO':
+        ET.SubElement(record, 'conference_information').text = \
+        get_conference(recid)
+    ET.SubElement(record, 'other_identifying_nos').text = str(recid)
     ET.SubElement(record, 'publication_date').text = \
         get_date(recid, product_type)
     ET.SubElement(record, 'subject_category_code').text = \
@@ -292,7 +332,7 @@ def main(recids):
     output = open(filename,'w')
 
     #recids = [1400805, 1373745, 1342808, 1400935]
-    records = ET.Element('records')    
+    records = ET.Element('records')
     for recid in recids:
         if get_url(recid):
             create_xml(recid, records)

@@ -9,13 +9,15 @@ import os
 import re
 import xml.etree.ElementTree as ET
 import urllib2
+from urllib2 import Request, urlopen
 import PyPDF2
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfFileReader, PdfFileWriter
+from StringIO import StringIO
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
+from invenio.bibformat_engine import BibFormatObject
 from osti_web_service import get_url
-
 
 TEST = False
 TEST = True
@@ -23,26 +25,31 @@ DOCUMENT = 'tmp_osti.out'
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 
 if TEST:
-    #DOCUMENT = 'test.xml'
-    pass
+    DOCUMENT = 'tmp_osti_test.out'
 
 RECIDS = []
 
 def create_osti_id_pdf(recid, osti_id):
+    """
+    Places a PDF named after the OSTI id in a location that
+    can be pushed to OSTI.
+    """
+
     try:
         url = get_url(recid)[0]
     except IndexError:
         print "No url on", recid
         return None
-    response = urllib2.urlopen(url)
-    pdf = response.read()
+    pdf = urlopen(Request(url)).read()
+    pdf = StringIO(pdf)
     try:
-        PyPDF2.PdfFileReader(open(pdf, "rb"))
+        PdfFileReader(open(pdf, "rb"))
     except PyPDF2.utils.PdfReadError:
         print "PDF invalid for", recid
         return None
-    final_pdf = DIRECTORY + str(recid) + ".pdf"
-    if os.path.exists(final_pdf):
+    final_pdf = DIRECTORY + str(osti_id) + ".pdf"
+    final_txt = DIRECTORY + str(osti_id) + ".txt"
+    if os.path.exists(final_pdf) or os.path.exists(final_txt):
         print "Already have PDF for", recid
         return None
     output = open(final_pdf, 'w')
@@ -87,10 +94,13 @@ def create_xml(osti_id, inspire_id):
     result = perform_request_search(p = search, cc = 'HEP')
     if len(result) == 1:
         return None
-    search = "035__a:" + str(osti_id)
+    search = "035__9:osti 035__a:" + str(osti_id)
     result = perform_request_search(p = search, cc = 'HEP')
     if len(result) == 1:
-        print 'OSTI ID', osti_id, 'already on', result[0]
+        for item in BibFormatObject(int(recid)).fields('035__'):
+            if item.has_key('9') and item.has_key('a'):
+                if item['9'] == 'OSTI' and item['a'] == osti_id:
+                    print 'OSTI ID', osti_id, 'already on', result[0]
         return None
     search = "001:" + recid + " -035__9:OSTI"
     if TEST:
@@ -105,12 +115,15 @@ def create_xml(osti_id, inspire_id):
     record_add_field(record, '001', controlfield_value=str(recid))
     new_id  = [('a', osti_id), ('9', 'OSTI')]
     record_add_field(record, '035', '', '', subfields=new_id)
-    try:
-        return print_rec(record)
-        create_osti_id_pdf(recid, osti_id)
-    except:
-        print "Something wrong: " + search
-        return False
+    create_osti_id_pdf(recid, osti_id)
+    return print_rec(record)
+
+    #try:
+    #    create_osti_id_pdf(recid, osti_id)
+    #    return print_rec(record)
+    #except:
+    #    print "Something wrong: " + search
+    #    return False
 
 
 def main():
