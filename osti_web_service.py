@@ -29,7 +29,7 @@ CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
 TEST = False
-TEST = True
+#TEST = True
 RECIDS = False
 
 
@@ -173,8 +173,15 @@ def get_author_details(recid, authors, tag):
         orcid = None
         if item.has_key('a'):
             author = item['a']
-            last_name = re.sub(r'\,.*', '', author)
-            fore_name = re.sub(r'.*\, ', '', author)
+            try:
+                matchobj = re.match(r'(.*)\, (.*)\, (.*)', author)
+                last_name = matchobj.group(1)
+                fore_name = matchobj.group(2)
+                title     = matchobj.group(3)
+                fore_name = fore_name + ', ' + title
+            except AttributeError:
+                last_name = re.sub(r'\,.*', '', author)
+                fore_name = re.sub(r'.*\, ', '', author)
             if re.search(r' ', fore_name):
                 first_name = re.sub(r' .*', '', fore_name)
                 middle_name = re.sub(r'.* ', '', fore_name)
