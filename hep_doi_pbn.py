@@ -4,6 +4,7 @@ from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 
 VERBOSE = False
+#VERBOSE = True
 
 def yearCalc(journal,volume):
   year = 9999 
@@ -17,7 +18,10 @@ def yearCalc(journal,volume):
     number = int(re.sub(r'X',r'',volume))
     year = number + 2010
   elif journal == "Phys.Rev.Lett.":
-    number = int(volume)
+    try:
+        number = int(volume)
+    except ValueError:
+        print "Error:", volume, " is not an integer" 
     if number == 1:
       year = 1958
     elif number%2==0:
@@ -55,8 +59,16 @@ def doi_to_pbn():
             doi = get_fieldvalues(r,'0247_a')[0]
             pbn = get_fieldvalues(r,'773__p')
             [publisher,jvp] = re.split('/',doi)
-            [journal,volume,page] = re.split('\.',jvp)
-            volumeNumber = int(volume)
+            try:
+                [journal,volume,page] = re.split('\.',jvp)
+            except ValueError:
+                print "Error in:", r, journal,volume,page
+            except UnboundLocalError:
+                print "Error in:", r, "with the journal,volume,page"
+            try:
+                volumeNumber = int(volume)
+            except ValueError:
+                print "Error:", volume, " is not a number"
             if journal == 'PhysRevSTAB': 
                 journal = 'Phys.Rev.ST Accel.Beams'
             elif journal == 'PhysRevSTPER': 

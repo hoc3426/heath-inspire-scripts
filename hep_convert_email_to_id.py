@@ -11,13 +11,22 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from invenio.bibformat_engine import BibFormatObject
 
 
-VERBOSE = 0
+VERBOSE = False
+#VERBOSE = True
 
 def find_records_containing_email():
+    """
+    Searches for HEP records with emails
+    """
+
     atsearch = r'100__m:/\@/ or 700__m:/\@/ and ac 1->20'
     return perform_request_search(p=atsearch, cc='HEP')
 
 def get_hepnames_recid_from_email(email):
+    """
+    Find the HEPNames recid based on email
+    """
+
     emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
     reclist = perform_request_search(p = \
         emailsearch % (email, email, email, email), cc='HepNames')
@@ -34,6 +43,10 @@ def get_hepnames_recid_from_email(email):
         return None
 
 def get_hepnames_anyid_from_recid(record, id_type):
+    """
+    Returns any id with a HEPNames recid
+    """
+
     record = int(record)
     author_id = None
     for item in BibFormatObject(record).fields('035__'):
@@ -44,6 +57,10 @@ def get_hepnames_anyid_from_recid(record, id_type):
     return author_id
 
 def get_hepnames_affiliation_from_recid(record, id_type):
+    """
+    Returns the current affiliation
+    """
+
     record = int(record)
     affiliation = None
     for item in BibFormatObject(record).fields('371__'):
@@ -56,13 +73,21 @@ def get_hepnames_affiliation_from_recid(record, id_type):
 
 
 
-def find_inspire_id_from_record(record):
-    author_id = get_hepnames_anyid_from_recid(record, 'INSPIRE')
+def find_inspire_id_from_record(recid):
+    """
+    Returns the INSPIRE ID of a HEPNames record
+    """
+
+    author_id = get_hepnames_anyid_from_recid(recid, 'INSPIRE')
     if VERBOSE and not author_id:
-        print "WARNING: no INSPIRE ID found for %s: " % (record)
+        print "WARNING: no INSPIRE ID found for %s: " % (recid)
     return author_id
 
 def find_bai_from_record(record):
+    """
+    Returns the BAI of a HEPNames record
+    """
+
     author_id = get_hepnames_anyid_from_recid(record, 'BAI')
     if VERBOSE and not author_id:
         print "WARNING: no BAI found for %s: " % (record)
@@ -70,14 +95,24 @@ def find_bai_from_record(record):
 
 
 def convert_email_to_inspire_id(email):
+    """
+    Returns the INSPIRE ID and the ORCID from an email
+    """
+
     inspire_id = None
+    orcid      = None
     recid = get_hepnames_recid_from_email(email)
     if recid:
         inspire_id = find_inspire_id_from_record(recid)
-    return inspire_id
+        orcid      = get_hepnames_anyid_from_recid(recid, 'ORCID')
+    return [inspire_id, orcid]
 
 
 def create_xml(recid, tags):
+    """
+    Replaces an email with an INSPIRE ID and an ORCID where possible
+    """
+
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
@@ -91,11 +126,20 @@ def create_xml(recid, tags):
             for code, value in field_instance[0]:
                 if code == 'm':
                     new_value = convert_email_to_inspire_id(value)
-                    if new_value:
-                        value = new_value
+                    if new_value[0]:
+                        value = new_value[0]
                         code = 'i'
                         flag = True
-                correct_subfields.append((code, value))
+                        correct_subfields.append((code, value))
+                    if new_value[1]:
+                        value = 'ORCID:' + new_value[1]
+                        code = 'j'
+                        flag = True
+                        correct_subfields.append((code, value))
+                    if not flag:
+                        correct_subfields.append((code, value))
+                else:
+                    correct_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                              subfields=correct_subfields)
     if flag:

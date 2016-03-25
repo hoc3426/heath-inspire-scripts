@@ -21,8 +21,7 @@ from check_url import checkURL
 from osti_web_service_constants import DOE_FERMILAB_DICT, \
                                        DOE_AFF_DICT, \
                                        INSPIRE_AFF_DICT, \
-                                       DOE_SUBJECT_CATEGORIES_DICT, \
-                                       XML_PREAMBLE
+                                       DOE_SUBJECT_CATEGORIES_DICT
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
@@ -38,6 +37,7 @@ CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
 def get_osti_id(recid):
+    """ Find the osti_id from an INSPIRE record """
     osti_id = None
     return osti_id
     for item in BibFormatObject(int(recid)).fields('035__'):
@@ -124,6 +124,7 @@ def get_pubnote(recid):
     return [journal, volume, issue, pages, doi]
 
 def get_conference(recid_hep):
+    """ Get conference information """
     try:
         cnum  = get_fieldvalues(recid_hep, "773__w")[0]
     except IndexError:
@@ -160,16 +161,61 @@ def get_conference(recid_hep):
     else:
         return None
 
-def get_authors(recid):
+def get_author_details(recid, authors, tag):
+    for item in BibFormatObject(int(recid)).fields(tag):
+        authors_detail = ET.SubElement(authors, 'authors_detail')
+        author = None
+        last_name = None
+        first_name = None
+        middle_name = None
+        affiliation = None
+        email = None
+        orcid = None
+        if item.has_key('a'):
+            author = item['a']
+            last_name = re.sub(r'\,.*', '', author)
+            fore_name = re.sub(r'.*\, ', '', author)
+            if re.search(r' ', fore_name):
+                first_name = re.sub(r' .*', '', fore_name)
+                middle_name = re.sub(r'.* ', '', fore_name)
+            elif re.search(r'^\w\.\w\.', fore_name):
+                first_name = re.sub(r'^(\w\.).*', r'\1', fore_name)
+                middle_name = re.sub(r'^\w\.', '', fore_name)
+            else:
+                first_name = fore_name
+        if item.has_key('u'):
+            affiliation = item['u']
+        if item.has_key('m'):
+            email = item['u']
+        if item.has_key('j'):
+            orcid = item['j']
+            if not re.search(r'ORCID', orcid):
+                orcid = None
+        ET.SubElement(authors_detail, 'first_name').text = first_name
+        ET.SubElement(authors_detail, 'middle_name').text = middle_name
+        ET.SubElement(authors_detail, 'last_name').text = last_name
+        ET.SubElement(authors_detail, 'affiliation').text = affiliation
+        ET.SubElement(authors_detail, 'private_email').text = email
+        ET.SubElement(authors_detail, 'orcid_id').text = orcid
+
+
+def get_authors(recid, authors):
     """Get authors as a long string, truncate at 10."""
-    authors = get_fieldvalues(recid, "100__a") \
+
+    author_list = get_fieldvalues(recid, "100__a") \
             + get_fieldvalues(recid, "700__a")
-    if len(authors) <= 10 and len(authors) > 0:
-        return '; '.join([unicode(a, "utf-8") for a in authors])
-    elif len(authors) > 10:
-        return authors[0] + "; et al."
+    #if len(author_list) <= 10 and len(author_list) > 0 and False:
+    #    return '; '.join([unicode(a, "utf-8") for a in author_list])
+    if len(author_list) > 500:
+        return author_list[0] + "; et al."
+
+    tags = ['100__', '700__']
+    for tag in tags:
+        get_author_details(recid, authors, tag)
+
 
 def get_collaborations(recid):
+    """Get the collaboration information"""
     try:
         collaborations = get_fieldvalues(recid, "710__g")
         return '; '.join([unicode(a, "utf-8") for a in collaborations])
@@ -292,9 +338,11 @@ def create_xml(recid, records):
         ET.SubElement(record, 'journal_type').text = 'AM'
     else:
         ET.SubElement(record, 'journal_type').text = 'FT'
-    ET.SubElement(record, 'site_url').text = url
+    if not accepted:
+        ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
-    ET.SubElement(record, 'author').text = get_authors(recid)
+    authors = ET.SubElement(record, 'authors')
+    authors.text = get_authors(recid, authors)
     ET.SubElement(record, 'contributor_organizations').text = \
         get_collaborations(recid)
     ET.SubElement(record, 'report_nos').text = get_reports(recid)
@@ -324,6 +372,7 @@ def create_xml(recid, records):
 
 
 def main(recids):
+    """Generate OSTI posting from a recid or an INSPIRE search."""
     if not recids:
         print "No, that search did not work"
         return None

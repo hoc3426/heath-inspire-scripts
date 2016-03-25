@@ -8,10 +8,11 @@ Script for adding OSTI IDs to INSPIRE records after using OSTI Web Service.
 import os
 import re
 import xml.etree.ElementTree as ET
-import urllib2
+#import urllib2
 from urllib2 import Request, urlopen
 import PyPDF2
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfFileReader
+#, PdfFileWriter
 from StringIO import StringIO
 
 from invenio.search_engine import perform_request_search
@@ -40,20 +41,23 @@ def create_osti_id_pdf(recid, osti_id):
     except IndexError:
         print "No url on", recid
         return None
-    pdf = urlopen(Request(url)).read()
-    pdf = StringIO(pdf)
+    remote_file = urlopen(Request(url)).read()
+    memory_file = StringIO(remote_file)
     try:
-        PdfFileReader(open(pdf, "rb"))
+        PdfFileReader(memory_file)
     except PyPDF2.utils.PdfReadError:
         print "PDF invalid for", recid
+        return None
+    except TypeError:
+        print "Problem with", url
         return None
     final_pdf = DIRECTORY + str(osti_id) + ".pdf"
     final_txt = DIRECTORY + str(osti_id) + ".txt"
     if os.path.exists(final_pdf) or os.path.exists(final_txt):
-        print "Already have PDF for", recid
+        print "Already have PDF for recid=", recid, "osti_id=", osti_id
         return None
-    output = open(final_pdf, 'w')
-    output.write(pdf)
+    output = open(final_pdf, 'wb')
+    output.write(remote_file)
     output.close()
 
 def find_recid(mystery_id):

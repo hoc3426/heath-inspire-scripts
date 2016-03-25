@@ -8,6 +8,42 @@ from invenio.search_engine import print_record
 from invenio.search_engine import perform_request_search
 from invenio.intbitset import intbitset
 
+DATAS = [
+['asqtad', '64192f21b781m0028m014', '10.15484/milc.asqtad.en24a/1177873', '1364957'],
+['asqtad', '4096f21b708m0031m031b', '10.15484/milc.asqtad.en13b/1178093', '1399427'],
+['asqtad', '2864f21b676m010m050', '10.15484/milc.asqtad.en08a/1178162', '1399428'],
+['asqtad', '56144f21b7465m0025m018', '10.15484/milc.asqtad.en19a/1178035', '1399429'],
+['asqtad', '4096f21b708m0031m031a', '10.15484/milc.asqtad.en13a/1178092', '1399430'],
+['asqtad', '2064f21b676m010m050b', '10.15484/milc.asqtad.en06b/1178159', '1399431'],
+['asqtad', '64144f21b746m0036m0108', '10.15484/milc.asqtad.en21a/1178038', '1399432'],
+['asqtad', '48144f21b748m0072m018b', '10.15484/milc.asqtad.en23b/1178041', '1399433'],
+['asqtad', '1648f21b6586m0194m0484', '10.15484/milc.asqtad.en01a/1178169', '1399434'],
+['asqtad', '2896f21b710m0093m031', '10.15484/milc.asqtad.en16a/1178098', '1399435'],
+['asqtad', '2064f21b678m010m050', '10.15484/milc.asqtad.en07a/1178160', '1399436'],
+['asqtad', '2064f21b681m030m050', '10.15484/milc.asqtad.en10a/1178165', '1399437'],
+['asqtad', '2464f21b676m005m050', '10.15484/milc.asqtad.en04a/1178155', '1399438'],
+['asqtad', '1648f21b6572m0097m0484', '10.15484/milc.asqtad.en00a/1178168', '1399439'],
+['asqtad', '2064f21b676m007m050', '10.15484/milc.asqtad.en05a/1178156', '1399440'],
+['asqtad', '2064f21b679m020m050b', '10.15484/milc.asqtad.en09b/1178164', '1399441'],
+['asqtad', '2896f21b711m0124m031', '10.15484/milc.asqtad.en17a/1178099', '1399442'],
+['asqtad', '2896f21b709m0062m031', '10.15484/milc.asqtad.en15a/1178095', '1399443'],
+['asqtad', '48144f21b747m0036m018b', '10.15484/milc.asqtad.en20b/1178037', '1399444'],
+['asqtad', '2896f21b709m0062m031b', '10.15484/milc.asqtad.en15b/1178096', '1399445'],
+['asqtad', '48144f21b747m0036m018a', '10.15484/milc.asqtad.en20a/1178036', '1399446'],
+['asqtad', '1648f21b6628m0484m0484', '10.15484/milc.asqtad.en03a/1178171', '1399447'],
+['asqtad', '64144f21b746m0018m018a', '10.15484/milc.asqtad.en18a/1178033', '1399448'],
+['asqtad', '2064f21b678m010m050b', '10.15484/milc.asqtad.en07b/1178161', '1399449'],
+['asqtad', '3296f21b7085m00465m031', '10.15484/milc.asqtad.en14a/1178094', '1399450'],
+['asqtad', '2064f21b679m020m050', '10.15484/milc.asqtad.en09a/1178163', '1399451'],
+['asqtad', '48144f21b748m0072m018a', '10.15484/milc.asqtad.en23a/1178040', '1399452'],
+['asqtad', '2896f21b709m0062m031c', '10.15484/milc.asqtad.en15c/1178097', '1399453'],
+['asqtad', '64144f21b746m0018m018b', '10.15484/milc.asqtad.en18b/1178034', '1399454'],
+['asqtad', '1648f21b6600m0290m0484', '10.15484/milc.asqtad.en02a/1178170', '1399455'],
+['asqtad', '2064f21b683m040m050', '10.15484/milc.asqtad.en11a/1178166', '1399456'],
+['asqtad', '6496f21b7075m00155m031', '10.15484/milc.asqtad.en12a/1178091', '1399457'],
+['asqtad', '48144f21b7475m0054m018a', '10.15484/milc.asqtad.en22a/1178039', '1399458'],
+['asqtad', '2064f21b676m010m050', '10.15484/milc.asqtad.en06a/1178158', '1399459'],
+['asqtad', '2064f21b676m007m050b', '10.15484/milc.asqtad.en05b/1178157', '1399460']]
 
 books = [
 #['Itzykson', 'quantum field theory', '0486445682', '159194'],
@@ -37,7 +73,11 @@ books = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 #books = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
 #['W5013','w5013','CERN-W5013','863473']]
 #books = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
-for book in books:
+
+
+
+#for book in books:
+if False:
     referenceFlag = False
     date = False
     author = book[0]
@@ -71,7 +111,7 @@ for book in books:
             j = i.lower()
             #j = re.sub(r',',r' ',j)
             #j = re.sub('[ ]+',r' ',j)
-            if re.search(title,j) and not re.search(r'$$[rs]',j):
+            if re.search(title, j) and not re.search(r'$$0', j):
                 referenceFlag = True
                 if date:
                     if re.search(date,j):
@@ -88,3 +128,64 @@ for book in books:
     os.unlink(fileName)
     os.unlink(fileName2)
     if not referenceFlag : os.unlink(fileName3)
+
+RECID = 1421164
+RECID = 1394175
+
+x = [RECID]
+recid = str(RECID)
+
+fileName =  'tmp___hep_reference_book' + recid + '.out'
+fileName2 = 'tmp__hep_reference_book' + recid + '.out'
+fileName3 = 'tmp_hep_reference_book' + recid + '.out'
+
+output = open(fileName,'w')
+for r in x:
+    output.write(print_record(r,ot=['999C5'],format='hm'))
+output.close()
+output2 = open(fileName2,'w')
+
+for i in open(fileName,'r'):
+    i = re.sub(r'\n',r'',i)
+    i = re.sub(r'</?pre>','',i)
+    i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
+
+    for book in DATAS:  
+        referenceFlag = False
+        date = False
+        author = book[0]
+        title = book[1]
+        doi = book[2]
+        doiTag = "a"
+        recid = book[3]
+        if len(book) == 5 : date = book[4]
+        if re.search(r"\-",doi): doiTag = "r"
+
+        i = re.sub(r'\n',r'',i)
+        i = re.sub(r'</?pre>','',i)
+        i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
+        if re.search(author,i):
+            j = i.lower()
+            #j = re.sub(r',',r' ',j)
+            #j = re.sub('[ ]+',r' ',j)
+            title_strict = re.compile(r'\b%s\b' % title, re.I) 
+            if re.search(title_strict, j) and not re.search(r'\$\$0', j):
+                referenceFlag = True
+                if date:
+                    if re.search(date,j):
+                       i = i + "$$" + doiTag + doi + "$$0" + recid
+                else:
+                    print i
+                    i = i + "$$" + doiTag + doi  + "$$0" + recid
+                    print i
+                if not re.search(r'CURATOR',i):
+                    i = i + "$$9CURATOR"
+    output2.write(i)
+    output2.write("\n")
+output2.close()
+conversion = "iconv -c -f utf-8 -t ascii " + fileName2 + " > " + fileName3
+os.system(conversion)
+os.unlink(fileName)
+os.unlink(fileName2)
+if not referenceFlag : os.unlink(fileName3)
+
