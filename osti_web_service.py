@@ -162,6 +162,7 @@ def get_conference(recid_hep):
         return None
 
 def get_author_details(recid, authors, tag):
+    """Get authors broken out as individuals"""
     for item in BibFormatObject(int(recid)).fields(tag):
         authors_detail = ET.SubElement(authors, 'authors_detail')
         author = None
@@ -205,21 +206,20 @@ def get_author_details(recid, authors, tag):
         ET.SubElement(authors_detail, 'private_email').text = email
         ET.SubElement(authors_detail, 'orcid_id').text = orcid
 
-
-def get_authors(recid, authors):
+def get_author(recid):
     """Get authors as a long string, truncate at 10."""
-
     author_list = get_fieldvalues(recid, "100__a") \
             + get_fieldvalues(recid, "700__a")
-    #if len(author_list) <= 10 and len(author_list) > 0 and False:
-    #    return '; '.join([unicode(a, "utf-8") for a in author_list])
+    if len(author_list) <= 10 and len(author_list) > 0 and False:
+        return '; '.join([unicode(a, "utf-8") for a in author_list])
     if len(author_list) > 500:
         return author_list[0] + "; et al."
 
+def get_authors(recid, authors):
+    """Get authors as individuals."""
     tags = ['100__', '700__']
     for tag in tags:
         get_author_details(recid, authors, tag)
-
 
 def get_collaborations(recid):
     """Get the collaboration information"""
@@ -303,13 +303,13 @@ def get_date(recid, product_type):
     try:
         date_object = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = date_object.strftime('%m/%d/%Y')
-    except:
+    except ValueError:
         try:
             date_object = datetime.datetime.strptime(date, '%Y-%m')
             date = date_object.strftime('%Y %B')
             if product_type in ['TR', 'TD', 'JA']:
                 date = date_object.strftime('%m/01/%Y')
-        except:
+        except ValueError:
             if product_type in ['TR', 'TD', 'JA']:
                 date = '01/01/' + str(date)
     return date
@@ -348,10 +348,15 @@ def create_xml(recid, records):
     if not accepted:
         ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
-    authors = ET.SubElement(record, 'authors')
-    authors.text = get_authors(recid, authors)
+    collaborations = get_collaborations(recid)
+    if re.search(r'CMS', collaborations):
+        author = ET.SubElement(record, 'author')
+        author.text = get_author(recid)
+    else:
+        authors = ET.SubElement(record, 'authors')
+        get_authors(recid, authors)
     ET.SubElement(record, 'contributor_organizations').text = \
-        get_collaborations(recid)
+        collaborations
     ET.SubElement(record, 'report_nos').text = get_reports(recid)
     for key in DOE_FERMILAB_DICT:
         ET.SubElement(record, key).text = DOE_FERMILAB_DICT[key]
