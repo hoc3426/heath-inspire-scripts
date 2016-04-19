@@ -36,6 +36,13 @@ ENDING_COUNTER = 20
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
+def get_language(recid):
+    """ Find the langauge of the work. """
+    try:
+        return get_fieldvalues(recid, '041__a')[0]
+    except IndexError:
+        return 'English'
+
 def get_osti_id(recid):
     """ Find the osti_id from an INSPIRE record """
     osti_id = None
@@ -388,6 +395,8 @@ def create_xml(recid, records):
     ET.SubElement(record, 'other_identifying_nos').text = str(recid)
     ET.SubElement(record, 'publication_date').text = \
         get_date(recid, product_type)
+    ET.SubElement(record, 'language').text = \
+        get_language(recid)
     ET.SubElement(record, 'subject_category_code').text = \
         get_subject_categories(recid)
     ET.SubElement(record, 'released_date').text = \

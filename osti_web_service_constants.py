@@ -14,7 +14,7 @@ DOE_SUBJECT_CATEGORIES_DICT = {
 DOE_FERMILAB_DICT = {
 'doe_contract_nos':'AC02-07CH11359',
 'site_input_code':'FNAL',
-'language':'English',
+#'language':'English',
 'country_publication_code':'US',
 'sponsor_org':'USDOE Office of Science (SC), High Energy Physics (HEP) (SC-25)',
 'released_by':"Heath O'Connell",
