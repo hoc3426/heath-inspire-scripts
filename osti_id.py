@@ -13,14 +13,18 @@ VERBOSE = True
 VERBOSE = False
 RECIDS = []
 
+INPUT_FILE = 'FNALData.txt'
+#INPUT_FILE = 'tmp_o.txt'
+
 def find_recid(id):
     id = re.sub(r';', '', id)
     if id.isdigit():
-        #print "Invalid ID: " , id
-        #return False
-        search = "001:" + id + " or 970__a:SPIRES-" + id + " 037:FERMILAB*"        
+        search = "001:" + id + " or 970__a:SPIRES-" + id + \
+                 " 037:FERMILAB*"        
     elif re.search(r'FERMILAB', id):
         id = re.sub(r'\/', '-', id)
+        id = re.sub(r'[\-]+', '-', id)
+        id = re.sub(r'\-DO$', '-DI', id)
         search = "037:" + id
     elif re.search(r'10\.\d+\/', id):
         search = "0247_a:" + id
@@ -42,10 +46,33 @@ def add_osti_id(string):
         return False
     elif re.search(r'\tSoftware\t', string):
         return False
-    match_obj_1 = re.match(r'^\s*(\d+)\s+(\d+)', string)
-    match_obj_2 = re.match(r'^\s*(\d+).*(FERMILAB[\-A-z0-9\/]+)', string)
-    match_obj_3 = re.match(r'^\s*(\d+).*(10\.\d+\/\S+)', string)
-    
+    elif re.match(r'^\s*(\d+).*\"FNAL\",\"\d+\"$', string):
+        return False
+
+    recid = None
+    report_num = None
+    match_obj_1 = False
+    match_obj_2 = False
+    match_obj_3 = False
+
+    string = re.sub(r'FERMILAB[ \-]', 'FERMILAB-', string)
+    string = re.sub(r'FNAL\/C\-\-(\d+)\/([\d\-A-Z]+)', \
+                    r'FERMILAB-CONF-\1-\2', string)
+    string = re.sub(r'FNAL[ \-]', 'FERMILAB-', string)
+
+    #"OSTI ID","PRODUCT TYPE","TITLE","REPORT #","DOE CONTRACT #","SITE CODE","SITE UNIQUE ID"    
+    string = string.upper()
+    try:
+        match_obj = re.match(r'^\s*(\d+)\,\".*\",\".*\",\"(.*)\",\".*\",\".*\",\"(\d+)\"')
+        osti_id    = match_obj.group(1)
+        report_num = match_obj.group(2)
+        recid      = match_obj.group(3)
+    except: 
+       match_obj_1 = re.match(r'^\s*(\d+)\s+(\d+)', string)
+       match_obj_2 = re.match(r'^\s*(\d+).*(FERMILAB[\-A-Z0-9\/]+)', string)
+       match_obj_3 = re.match(r'^\s*(\d+).*(10\.\d+\/\S+)', string)
+    if VERBOSE:
+        print string, match_obj_1, match_obj_2, match_obj_3
     if match_obj_1:
         id_1 = match_obj_1.group(1)
         id_2 = match_obj_1.group(2)
@@ -57,25 +84,37 @@ def add_osti_id(string):
         elif recid_guess_2:
             recid = recid_guess_2
             osti_id = id_1
-    elif match_obj_2:
-        osti_id = match_obj_2.group(1) 
-        report_num = match_obj_2.group(2)
+        if VERBOSE:
+            print id_1, id_2, recid
+    if match_obj_2 or report_num and not recid:
+        if match_obj_2:
+            osti_id = match_obj_2.group(1) 
+            report_num = match_obj_2.group(2)
         recid = find_recid(report_num)
-    elif match_obj_3:
+        if VERBOSE:
+            print report_num, recid
+    if match_obj_3 and not recid:
         osti_id = match_obj_3.group(1)
         doi = match_obj_3.group(2)
         recid = find_recid(doi)
-    else:
-        print "Cannot find valid ID:", string
-        return False
+        if VERBOSE:
+            print doi, recid
     if not recid:
-        print "Cannot find valid recid:", string
-        return False
+        print "Cannot find valid recid:", report_num, string
+        return False    
     search = "001:" + str(recid) + " -035__9:OSTI"
     if VERBOSE:
         print search
     result = perform_request_search(p = search, cc = 'HEP')
     if not len(result) == 1:
+        search_other = "035__a:" + osti_id + " 035__9:OSTI"
+        result_other = perform_request_search(p = search, cc = 'HEP')
+        try:
+           recid_other = result_other[0]
+           if recid != recid_other:
+               print "OSTI ID", osti_id, "on record", result[0], "not", recid
+        except IndexError:
+           pass 
         return False   
     if VERBOSE:
         print result
@@ -100,7 +139,7 @@ def main(input):
             output.write(output_data)
     else:
         try:
-            for i in open('osti.in','r').readlines():
+            for i in open(INPUT_FILE, 'r').readlines():
                 output_data = add_osti_id(i)
                 if output_data:
                     output.write(output_data)

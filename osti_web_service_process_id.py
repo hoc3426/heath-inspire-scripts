@@ -21,7 +21,7 @@ from invenio.bibformat_engine import BibFormatObject
 from osti_web_service import get_url
 
 TEST = False
-TEST = True
+#TEST = True
 DOCUMENT = 'tmp_osti.out'
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 
@@ -34,11 +34,17 @@ def create_osti_id_pdf(recid, osti_id):
     """
     Places a PDF named after the OSTI id in a location that
     can be pushed to OSTI.
+    If the pdf is not of an excepted paper it skips this.
     """
 
     try:
-        url = get_url(recid)[0]
+        [url, accepted] = get_url(recid)
+        if accepted == False:
+            return None
     except IndexError:
+        print "No url on", recid
+        return None
+    except TypeError:
         print "No url on", recid
         return None
     remote_file = urlopen(Request(url)).read()
@@ -111,6 +117,7 @@ def create_xml(osti_id, inspire_id):
         print search
     result = perform_request_search(p = search, cc = 'HEP')
     if not len(result) == 1:
+        print search, result
         print 'Problem with', recid, osti_id
         return False
     if TEST:

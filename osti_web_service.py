@@ -31,7 +31,7 @@ VERBOSE = True
 TEST = False
 #TEST = True
 RECIDS = False
-
+ENDING_COUNTER = 20
 
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
@@ -82,7 +82,7 @@ def get_url(recid):
         url = url_postprint
     elif url_fermilab:
         url = url_fermilab
-    elif url_arxiv and recid in CMS:
+    elif url_arxiv and int(recid) in CMS:
         url = url_arxiv
     if url:
         if checkURL(url):
@@ -197,8 +197,10 @@ def get_author_details(recid, authors, tag):
             email = item['u']
         if item.has_key('j'):
             orcid = item['j']
-            if not re.search(r'ORCID', orcid):
+            if not re.search(r'ORCID:', orcid):
                 orcid = None
+            else:
+                orcid = re.sub(r'ORCID:', '', orcid)
         ET.SubElement(authors_detail, 'first_name').text = first_name
         ET.SubElement(authors_detail, 'middle_name').text = middle_name
         ET.SubElement(authors_detail, 'last_name').text = last_name
@@ -206,14 +208,23 @@ def get_author_details(recid, authors, tag):
         ET.SubElement(authors_detail, 'private_email').text = email
         ET.SubElement(authors_detail, 'orcid_id').text = orcid
 
-def get_author(recid):
+def get_author_first(recid):
     """Get authors as a long string, truncate at 10."""
-    author_list = get_fieldvalues(recid, "100__a") \
-            + get_fieldvalues(recid, "700__a")
-    if len(author_list) <= 10 and len(author_list) > 0 and False:
-        return '; '.join([unicode(a, "utf-8") for a in author_list])
-    if len(author_list) > 500:
-        return author_list[0] + "; et al."
+    return get_fieldvalues(recid, "100__a")[0] + "; et al."
+    #author_list = get_fieldvalues(recid, "100__a") \
+    #        + get_fieldvalues(recid, "700__a")
+    #if len(author_list) <= 10 and len(author_list) > 0 and False:
+    #    return '; '.join([unicode(a, "utf-8") for a in author_list])
+    #if len(author_list) > 500:
+    #    return author_list[0] + "; et al."
+
+def get_author_number(recid):
+    """Gets number of authors."""
+    author_list = get_fieldvalues(recid, "700__a")
+    try:
+        return len(author_list)
+    except IndexError:
+        return 0
 
 def get_authors(recid, authors):
     """Get authors as individuals."""
@@ -249,7 +260,7 @@ def get_product_type(recid):
     """Get product type in OSTI format."""
     type_dict = {'TM':'TR', 'CONF':'CO', 'PUB':'JA', 'THESIS':'TD',
                  'MASTERS':'TD', 'BACHELORS':'TD', 'HABILITATION':'TD',
-                 'DESIGN':'PD'}
+                 'DESIGN':'PD', 'FN':'TR'}
     product_type = '??'
     report_string = get_reports(recid)
     for key in type_dict:
@@ -349,9 +360,10 @@ def create_xml(recid, records):
         ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
     collaborations = get_collaborations(recid)
-    if re.search(r'CMS', collaborations):
+    author_number = get_author_number(recid)
+    if author_number > 20:
         author = ET.SubElement(record, 'author')
-        author.text = get_author(recid)
+        author.text = get_author_first(recid)
     else:
         authors = ET.SubElement(record, 'authors')
         get_authors(recid, authors)
@@ -385,6 +397,8 @@ def create_xml(recid, records):
 
 def main(recids):
     """Generate OSTI posting from a recid or an INSPIRE search."""
+
+    counter = 1
     if not recids:
         print "No, that search did not work"
         return None
@@ -395,8 +409,15 @@ def main(recids):
     #recids = [1400805, 1373745, 1342808, 1400935]
     records = ET.Element('records')
     for recid in recids:
+        if counter > ENDING_COUNTER:
+            break
         if get_url(recid):
-            create_xml(recid, records)
+            if get_product_type(recid) == 'JA' and \
+               get_pubnote(recid)[0] == None:
+                   pass
+            else:
+                create_xml(recid, records)
+                counter += 1
     if TEST:
         print prettify(records)
     else:
@@ -415,7 +436,7 @@ def find_records():
     search_input = raw_input("Your search? ")
     if len(search_input) > 3:
     # and re.search(r':', search_input):
-        search = '037:fermilab* ' + search_input
+        search = search_input + ' 037:fermilab* -035__9:osti'
     else:
         print "That's not a search. Game over."
         return None

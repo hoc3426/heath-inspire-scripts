@@ -21,8 +21,8 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 362500
-ENDING_COUNTER = 2001
+STARTING_COUNTER = 476727
+ENDING_COUNTER = 5001
 
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
