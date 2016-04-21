@@ -60,6 +60,7 @@ def get_url(recid):
     url_arxiv = None
     url_openaccess = None
     url_postprint = None
+    url_inspire = None
     accepted = False
 
     for item in BibFormatObject(int(recid)).fields('8564_'):
@@ -82,6 +83,8 @@ def get_url(recid):
                 url_fermilab = url_i
             elif re.search(r'record/\d+/files/arXiv', url_i):
                 url_arxiv = url_i
+            if re.search(r'inspirehep.*fermilab\-.*pdf', url_i):
+                url_inspire = url_i
 
     if url_openaccess:
         url = url_openaccess
@@ -91,6 +94,9 @@ def get_url(recid):
         url = url_fermilab
     elif url_arxiv and int(recid) in CMS:
         url = url_arxiv
+    elif url_inspire:
+        url = url_inspire
+
     if url:
         if checkURL(url):
             return [url, accepted]
