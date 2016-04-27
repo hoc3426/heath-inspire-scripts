@@ -21,7 +21,7 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 513938
+STARTING_COUNTER = 1
 ENDING_COUNTER = 5001
 
 
@@ -102,7 +102,7 @@ def create_xml(input_dict):
         print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
-        search  =  'find eprint ' + eprint
+        search  =  'find eprint ' + eprint + ' not 035__9:ads'
         result = perform_request_search(p=search, cc='HEP')
         if DEBUG == 1:
             print search, result

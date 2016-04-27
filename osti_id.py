@@ -14,6 +14,7 @@ VERBOSE = False
 RECIDS = []
 
 INPUT_FILE = 'FNALData.txt'
+INPUT_FILE = 'FNALData_thesis.txt'
 #INPUT_FILE = 'tmp_o.txt'
 
 def find_recid(id):
