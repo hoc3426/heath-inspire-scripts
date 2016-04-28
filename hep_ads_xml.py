@@ -9,6 +9,7 @@ http://ads.harvard.edu/pubs/arXiv/ADSmatches_updates.xml
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS
+from hep_ads_xml_badrecs import BADRECS
 from hep_published import JOURNAL_PUBLISHED_DICT
 
 import xml.etree.ElementTree as ET
@@ -18,6 +19,7 @@ TEST = False
 #TEST = True
 VERBOSE = False
 DEBUG = False
+DEBUG = True
 UPDATE = True
 UPDATE = False
 
@@ -36,10 +38,6 @@ if TEST:
     #DOCUMENT = 'ADS_cond.xml'
     #DOCUMENT = 'ADS_math.xml'
     #DOCUMENT = 'ADSmatches.xml'
-
-BADRECS = [1299943, 1263270, 782224, 799038, 834458]
-BADRECS = [1202336, 744283, 419659, 535573, 535574, 535581, 799568, 536276,
-           650007, 631684]
 
 BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
 
