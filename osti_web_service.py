@@ -11,6 +11,7 @@ import cgi
 import sys
 import datetime
 import pytz
+import os
 
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
@@ -36,6 +37,8 @@ ENDING_COUNTER = 20
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
+
 def get_language(recid):
     """ Find the langauge of the work. """
     try:
@@ -46,7 +49,6 @@ def get_language(recid):
 def get_osti_id(recid):
     """ Find the osti_id from an INSPIRE record """
     osti_id = None
-    return osti_id
     for item in BibFormatObject(int(recid)).fields('035__'):
         if item.has_key('9') and item.has_key('a'):
             if item['9'].lower() == 'osti':
@@ -102,9 +104,9 @@ def get_url(recid):
             return [url, accepted]
         else:
             print "Problem with", url
-            return None
+            return [None, accepted]
     else:
-        return None
+        return [None, False]
 
 def get_title(recid):
     """Get title with in xml compliant form."""
@@ -350,12 +352,16 @@ def create_xml(recid, records):
 
     record = ET.SubElement(records, 'record')
 
+    already_accepted = False
     osti_id = get_osti_id(recid)
     if osti_id:
         ET.SubElement(record, 'osti_id').text = osti_id
         dict_osti_id = {'osti_id':osti_id}
         ET.SubElement(record, 'revdata', dict_osti_id)
         ET.SubElement(record, 'revprod', dict_osti_id)
+        file_txt = DIRECTORY + '/' + str(osti_id) + '.txt'
+        if os.path.isfile(file_txt):
+            already_accepted = True
     else:
         ET.SubElement(record, 'new')
     ET.SubElement(record, 'site_input_code').text = \
@@ -369,7 +375,7 @@ def create_xml(recid, records):
         ET.SubElement(record, 'journal_type').text = 'AM'
     else:
         ET.SubElement(record, 'journal_type').text = 'FT'
-    if not accepted:
+    if not accepted or already_accepted:
         ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
     collaborations = get_collaborations(recid)
@@ -428,8 +434,8 @@ def main(recids):
             break
         if get_url(recid):
             if get_product_type(recid) == 'JA' and \
-               get_pubnote(recid)[0] == None:
-                   pass
+            get_pubnote(recid)[0] == None:
+                pass
             else:
                 create_xml(recid, records)
                 counter += 1

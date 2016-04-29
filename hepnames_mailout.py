@@ -174,6 +174,9 @@ def find_records():
     search += ' 371__m:/\@/'
     search += ' -035__9:ORCID'
     search += ' -001:1004158'
+    search += ' -001:998910' #Paul Mantsch
+    search += ' -001:983897' #Alan Wehmann
+
     print search
     result = perform_request_search(p=search, cc='HepNames')
     if len(result) > 0:

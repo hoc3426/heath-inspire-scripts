@@ -19,12 +19,12 @@ TEST = False
 #TEST = True
 VERBOSE = False
 DEBUG = False
-DEBUG = True
+#DEBUG = True
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 1
-ENDING_COUNTER = 5001
+STARTING_COUNTER = 500000
+ENDING_COUNTER = 51
 
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
