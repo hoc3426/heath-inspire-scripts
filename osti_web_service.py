@@ -209,7 +209,7 @@ def get_author_details(recid, authors, tag):
         if item.has_key('u'):
             affiliation = item['u']
         if item.has_key('m'):
-            email = item['u']
+            email = item['m']
         if item.has_key('j'):
             orcid = item['j']
             if not re.search(r'ORCID:', orcid):
@@ -432,7 +432,7 @@ def main(recids):
     for recid in recids:
         if counter > ENDING_COUNTER:
             break
-        if get_url(recid):
+        if get_url(recid)[0]:
             if get_product_type(recid) == 'JA' and \
             get_pubnote(recid)[0] == None:
                 pass

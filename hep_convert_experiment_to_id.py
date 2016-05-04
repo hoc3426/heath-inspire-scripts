@@ -100,8 +100,8 @@ EXPERIMENTS = ['DES', 'FNAL-E-0929', 'DUNE']
 EXPERIMENTS = ['BNL-RHIC-STAR']
 EXPERIMENTS = ['FNAL-E-0823']
 EXPERIMENTS = ['FERMI-LAT']
-#EXPERIMENTS = ['DES']
-EXPERIMENTS = ['CERN-LHC-CMS']
+EXPERIMENTS = ['DES']
+#EXPERIMENTS = ['CERN-LHC-CMS']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')

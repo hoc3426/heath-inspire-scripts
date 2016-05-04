@@ -23,8 +23,8 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 500000
-ENDING_COUNTER = 51
+STARTING_COUNTER = 597369
+ENDING_COUNTER = 500
 
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
@@ -76,6 +76,9 @@ def create_xml(input_dict):
     recid_eprint   = 0
     recid_doi      = 0
     recid_pubnote  = 0
+
+    if not '2016' in input_dict['journal_bibcode']:
+        return None
 
     if TEST:
         print "In create_xml"
