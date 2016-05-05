@@ -152,6 +152,8 @@ def main():
     for record in root.findall('record'):
         print record.tag
         osti_id = record.find('osti_id').text
+        if osti_id == '0':
+            continue
         inspire_id = record.find('other_identifying_nos').text
         record_update = create_xml(osti_id, inspire_id)
         if record_update:

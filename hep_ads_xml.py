@@ -23,7 +23,7 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 597369
+STARTING_COUNTER = 1
 ENDING_COUNTER = 500
 
 
@@ -77,7 +77,7 @@ def create_xml(input_dict):
     recid_doi      = 0
     recid_pubnote  = 0
 
-    if not '2016' in input_dict['journal_bibcode']:
+    if not '2015' in input_dict['journal_bibcode']:
         return None
 
     if TEST:

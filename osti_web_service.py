@@ -225,7 +225,10 @@ def get_author_details(recid, authors, tag):
 
 def get_author_first(recid):
     """Get authors as a long string, truncate at 10."""
-    return get_fieldvalues(recid, "100__a")[0] + "; et al."
+    try:
+        return get_fieldvalues(recid, "100__a")[0] + "; et al."
+    except IndexError:
+        return None
     #author_list = get_fieldvalues(recid, "100__a") \
     #        + get_fieldvalues(recid, "700__a")
     #if len(author_list) <= 10 and len(author_list) > 0 and False:
@@ -275,7 +278,7 @@ def get_product_type(recid):
     """Get product type in OSTI format."""
     type_dict = {'TM':'TR', 'CONF':'CO', 'PUB':'JA', 'THESIS':'TD',
                  'MASTERS':'TD', 'BACHELORS':'TD', 'HABILITATION':'TD',
-                 'DESIGN':'PD', 'FN':'TR'}
+                 'DESIGN':'TR', 'FN':'TR', 'ANNUAL':'PD', 'MUCOOL':'TR'}
     product_type = '??'
     report_string = get_reports(recid)
     for key in type_dict:
@@ -371,10 +374,11 @@ def create_xml(recid, records):
     access_limitation = ET.SubElement(record, 'access_limitation')
     ET.SubElement(access_limitation, 'unl')
     [url, accepted] = get_url(recid)
-    if accepted:
-        ET.SubElement(record, 'journal_type').text = 'AM'
-    else:
-        ET.SubElement(record, 'journal_type').text = 'FT'
+    if product_type == 'JA':
+        if accepted:
+            ET.SubElement(record, 'journal_type').text = 'AM'
+        elif url:
+            ET.SubElement(record, 'journal_type').text = 'FT'
     if not accepted or already_accepted:
         ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
@@ -382,7 +386,9 @@ def create_xml(recid, records):
     author_number = get_author_number(recid)
     if author_number > 20:
         author = ET.SubElement(record, 'author')
-        author.text = get_author_first(recid)
+        author_first = get_author_first(recid)
+        if author_first:
+            author.text = get_author_first(recid)
     else:
         authors = ET.SubElement(record, 'authors')
         get_authors(recid, authors)
