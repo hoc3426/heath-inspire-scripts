@@ -24,6 +24,8 @@ TEST = False
 #TEST = True
 DOCUMENT = 'tmp_osti.out'
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
+VERBOSE = False
+#VERBOSE = True
 
 if TEST:
     DOCUMENT = 'tmp_osti_test.out'
@@ -36,7 +38,8 @@ def create_osti_id_pdf(recid, osti_id):
     can be pushed to OSTI.
     If the pdf is not of an excepted paper it skips this.
     """
-
+    if VERBOSE:
+        print recid, osti_id
     try:
         [url, accepted] = get_url(recid)
         if accepted == False:
@@ -100,6 +103,7 @@ def create_xml(osti_id, inspire_id):
     if len(result) != 1:
         print 'No such INSPIRE record', recid
         return None
+    create_osti_id_pdf(recid, osti_id)
     search = "001:" + recid + " 035__a:" + osti_id
     result = perform_request_search(p = search, cc = 'HEP')
     if len(result) == 1:
@@ -126,7 +130,7 @@ def create_xml(osti_id, inspire_id):
     record_add_field(record, '001', controlfield_value=str(recid))
     new_id  = [('a', osti_id), ('9', 'OSTI')]
     record_add_field(record, '035', '', '', subfields=new_id)
-    create_osti_id_pdf(recid, osti_id)
+    #create_osti_id_pdf(recid, osti_id)
     return print_rec(record)
 
     #try:
@@ -152,9 +156,13 @@ def main():
     for record in root.findall('record'):
         print record.tag
         osti_id = record.find('osti_id').text
+        if VERBOSE:
+            print osti_id
         if osti_id == '0':
             continue
         inspire_id = record.find('other_identifying_nos').text
+        if VERBOSE:
+            print inspire_id
         record_update = create_xml(osti_id, inspire_id)
         if record_update:
             try:

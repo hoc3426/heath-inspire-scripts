@@ -9,7 +9,7 @@ from invenio.intbitset import intbitset
 
 VERBOSE = False
 #VERBOSE = True
-LETTER = 'M'
+LETTER = 'O'
 
 def main():
     filename = 'tmp_' + __file__
@@ -22,7 +22,7 @@ def main():
 def email_search(email):
     email_fields = '371__m:"{0}" or 371__o:"{0}"'
     email_fields += ' or 595__o:"{0}" or 595__m:"{0}"'
-    return  email_fields.format(email)
+    return email_fields.format(email)
 
 def hepnames_search_ids(letter):
     name_letter = letter + '*'

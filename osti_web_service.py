@@ -29,6 +29,7 @@ CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
+VERBOSE = False
 TEST = False
 #TEST = True
 RECIDS = False
@@ -87,6 +88,8 @@ def get_url(recid):
                 url_arxiv = url_i
             if re.search(r'inspirehep.*fermilab\-.*pdf', url_i):
                 url_inspire = url_i
+            elif re.search(r'inspirehep.*MUCOOL\-.*pdf', url_i):
+                url_inspire = url_i
 
     if url_openaccess:
         url = url_openaccess
@@ -98,6 +101,9 @@ def get_url(recid):
         url = url_arxiv
     elif url_inspire:
         url = url_inspire
+
+    if VERBOSE:
+        print url
 
     if url:
         if checkURL(url):
@@ -255,7 +261,7 @@ def get_collaborations(recid):
     try:
         collaborations = get_fieldvalues(recid, "710__g")
         return '; '.join([unicode(a, "utf-8") for a in collaborations])
-    except:
+    except StandardError:
         return None
 
 def get_abstract(recid):
@@ -285,6 +291,8 @@ def get_product_type(recid):
         pattern = 'FERMILAB-' + key
         if re.search(pattern, report_string):
             product_type = type_dict[key]
+    if VERBOSE:
+        print product_type
     return product_type
 
 def get_subject_categories(recid):
@@ -351,11 +359,14 @@ def prettify(elem):
     return reparsed.toprettyxml(indent="  ")
 
 def create_xml(recid, records):
-    """Creates xml entry for a recid and feeds it to list of records."""
+    """
+    Creates xml entry for a recid and feeds it to list of records.
+    If an accepted version has already been submitted, returns None.
+    """
 
     record = ET.SubElement(records, 'record')
 
-    already_accepted = False
+    #already_accepted = False
     osti_id = get_osti_id(recid)
     if osti_id:
         ET.SubElement(record, 'osti_id').text = osti_id
@@ -364,22 +375,27 @@ def create_xml(recid, records):
         ET.SubElement(record, 'revprod', dict_osti_id)
         file_txt = DIRECTORY + '/' + str(osti_id) + '.txt'
         if os.path.isfile(file_txt):
-            already_accepted = True
+            #already_accepted = True
+            print "Already sent AM for", osti_id
+            return None
     else:
         ET.SubElement(record, 'new')
     ET.SubElement(record, 'site_input_code').text = \
         DOE_FERMILAB_DICT['site_input_code']
     product_type = get_product_type(recid)
-    ET.SubElement(record, 'product_type').text = product_type
-    access_limitation = ET.SubElement(record, 'access_limitation')
-    ET.SubElement(access_limitation, 'unl')
     [url, accepted] = get_url(recid)
+    if accepted:
+        product_type = 'JA'
     if product_type == 'JA':
         if accepted:
             ET.SubElement(record, 'journal_type').text = 'AM'
         elif url:
             ET.SubElement(record, 'journal_type').text = 'FT'
-    if not accepted or already_accepted:
+    ET.SubElement(record, 'product_type').text = product_type
+    access_limitation = ET.SubElement(record, 'access_limitation')
+    ET.SubElement(access_limitation, 'unl')
+    #if not accepted and not already_accepted:
+    if not accepted:
         ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
     collaborations = get_collaborations(recid)
@@ -460,10 +476,13 @@ def find_records():
     print """
     Let's do a HEP search in INSPIRE format
     """
-    search_input = raw_input("Your search? ")
+    search_input = raw_input("Your search? ").lower()
     if len(search_input) > 3:
-    # and re.search(r':', search_input):
-        search = search_input + ' 037:fermilab* -035__9:osti'
+        if re.search(r'ignore', search_input):
+            search = re.sub(r'ignore', '', search_input)
+            search = search + ' 037:fermilab*'
+        else:
+            search = search_input + ' 037:fermilab* -035__9:osti'
     else:
         print "That's not a search. Game over."
         return None
@@ -489,7 +508,7 @@ if __name__ == '__main__':
         try:
             RECID = int(sys.argv[1:][0])
             RECIDS.append(RECID)
-        except:
+        except StandardError:
             RECIDS = find_records()
     try:
         main(RECIDS)

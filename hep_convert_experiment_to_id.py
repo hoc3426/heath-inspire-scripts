@@ -100,7 +100,7 @@ EXPERIMENTS = ['DES', 'FNAL-E-0929', 'DUNE']
 EXPERIMENTS = ['BNL-RHIC-STAR']
 EXPERIMENTS = ['FNAL-E-0823']
 EXPERIMENTS = ['FERMI-LAT']
-EXPERIMENTS = ['DES']
+EXPERIMENTS = ['DES', 'SLAC-PEP2-BABAR']
 #EXPERIMENTS = ['CERN-LHC-CMS']
 
 def get_hepnames_recid_from_search(search):
@@ -160,7 +160,7 @@ def create_xml(recid, tags, experiment):
 
 def find_records_with_no_id(experiment):
     print experiment
-    osearch = "001:1396014 693__e:" + experiment
+    osearch = "693__e:" + experiment
     oresult = perform_request_search(p=osearch, cc='HEP')
     #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
     psearch = ' -100__i:INSPIRE* -700__i:INSPIRE*'

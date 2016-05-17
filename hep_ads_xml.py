@@ -8,7 +8,7 @@ http://ads.harvard.edu/pubs/arXiv/ADSmatches_updates.xml
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
-from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS
+from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS, ADS_SEEN
 from hep_ads_xml_badrecs import BADRECS
 from hep_published import JOURNAL_PUBLISHED_DICT
 
@@ -25,7 +25,7 @@ UPDATE = False
 
 STARTING_COUNTER = 1
 ENDING_COUNTER = 500
-
+YEAR = '2016'
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
 
@@ -77,7 +77,10 @@ def create_xml(input_dict):
     recid_doi      = 0
     recid_pubnote  = 0
 
-    if not '2015' in input_dict['journal_bibcode']:
+    if not YEAR == input_dict['journal_bibcode'][:4]:
+        return None
+
+    if input_dict['journal_bibcode'] in ADS_SEEN:
         return None
 
     if TEST:
