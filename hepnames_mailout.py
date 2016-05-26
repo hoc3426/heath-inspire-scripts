@@ -23,7 +23,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 LINK_BLOG = "http://blog.inspirehep.net/2015/04/"
-LINK_BLOG += "what-is-orcid-and-how-can-it-help-you.html"
+LINK_BLOG += "what-is-orcid-and-how-can-it-help-you/"
 
 def main(recids):
     """

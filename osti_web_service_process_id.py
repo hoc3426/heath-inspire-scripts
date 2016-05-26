@@ -5,20 +5,20 @@
 Script for adding OSTI IDs to INSPIRE records after using OSTI Web Service.
 """
 
-import os
+#import os
 import re
 import xml.etree.ElementTree as ET
-#import urllib2
-from urllib2 import Request, urlopen
-import PyPDF2
-from PyPDF2 import PdfFileReader
-#, PdfFileWriter
-from StringIO import StringIO
+##import urllib2
+#from urllib2 import Request, urlopen
+#import PyPDF2
+#from PyPDF2 import PdfFileReader
+##, PdfFileWriter
+#from StringIO import StringIO
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.bibformat_engine import BibFormatObject
-from osti_web_service import get_url
+from osti_web_service import create_osti_id_pdf
 
 TEST = False
 #TEST = True
@@ -31,43 +31,6 @@ if TEST:
     DOCUMENT = 'tmp_osti_test.out'
 
 RECIDS = []
-
-def create_osti_id_pdf(recid, osti_id):
-    """
-    Places a PDF named after the OSTI id in a location that
-    can be pushed to OSTI.
-    If the pdf is not of an excepted paper it skips this.
-    """
-    if VERBOSE:
-        print recid, osti_id
-    try:
-        [url, accepted] = get_url(recid)
-        if accepted == False:
-            return None
-    except IndexError:
-        print "No url on", recid
-        return None
-    except TypeError:
-        print "No url on", recid
-        return None
-    remote_file = urlopen(Request(url)).read()
-    memory_file = StringIO(remote_file)
-    try:
-        PdfFileReader(memory_file)
-    except PyPDF2.utils.PdfReadError:
-        print "PDF invalid for", recid
-        return None
-    except TypeError:
-        print "Problem with", url
-        return None
-    final_pdf = DIRECTORY + str(osti_id) + ".pdf"
-    final_txt = DIRECTORY + str(osti_id) + ".txt"
-    if os.path.exists(final_pdf) or os.path.exists(final_txt):
-        print "Already have PDF for recid=", recid, "osti_id=", osti_id
-        return None
-    output = open(final_pdf, 'wb')
-    output.write(remote_file)
-    output.close()
 
 def find_recid(mystery_id):
     """
@@ -170,7 +133,7 @@ def main():
                     print record_update
                 else:
                     output.write(record_update)
-            except:
+            except StandardError:
                 print 'CANNOT print record', record.attrib
     output.write('</collection>')
     output.close()

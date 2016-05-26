@@ -20,6 +20,16 @@ from invenio.intbitset import intbitset
 #from hep_aff import get_aff
 #from numbers_beijing import IDS
 
+search = '100__m:/\@/ or 700__m:/\@/'
+result = perform_request_search(p=search,cc='HEP')
+unique_emails = []
+for recid in result:
+    emails = get_fieldvalues(recid, '100__m') + \
+             get_fieldvalues(recid, '700__m')
+    for email in emails:
+        if not email in unique_emails:
+            unique_emails.append(email)
+
 if False:
     for ID in IDS:
         search = '035__a:' + ID

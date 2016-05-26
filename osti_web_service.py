@@ -13,6 +13,12 @@ import datetime
 import pytz
 import os
 
+from urllib2 import Request, urlopen
+import PyPDF2
+from PyPDF2 import PdfFileReader
+from StringIO import StringIO
+
+
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 from invenio.intbitset import intbitset
@@ -39,6 +45,44 @@ CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
+
+def create_osti_id_pdf(recid, osti_id):
+    """
+    Places a PDF named after the OSTI id in a location that
+    can be pushed to OSTI.
+    If the pdf is not of an excepted paper it skips this.
+    """
+    if VERBOSE:
+        print recid, osti_id
+    try:
+        [url, accepted] = get_url(recid)
+        if accepted == False:
+            return None
+    except IndexError:
+        print "No url on", recid
+        return None
+    except TypeError:
+        print "No url on", recid
+        return None
+    remote_file = urlopen(Request(url)).read()
+    memory_file = StringIO(remote_file)
+    try:
+        PdfFileReader(memory_file)
+    except PyPDF2.utils.PdfReadError:
+        print "PDF invalid for", recid
+        return None
+    except TypeError:
+        print "Problem with", url
+        return None
+    final_pdf = DIRECTORY + str(osti_id) + ".pdf"
+    final_txt = DIRECTORY + str(osti_id) + ".txt"
+    if os.path.exists(final_pdf) or os.path.exists(final_txt):
+        print "Already have PDF for recid=", recid, "osti_id=", osti_id
+        return None
+    output = open(final_pdf, 'wb')
+    output.write(remote_file)
+    output.close()
+
 
 def get_language(recid):
     """ Find the langauge of the work. """
@@ -361,40 +405,47 @@ def prettify(elem):
 def create_xml(recid, records):
     """
     Creates xml entry for a recid and feeds it to list of records.
+    Tests to see if all the necessary information is present.
     If an accepted version has already been submitted, returns None.
     """
 
-    record = ET.SubElement(records, 'record')
-
-    #already_accepted = False
+    [url, accepted] = get_url(recid)
+    if url is None:
+        return None
     osti_id = get_osti_id(recid)
+    if osti_id:
+        file_txt = DIRECTORY + '/' + str(osti_id) + '.txt'
+        file_pdf = DIRECTORY + '/' + str(osti_id) + '.pdf'
+        if os.path.isfile(file_txt) or os.path.isfile(file_pdf):
+            #print "Already sent AM for", osti_id
+            return None
+    product_type = get_product_type(recid)
+    if accepted:
+        product_type = 'JA'
+    journal_info = get_pubnote(recid)
+    if product_type == 'JA' and journal_info[0] == None:
+        return None
+    #Begin building record
+    record = ET.SubElement(records, 'record')
     if osti_id:
         ET.SubElement(record, 'osti_id').text = osti_id
         dict_osti_id = {'osti_id':osti_id}
         ET.SubElement(record, 'revdata', dict_osti_id)
         ET.SubElement(record, 'revprod', dict_osti_id)
-        file_txt = DIRECTORY + '/' + str(osti_id) + '.txt'
-        if os.path.isfile(file_txt):
-            #already_accepted = True
-            print "Already sent AM for", osti_id
-            return None
     else:
         ET.SubElement(record, 'new')
     ET.SubElement(record, 'site_input_code').text = \
         DOE_FERMILAB_DICT['site_input_code']
-    product_type = get_product_type(recid)
-    [url, accepted] = get_url(recid)
-    if accepted:
-        product_type = 'JA'
     if product_type == 'JA':
         if accepted:
             ET.SubElement(record, 'journal_type').text = 'AM'
-        elif url:
+            #print 'Accepted Manuscript', recid, osti_id
+            create_osti_id_pdf(recid, osti_id)
+        else:
             ET.SubElement(record, 'journal_type').text = 'FT'
     ET.SubElement(record, 'product_type').text = product_type
     access_limitation = ET.SubElement(record, 'access_limitation')
     ET.SubElement(access_limitation, 'unl')
-    #if not accepted and not already_accepted:
     if not accepted:
         ET.SubElement(record, 'site_url').text = url
     ET.SubElement(record, 'title').text = get_title(recid)
@@ -416,7 +467,9 @@ def create_xml(recid, records):
     ET.SubElement(record, 'description').text = get_abstract(recid)
     ET.SubElement(record, 'originating_research_org').text = \
         get_affiliations(recid, True)
-    journal_info = get_pubnote(recid)
+    #journal_info = get_pubnote(recid)
+    #if product_type == 'JA' and journal_info[0] == None:
+    #    return None
     journal_elements = ['journal_name', 'journal_volume', 'journal_issue',
                         'product_size', 'doi']
     i_count = 0
@@ -436,12 +489,12 @@ def create_xml(recid, records):
     ET.SubElement(record, 'released_date').text = \
           CHICAGO_TIMEZONE.fromutc(datetime.datetime.utcnow()).\
           strftime('%m/%d/%Y')
-
+    return 1
 
 def main(recids):
     """Generate OSTI posting from a recid or an INSPIRE search."""
 
-    counter = 1
+    counter = 0
     if not recids:
         print "No, that search did not work"
         return None
@@ -454,19 +507,23 @@ def main(recids):
     for recid in recids:
         if counter > ENDING_COUNTER:
             break
-        if get_url(recid)[0]:
-            if get_product_type(recid) == 'JA' and \
-            get_pubnote(recid)[0] == None:
-                pass
-            else:
-                create_xml(recid, records)
-                counter += 1
+        record_test = create_xml(recid, records)
+        if record_test:
+            counter += 1
+        #if get_url(recid)[0]:
+        #    if get_product_type(recid) == 'JA' and \
+        #    get_pubnote(recid)[0] == None:
+        #        pass
+        #    else:
+        #        create_xml(recid, records)
+        #        counter += 1
     if TEST:
         print prettify(records)
     else:
         #output.write(XML_PREAMBLE)
         output.write(prettify(records))
     output.close()
+    print "Number of records:", counter
 
 def find_records():
     """
