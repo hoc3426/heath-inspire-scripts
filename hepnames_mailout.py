@@ -9,6 +9,7 @@ RECIDS = False
 
 #from fermi_theory_inspire_ids import RECIDS
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
+from hepnames_mailout_bad_recids import BAD_RECIDS
 
 import time
 import sys
@@ -35,6 +36,8 @@ def main(recids):
 
     icount = 1
     for recid in recids:
+        if recid in BAD_RECIDS:
+            break
         recid_str = str(recid)
         recid_int = int(recid)
         if re.search(r'INSPIRE-', recid_str):
@@ -173,9 +176,6 @@ def find_records():
         return None
     search += ' 371__m:/\@/'
     search += ' -035__9:ORCID'
-    search += ' -001:1004158'
-    search += ' -001:998910' #Paul Mantsch
-    search += ' -001:983897' #Alan Wehmann
 
     print search
     result = perform_request_search(p=search, cc='HepNames')
