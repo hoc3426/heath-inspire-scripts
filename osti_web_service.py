@@ -52,8 +52,12 @@ def create_osti_id_pdf(recid, osti_id):
     can be pushed to OSTI.
     If the pdf is not of an excepted paper it skips this.
     """
+    final_pdf = None
+    final_txt = None
     if VERBOSE:
         print recid, osti_id
+    if not recid or not osti_id:
+        return None
     try:
         [url, accepted] = get_url(recid)
         if accepted == False:
@@ -78,6 +82,8 @@ def create_osti_id_pdf(recid, osti_id):
     final_txt = DIRECTORY + str(osti_id) + ".txt"
     if os.path.exists(final_pdf) or os.path.exists(final_txt):
         print "Already have PDF for recid=", recid, "osti_id=", osti_id
+        print final_pdf
+        print final_txt
         return None
     output = open(final_pdf, 'wb')
     output.write(remote_file)

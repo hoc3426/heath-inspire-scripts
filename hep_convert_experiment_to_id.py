@@ -101,7 +101,7 @@ EXPERIMENTS = [#'AMANDA',
 #EXPERIMENTS = ['FNAL-E-0823']
 #EXPERIMENTS = ['FERMI-LAT']
 #EXPERIMENTS = ['DES', 'SLAC-PEP2-BABAR']
-#EXPERIMENTS = ['CERN-LHC-CMS']
+EXPERIMENTS = ['CERN-LHC-LHCB']
 
 def get_hepnames_recid_from_search(search):
     reclist = perform_request_search(p = search, cc='HepNames')
@@ -164,6 +164,7 @@ def find_records_with_no_id(experiment):
     oresult = perform_request_search(p=osearch, cc='HEP')
     #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
     psearch = ' date:2016 -100__i:INSPIRE* -700__i:INSPIRE* -001:1424769'
+    psearch = '001:1425856'
     if VERBOSE:
         print psearch
     presult = perform_request_search(p=psearch, cc='HEP')

@@ -9,7 +9,7 @@ from invenio.intbitset import intbitset
 
 VERBOSE = False
 #VERBOSE = True
-LETTER = 'P'
+LETTER = 'Q'
 
 def main():
     filename = 'tmp_' + __file__
@@ -52,7 +52,8 @@ def examine(field_search):
     collection = field_search[2]
     core = perform_request_search(p='980:CORE', cc='HEP')
     search_theory = 'find fc p or fc t or fc l or fc n or fc g 980:core'
-    core = perform_request_search(p=search_theory, cc='HEP')
+    search_core = '980:core'
+    core = perform_request_search(p=search_core, cc='HEP')
     if re.search(r'541.*', field):
         result = search_unit(p = search, m = 'a', f = field)
         #result = result & get_collection_reclist('HEP')
