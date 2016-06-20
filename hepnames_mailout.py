@@ -111,7 +111,7 @@ Once you have an ORCID ID please just reply to this email and let us know
 what it is so that we can add it to your HEPNames record.
 <br /><br />
 For more information on ORCID and its importance to INSPIRE, please see
-our recent <a href=\"%(link_blog)s\">blog post</a>.
+our 2015 <a href=\"%(link_blog)s\">blog post</a>.
 <br /><br />
 Your assistance is greatly appreciated.
 <br /><br />

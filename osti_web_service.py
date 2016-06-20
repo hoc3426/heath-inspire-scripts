@@ -28,7 +28,8 @@ from check_url import checkURL
 from osti_web_service_constants import DOE_FERMILAB_DICT, \
                                        DOE_AFF_DICT, \
                                        INSPIRE_AFF_DICT, \
-                                       DOE_SUBJECT_CATEGORIES_DICT
+                                       DOE_SUBJECT_CATEGORIES_DICT, \
+                                       SEARCH
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
@@ -539,7 +540,10 @@ def find_records():
     print """
     Let's do a HEP search in INSPIRE format
     """
-    search_input = raw_input("Your search? ").lower()
+    if SEARCH:
+        search_input = SEARCH
+    else:
+        search_input = raw_input("Your search? ").lower()
     if len(search_input) > 3:
         if re.search(r'ignore', search_input):
             search = re.sub(r'ignore', '', search_input)
