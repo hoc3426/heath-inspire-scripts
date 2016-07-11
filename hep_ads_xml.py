@@ -24,7 +24,7 @@ UPDATE = True
 UPDATE = False
 
 STARTING_COUNTER = 1
-ENDING_COUNTER = 500
+ENDING_COUNTER = 5000
 YEAR = '2016'
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'

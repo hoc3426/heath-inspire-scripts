@@ -13,6 +13,7 @@ for eprint in eprints :
     search = "035__9:ads - 035__a:/ICRC/"
     search = "773__v:/[0-9]N[0-9]/"
     search = "100__j:ORCID* or 700__j:ORCID*"
+    search = "037:fermilab* 773__p:IEEE* (773__y:2011 or 773__y:2012 or 773__y:2013 or 773__y:2014 or 773__y:2015 or 773__y:2016)"
     x = perform_request_search(p=search,cc='HEP')
     journals = []
     for r in x :    

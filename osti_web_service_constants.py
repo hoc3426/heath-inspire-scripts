@@ -103,6 +103,10 @@ INSPIRE_AFF_DICT = {'Argonne':'ANL',
 }
 
 
+
+
+#This search is for a project Mary is working on where
+#OSTI said they didn't have the full-text.
 SEARCH = "035:1250821 \
 or 035:1250815 \
 or 035:1250808 \
@@ -135,4 +139,6 @@ or 035:1249474 \
 or 035:1249473 \
 035__9:osti \
 ignore"
+
+SEARCH = None
 
