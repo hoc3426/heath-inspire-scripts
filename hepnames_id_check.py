@@ -8,8 +8,8 @@ from invenio.search_engine import search_unit
 from invenio.intbitset import intbitset
 
 VERBOSE = False
-#VERBOSE = True
-LETTER = 'T'
+VERBOSE = True
+LETTER = 'U'
 
 def main():
     filename = 'tmp_' + __file__
@@ -42,6 +42,8 @@ def hepnames_search_ids(letter):
     #field_search_list = [['100__a', name_letter, 'HepNames']]
     #field_search_list = [['541__a', r'*0000*', 'HEP'],
     #                     ['541__b', r'*\@*', 'HEP']]
+    #field_search_list = [['100__j', r'*0000*', 'HEP'],
+    #                     ['700__j', r'*0000*', 'HEP']]
 
     for field_search in field_search_list:
         examine(field_search)
@@ -98,6 +100,8 @@ def examine(field_search):
                 if re.search(ignore, field_value):
                     continue
                 field_value = re.sub(r'^\w+:', r'', field_value)
+                if not field_value:
+                    continue
                 search_dup = '035__a:' + field_value
                 #collection = 'HepNames'
             if collection == 'HEP':
@@ -127,7 +131,7 @@ def examine(field_search):
                               format(print_field_value, recid_print)
                     else:
                         print search_dup, recid_print, result_dup, bad_id
-                if field == '035__a':
+                if field == '035__a' and field_value:
                     author_search = r'100__a:"{0}" or 700__a:"{0}"'
                     search_hep = author_search.format(field_value)
                     result_hep = perform_request_search(p = search_hep, \

@@ -163,7 +163,7 @@ def find_records_with_no_id(experiment):
     osearch = "693__e:" + experiment
     oresult = perform_request_search(p=osearch, cc='HEP')
     #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
-    psearch = ' -100__i:INSPIRE* -700__i:INSPIRE* -001:1424769'
+    psearch = ' -100__i:INSPIRE* -700__i:INSPIRE* -001:1424769 -693:ligo'
     if VERBOSE:
         print psearch
     presult = perform_request_search(p=psearch, cc='HEP')

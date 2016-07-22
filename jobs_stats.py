@@ -11,14 +11,16 @@ fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
 search = 'dadd:2015-01-01->2015-03-31'
 print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 
-for field in fields:
+if False:
+#for field in fields:
   search = '65017:' + field
   x = perform_request_search(p=search, cc='Jobs')
   y = perform_request_search(p=search, cc='Jobs Hidden')
   total = len(x+y)
   print "{0:20s} {1:5d} {2:5d} {3:5d}".format(search, len(x), len(y), total)
 
-for rank in ranks:
+if False:
+#for rank in ranks:
   search = '656:' + rank
   x = perform_request_search(p=search, cc='Jobs')
   y = perform_request_search(p=search, cc='Jobs Hidden')
@@ -28,17 +30,22 @@ for rank in ranks:
 
 
 
-for year in range(2016, 2017):
-  for month in range(1, 13):
-    if month < 10:
-        month = '0' + str(month)
-    #date = str(year) + '-' + str(month) + '-*'
-    date = str(year) + '-' + str(month)
+for year in range(2012, 2017):
+  #for month in range(1, 13):
+  #  if month < 10:
+  #      month = '0' + str(month)
+    date = str(year)
+  #  date = str(year) + '-' + str(month)
     search = 'dadd:' + date
+    search1 = '037__a:jobsubmit-job-' + date + '*'
     x = perform_request_search(p=search, cc='Jobs')
     y = perform_request_search(p=search, cc='Jobs Hidden')              
+    x1 = perform_request_search(p=search1, cc='Jobs')
+    y1 = perform_request_search(p=search1, cc='Jobs Hidden')
     total = len(x+y)
-    print "{0:12s} {1:5d} {2:5d} {3:5d}".format(search, len(x), len(y), total)
+    total1 = len(x1+y1)
+    print "{0:12s} {1:5d} {2:5d} {3:5d} {4:5d} {5:5d} {6:5d}".\
+          format(search, len(x1), len(y1), total1, len(x), len(y), total)
 
 
 
