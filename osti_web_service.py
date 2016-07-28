@@ -35,8 +35,8 @@ CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
 
 LOGFILE = 'osti_web_service.log'
-#VERBOSE = True
-VERBOSE = False
+VERBOSE = True
+#VERBOSE = False
 TEST = False
 #TEST = True
 RECIDS = False

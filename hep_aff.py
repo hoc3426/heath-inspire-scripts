@@ -18,6 +18,7 @@ def find_records():
     atsearch = '100__u:/UNDEFINED/ or 700__u:/UNDEFINED/'
     atsearch = '100__v:Fermilab or 700__v:Fermilab'
     atsearch = '700__v:/fermi.*batavia/ - 700__u:fermilab'
+    atsearch = '001:1475323'
     return perform_request_search(p=atsearch, cc='HEP')
 
 def get_aff(aff):

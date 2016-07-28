@@ -5,7 +5,8 @@
 import sys
 import os
 
-from invenio.search_engine import perform_request_search, get_record
+from invenio.search_engine import perform_request_search, get_record, \
+     get_fieldvalues                 
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 from invenio.intbitset import intbitset
@@ -45,6 +46,7 @@ EXPERIMENTS = [#'AMANDA',
 #'DESY-HERA-H1',
 #'DESY-HERA-HERMES',
 #'DESY-HERA-ZEUS',
+'DOUBLECHOOZ',
 'DUNE',
 'FERMI-LAT',
 'FNAL-E-0740',
@@ -96,7 +98,7 @@ EXPERIMENTS = [#'AMANDA',
 #EXPERIMENTS = ['FNAL-E-0740', 'DES']
 #EXPERIMENTS = ['FNAL-E-0740']
 #EXPERIMENTS = ['CERN-LHC-LHCB']
-EXPERIMENTS = ['DES', 'FNAL-E-0929', 'DUNE', 'FNAL-E-0823', 'FNAL-E-0830', 'SLAC-PEP2-BABAR']
+#EXPERIMENTS = ['DES', 'FNAL-E-0929', 'DUNE', 'FNAL-E-0823', 'FNAL-E-0830', 'SLAC-PEP2-BABAR']
 #EXPERIMENTS = ['BNL-RHIC-STAR']
 #EXPERIMENTS = ['FNAL-E-0823']
 #EXPERIMENTS = ['FERMI-LAT']
@@ -163,7 +165,7 @@ def find_records_with_no_id(experiment):
     osearch = "693__e:" + experiment
     oresult = perform_request_search(p=osearch, cc='HEP')
     #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
-    psearch = ' -100__i:INSPIRE* -700__i:INSPIRE* -001:1424769 -693:ligo'
+    psearch = ' -100__i:INSPIRE* -700__i:INSPIRE*'
     if VERBOSE:
         print psearch
     presult = perform_request_search(p=psearch, cc='HEP')
@@ -173,7 +175,11 @@ def find_records_with_no_id(experiment):
     if VERBOSE:
         print len(result)
     #result = result[:400]
-    return result
+    clean_result = []
+    for recid in result:
+        if len(get_fieldvalues(recid, '693__e')) == 1:
+            clean_result.append(recid)
+    return clean_result
 
 def experiment_convert(experiment):
     i_count = 1
