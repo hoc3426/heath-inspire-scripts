@@ -10,6 +10,7 @@ TYPE_DICT = {
 'REVIEW':'PD', 'PROPOSAL':'TR'
 }
 
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 
 DOE_SUBJECT_CATEGORIES_DICT = {
 'acc':'43 PARTICLE ACCELERATORS',

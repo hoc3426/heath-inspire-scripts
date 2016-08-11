@@ -30,7 +30,9 @@ from osti_web_service_constants import DOE_FERMILAB_DICT, \
                                        INSPIRE_AFF_DICT, \
                                        DOE_SUBJECT_CATEGORIES_DICT, \
                                        TYPE_DICT, \
+                                       DIRECTORY, \
                                        SEARCH
+#from osti_check_accepted import check_already_sent
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
@@ -45,8 +47,6 @@ ENDING_COUNTER = 20
 
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
-
-DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 
 def create_osti_id_pdf(recid, osti_id):
     """
@@ -107,6 +107,16 @@ def get_osti_id(recid):
             if item['9'].lower() == 'osti':
                 osti_id = item['a']
     return osti_id
+
+def check_already_sent(recid):
+    osti_id = get_osti_id(recid)
+    if osti_id:
+        final_pdf = DIRECTORY + str(osti_id) + ".pdf"
+        final_txt = DIRECTORY + str(osti_id) + ".txt"
+        if os.path.exists(final_pdf) or os.path.exists(final_txt):
+            return True
+    return False
+
 
 def get_url(recid):
     """Is there a valid url? Is it to an accepted PDF?"""
@@ -513,6 +523,8 @@ def main(recids):
     for recid in recids:
         if counter > ENDING_COUNTER:
             break
+        if check_already_sent(recid):
+            continue
         record_test = create_xml(recid, records)
         if record_test:
             counter += 1

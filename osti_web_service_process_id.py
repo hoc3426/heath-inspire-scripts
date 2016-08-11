@@ -19,11 +19,11 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.bibformat_engine import BibFormatObject
 from osti_web_service import create_osti_id_pdf
+from osti_web_service_constants import DIRECTORY
 
 TEST = False
 #TEST = True
 DOCUMENT = 'tmp_osti.out'
-DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 VERBOSE = False
 #VERBOSE = True
 
