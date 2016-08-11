@@ -12,6 +12,9 @@ TYPE_DICT = {
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 
+ACCEPTED_SEARCH = '8564_z:openaccess or 8564_z:postprint or \
+8564_y:"article from scoap3" ignore'
+
 DOE_SUBJECT_CATEGORIES_DICT = {
 'acc':'43 PARTICLE ACCELERATORS',
 'ins':'46 INSTRUMENTATION RELATED TO NUCLEAR SCIENCE AND TECHNOLOGY',

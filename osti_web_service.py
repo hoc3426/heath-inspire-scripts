@@ -25,17 +25,16 @@ from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from check_url import checkURL
 
-from osti_web_service_constants import DOE_FERMILAB_DICT, \
-                                       DOE_AFF_DICT, \
-                                       INSPIRE_AFF_DICT, \
-                                       DOE_SUBJECT_CATEGORIES_DICT, \
-                                       TYPE_DICT, \
+from osti_web_service_constants import ACCEPTED_SEARCH, \
                                        DIRECTORY, \
-                                       SEARCH
-#from osti_check_accepted import check_already_sent
+                                       DOE_AFF_DICT, \
+                                       DOE_FERMILAB_DICT, \
+                                       DOE_SUBJECT_CATEGORIES_DICT, \
+                                       INSPIRE_AFF_DICT, \
+                                       SEARCH, \
+                                       TYPE_DICT
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
-
 
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
@@ -109,6 +108,8 @@ def get_osti_id(recid):
     return osti_id
 
 def check_already_sent(recid):
+    """Looks to see if we've already sent the AM to OSTI."""
+
     osti_id = get_osti_id(recid)
     if osti_id:
         final_pdf = DIRECTORY + str(osti_id) + ".pdf"
@@ -543,7 +544,7 @@ def main(recids):
     output.close()
     print "Number of records:", counter
 
-def find_records():
+def find_records(search_input=None):
     """
     Finds records to send email to.
     """
@@ -553,7 +554,7 @@ def find_records():
     """
     if SEARCH:
         search_input = SEARCH
-    else:
+    elif not search_input:
         search_input = raw_input("Your search? ").lower()
     if len(search_input) > 3:
         if re.search(r'ignore', search_input):
@@ -581,6 +582,8 @@ def find_records():
         return None
 
 if __name__ == '__main__':
+    if sys.argv[1:][0] == 'i':
+        RECIDS = find_records(ACCEPTED_SEARCH)
     if not RECIDS:
         RECIDS = []
         try:
