@@ -4,6 +4,8 @@ This module finds people in HEPNames to send email to
 asking them to send us their ORCID ID.
 """
 
+TEST = True
+TEST = False
 VERBOSE = True
 RECIDS = False
 
@@ -37,7 +39,8 @@ def main(recids):
     icount = 1
     for recid in recids:
         if recid in BAD_RECIDS:
-            break
+            print 'Bad recid', recid
+            continue
         recid_str = str(recid)
         recid_int = int(recid)
         if re.search(r'INSPIRE-', recid_str):
@@ -68,6 +71,8 @@ def main(recids):
         #contact_email = "cleggm1@gmail.com"
         #contact_email = "bhecker@slac.stanford.edu"
         #contact_email = "thorsten.schwander@gmail.com"
+        if TEST:
+            contact_email = 'hoc@fnal.gov'
 
         print icount, '/', len(recids)
         print 'recid = ', recid_str

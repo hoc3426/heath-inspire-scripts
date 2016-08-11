@@ -29,6 +29,7 @@ from osti_web_service_constants import DOE_FERMILAB_DICT, \
                                        DOE_AFF_DICT, \
                                        INSPIRE_AFF_DICT, \
                                        DOE_SUBJECT_CATEGORIES_DICT, \
+                                       TYPE_DICT, \
                                        SEARCH
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
@@ -36,7 +37,7 @@ CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
-#VERBOSE = False
+VERBOSE = False
 TEST = False
 #TEST = True
 RECIDS = False
@@ -333,9 +334,7 @@ def get_reports(recid):
 
 def get_product_type(recid):
     """Get product type in OSTI format."""
-    type_dict = {'TM':'TR', 'CONF':'CO', 'PUB':'JA', 'THESIS':'TD',
-                 'MASTERS':'TD', 'BACHELORS':'TD', 'HABILITATION':'TD',
-                 'DESIGN':'TR', 'FN':'TR', 'ANNUAL':'PD', 'MUCOOL':'TR'}
+    type_dict = TYPE_DICT
     product_type = '??'
     report_string = get_reports(recid)
     for key in type_dict:

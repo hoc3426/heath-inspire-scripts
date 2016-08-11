@@ -3,13 +3,14 @@ import sys
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 #from hep_convert_email_to_id import get_hepnames_recid_from_email
-from hep_convert_email_to_id import find_inspire_id_from_record
+from hep_convert_email_to_id import find_inspire_id_from_record, \
+                                    get_hepnames_anyid_from_recid
 from invenio.search_engine import search_unit
 from invenio.intbitset import intbitset
 
 VERBOSE = False
 VERBOSE = True
-LETTER = 'V'
+LETTER = 'X'
 
 def main():
     filename = 'tmp_' + __file__
@@ -53,7 +54,7 @@ def examine(field_search):
     search = field_search[1]
     collection = field_search[2]
     core = perform_request_search(p='980:CORE', cc='HEP')
-    search_theory = 'find fc p or fc t or fc l or fc n or fc g 980:core'
+    #search_theory = 'find fc p or fc t or fc l or fc n or fc g 980:core'
     search_core = '980:core'
     core = perform_request_search(p=search_core, cc='HEP')
     if re.search(r'541.*', field):
@@ -118,8 +119,11 @@ def examine(field_search):
                     for recid_dup in result_dup:
                         author_id = \
                             find_inspire_id_from_record(recid_dup)
-                        print '{0:11d} {1:40s} {2:20s}'.\
-                              format(recid_dup, field_value, author_id)
+                        orcid = \
+                        get_hepnames_anyid_from_recid(recid_dup, 'ORCID')
+                        print '{0:11d} {1:40s} {2:20s} {3:20s}'.\
+                              format(recid_dup, field_value, author_id,
+                                     orcid)
                 else:
                     if len(result_dup) == 0:
                         print_field_value = field_value

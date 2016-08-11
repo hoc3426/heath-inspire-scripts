@@ -25,9 +25,11 @@ EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
 EXPERIMENT = 'BNL-RHIC-STAR'
 EXPERIMENT = 'DUNE'
+EXPERIMENT = 'GERDA'
 #INSPIRE = 537896
 #INSPIRE = 52682
 INSPIRE =  52765
+INSPIRE =  55286
 
 #for email in EMAILS:
 if False:
@@ -70,7 +72,8 @@ search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 fileName = 'tmp_hepnames_add_from_list.out'
 input = open('tmp.bnl.in', 'r')
 output = open(fileName,'w')
-for line in input.readlines():
+#for line in input.readlines():
+if False:
     line = re.sub(r'\n', '', line)
     try:
         match_object = re.match(r'(.*)\t+(.*)\t+(.*)\t+(.*)\t+(.*)', line)
@@ -100,10 +103,10 @@ x = perform_request_search(p=search,cc='HepNames')
 #x = x[:5]
 #print len(x)
 
-#fileName = 'tmp_hepnames_add_from_list.out'
-#output = open(fileName,'w')
-#for author in AUTHORS:
-if False:
+fileName = 'tmp_hepnames_add_from_list.out'
+output = open(fileName,'w')
+for author in AUTHORS:
+#if False:
     #print author
     au = author[0] 
     email = author[1]

@@ -2,6 +2,15 @@ OSTI_URL = 'https://www.osti.gov/elink/docs/2411dtd.htm'
 XML_PREAMBLE  = '<?xml version="1.0" encoding="UTF-8" ?>'
 XML_PREAMBLE += '<!DOCTYPE records SYSTEM "' + OSTI_URL + '">'
 
+
+TYPE_DICT = {
+'TM':'TR', 'CONF':'CO', 'PUB':'JA', 'THESIS':'TD',
+'MASTERS':'TD', 'BACHELORS':'TD', 'HABILITATION':'TD',
+'DESIGN':'TR', 'FN':'TR', 'ANNUAL':'PD', 'MUCOOL':'TR',
+'REVIEW':'PD', 'PROPOSAL':'TR'
+}
+
+
 DOE_SUBJECT_CATEGORIES_DICT = {
 'acc':'43 PARTICLE ACCELERATORS',
 'ins':'46 INSTRUMENTATION RELATED TO NUCLEAR SCIENCE AND TECHNOLOGY',
@@ -121,5 +130,5 @@ FERMILAB-CONF-15-238-TD or \
 FERMILAB-CONF-15-120-ND \
 ignore"
 
-#SEARCH = None
+SEARCH = None
 
