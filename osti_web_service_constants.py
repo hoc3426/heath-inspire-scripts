@@ -4,10 +4,20 @@ XML_PREAMBLE += '<!DOCTYPE records SYSTEM "' + OSTI_URL + '">'
 
 
 TYPE_DICT = {
-'TM':'TR', 'CONF':'CO', 'PUB':'JA', 'THESIS':'TD',
-'MASTERS':'TD', 'BACHELORS':'TD', 'HABILITATION':'TD',
-'DESIGN':'TR', 'FN':'TR', 'ANNUAL':'PD', 'MUCOOL':'TR',
-'REVIEW':'PD', 'PROPOSAL':'TR'
+'ANNUAL':'PD',
+'BACHELORS':'TD',
+'CONF':'CO',
+'DESIGN':'TR',
+'FN':'TR',
+'HABILITATION':'TD',
+'MASTERS':'TD',
+'MUCOOL':'TR',
+'PLAN':'PD',
+'PROPOSAL':'TR',
+'PUB':'JA',
+'REVIEW':'PD',
+'THESIS':'TD',
+'TM':'TR'
 }
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'

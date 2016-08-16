@@ -169,11 +169,23 @@ def get_url(recid):
         print url
 
     if url:
-        if checkURL(url):
-            return [url, accepted]
-        else:
-            print "Problem with", url
+        try:
+            if checkURL(url):
+                return [url, accepted]
+            else:
+                print "Check recid", recid
+                print "Problem (if) with", url
+                return [None, accepted]
+        except:
+            print "Check recid", recid
+            print "Problem with (try) ", url
             return [None, accepted]
+ 
+        #if checkURL(url):
+        #    return [url, accepted]
+        #else:
+        #    print "Problem with", url
+        #    return [None, accepted]
     else:
         return [None, False]
 
@@ -582,8 +594,11 @@ def find_records(search_input=None):
         return None
 
 if __name__ == '__main__':
-    if sys.argv[1:][0] == 'i':
-        RECIDS = find_records(ACCEPTED_SEARCH)
+    try:
+        if sys.argv[1:][0] == 'i':
+            RECIDS = find_records(ACCEPTED_SEARCH)
+    except IndexError:
+        pass
     if not RECIDS:
         RECIDS = []
         try:

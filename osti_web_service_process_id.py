@@ -5,21 +5,13 @@
 Script for adding OSTI IDs to INSPIRE records after using OSTI Web Service.
 """
 
-#import os
 import re
 import xml.etree.ElementTree as ET
-##import urllib2
-#from urllib2 import Request, urlopen
-#import PyPDF2
-#from PyPDF2 import PdfFileReader
-##, PdfFileWriter
-#from StringIO import StringIO
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.bibformat_engine import BibFormatObject
 from osti_web_service import create_osti_id_pdf
-from osti_web_service_constants import DIRECTORY
 
 TEST = False
 #TEST = True
@@ -38,11 +30,11 @@ def find_recid(mystery_id):
     """
 
     if not mystery_id.isdigit():
-        print "Invalid ID: " , mystery_id
+        print "Invalid ID: ", mystery_id
         return False
     search = "001:" + mystery_id + \
              " or 970__a:SPIRES-" + mystery_id + " 037:FERMILAB*"
-    result = perform_request_search(p = search, cc = 'HEP')
+    result = perform_request_search(p=search, cc='HEP')
     if len(result) == 1:
         recid = result[0]
         if recid in RECIDS:
@@ -62,17 +54,17 @@ def create_xml(osti_id, inspire_id):
     osti_id = str(osti_id)
     recid = str(inspire_id)
     search = "001:" + recid
-    result = perform_request_search(p = search, cc = 'HEP')
+    result = perform_request_search(p=search, cc='HEP')
     if len(result) != 1:
         print 'No such INSPIRE record', recid
         return None
     create_osti_id_pdf(recid, osti_id)
     search = "001:" + recid + " 035__a:" + osti_id
-    result = perform_request_search(p = search, cc = 'HEP')
+    result = perform_request_search(p=search, cc='HEP')
     if len(result) == 1:
         return None
     search = "035__9:osti 035__a:" + str(osti_id)
-    result = perform_request_search(p = search, cc = 'HEP')
+    result = perform_request_search(p=search, cc='HEP')
     if len(result) == 1:
         for item in BibFormatObject(int(recid)).fields('035__'):
             if item.has_key('9') and item.has_key('a'):
@@ -82,7 +74,7 @@ def create_xml(osti_id, inspire_id):
     search = "001:" + recid + " -035__9:OSTI"
     if TEST:
         print search
-    result = perform_request_search(p = search, cc = 'HEP')
+    result = perform_request_search(p=search, cc='HEP')
     if not len(result) == 1:
         print search, result
         print 'Problem with', recid, osti_id
@@ -91,7 +83,7 @@ def create_xml(osti_id, inspire_id):
         print result
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
-    new_id  = [('a', osti_id), ('9', 'OSTI')]
+    new_id = [('a', osti_id), ('9', 'OSTI')]
     record_add_field(record, '035', '', '', subfields=new_id)
     #create_osti_id_pdf(recid, osti_id)
     return print_rec(record)
@@ -112,7 +104,7 @@ def main():
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_append.out', filename)
-    output = open(filename,'w')
+    output = open(filename, 'w')
     output.write('<collection>')
     tree = ET.parse(DOCUMENT)
     root = tree.getroot()
