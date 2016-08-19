@@ -120,7 +120,8 @@ def create_xml(recid, tags):
     for tag in tags:
         field_instances = record_get_field_instances(record, \
                                                      tag[0:3], tag[3], tag[4])
-        correct_subfields = []
+        correct_subfields = []        
+        seen_subfields = []
         for field_instance in field_instances:
             correct_subfields = []
             for code, value in field_instance[0]:
@@ -130,14 +131,24 @@ def create_xml(recid, tags):
                         value = new_value[0]
                         code = 'i'
                         flag = True
-                        correct_subfields.append((code, value))
+                        if not (code, value) in seen_subfields:
+                            correct_subfields.append((code, value))
+                            seen_subfields.append((code, value))
                     if new_value[1]:
                         value = 'ORCID:' + new_value[1]
                         code = 'j'
                         flag = True
-                        correct_subfields.append((code, value))
+                        if not (code, value) in seen_subfields:
+                            correct_subfields.append((code, value))
+                            seen_subfields.append((code, value))
                     if not flag:
+                        if not (code, value) in seen_subfields:
+                            correct_subfields.append((code, value))
+                            seen_subfields.append((code, value))                
+                elif code == 'i' or code == 'j':
+                    if not (code, value) in seen_subfields:
                         correct_subfields.append((code, value))
+                        seen_subfields.append((code, value))
                 else:
                     correct_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \

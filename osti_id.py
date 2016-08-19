@@ -16,6 +16,7 @@ RECIDS = []
 INPUT_FILE = 'FNALData.txt'
 INPUT_FILE = 'FNALData_thesis.txt'
 #INPUT_FILE = 'tmp_o.txt'
+INPUT_FILE = 'tmp_osti_elem.txt'
 
 def find_recid(id):
     id = re.sub(r';', '', id)
@@ -33,12 +34,13 @@ def find_recid(id):
     if len(x) == 1:
         recid = x[0]
         if recid in RECIDS:
-            return False
+            print 'Duplicate', id, recid
+            return None
         else:
             RECIDS.append(recid)
             return recid
     else:
-        return False
+        return None
 
 def add_osti_id(string):
     if re.search(r'\s*Video\s*NA\s*NA', string):
@@ -52,57 +54,50 @@ def add_osti_id(string):
 
     recid = None
     report_num = None
+    osti_id = None
+    doi = None
     match_obj_1 = False
     match_obj_2 = False
     match_obj_3 = False
 
-    string = re.sub(r'FERMILAB[ \-]', 'FERMILAB-', string)
+    string = re.sub(r'[\-]+', '-', string)
+    string = re.sub(r'FERMILAB[ \-]+', 'FERMILAB-', string)
     string = re.sub(r'FNAL\/C\-\-(\d+)\/([\d\-A-Z]+)', \
                     r'FERMILAB-CONF-\1-\2', string)
-    string = re.sub(r'FNAL[ \-]', 'FERMILAB-', string)
-
-    #"OSTI ID","PRODUCT TYPE","TITLE","REPORT #","DOE CONTRACT #","SITE CODE","SITE UNIQUE ID"    
-    string = string.upper()
+    string = re.sub(r'FNAL[ ]\-', 'FERMILAB-', string)
     try:
-        match_obj = re.match(r'^\s*(\d+)\,\".*\",\".*\",\"(.*)\",\".*\",\".*\",\"(\d+)\"')
-        osti_id    = match_obj.group(1)
-        report_num = match_obj.group(2)
-        recid      = match_obj.group(3)
-    except: 
-       match_obj_1 = re.match(r'^\s*(\d+)\s+(\d+)', string)
-       match_obj_2 = re.match(r'^\s*(\d+).*(FERMILAB[\-A-Z0-9\/]+)', string)
-       match_obj_3 = re.match(r'^\s*(\d+).*(10\.\d+\/\S+)', string)
-    if VERBOSE:
-        print string, match_obj_1, match_obj_2, match_obj_3
-    if match_obj_1:
-        id_1 = match_obj_1.group(1)
-        id_2 = match_obj_1.group(2)
-        recid_guess_1 = find_recid(id_1)
-        recid_guess_2 = find_recid(id_2)
-        if recid_guess_1:
-            recid = recid_guess_1
-            osti_id = id_2
-        elif recid_guess_2:
-            recid = recid_guess_2
-            osti_id = id_1
-        if VERBOSE:
-            print id_1, id_2, recid
-    if match_obj_2 or report_num and not recid:
-        if match_obj_2:
-            osti_id = match_obj_2.group(1) 
-            report_num = match_obj_2.group(2)
-        recid = find_recid(report_num)
-        if VERBOSE:
-            print report_num, recid
-    if match_obj_3 and not recid:
-        osti_id = match_obj_3.group(1)
-        doi = match_obj_3.group(2)
-        recid = find_recid(doi)
-        if VERBOSE:
-            print doi, recid
-    if not recid:
-        print "Cannot find valid recid:", report_num, string
-        return False    
+        report_num = re.search(r'(FERMILAB\-\S+\d{2,}[\w\-]+)', string).group(1)
+        report_num = re.sub(r'\/', '-', report_num)
+        recid = find_recid(report_num) 
+    except:
+        pass
+    try:
+        osti_id = re.search(r'^FNAL[\t\s]*(\d+)', string).group(1)
+        if not recid:
+            recid = find_recid(osti_id)
+    except:
+        pass
+    try:
+        doi = re.search(r'(10\.\d+\/\S+)', string).group(1)
+        if not recid:
+            recid = find_recid(doi)
+    except:
+        pass
+    if not osti_id:
+        return False
+    if not any([osti_id, doi, recid]):
+        print 'Boo', osti_id, report_num, doi, recid, '\n', string
+    elif not recid:
+        print 'Hoo', osti_id, report_num, doi, recid, '\n', string
+        #for x in [report_num, osti_id, doi]:
+        #    if x:
+        #        print x, find_recid(x)
+        return False
+
+
+    #if not recid:
+    #    print "Cannot find valid recid:", report_num, doi, osti_id, string
+    #    return False    
     search = "001:" + str(recid) + " -035__9:OSTI"
     if VERBOSE:
         print search
