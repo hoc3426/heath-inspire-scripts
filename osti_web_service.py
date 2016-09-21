@@ -115,6 +115,9 @@ def check_already_sent(recid):
         final_pdf = DIRECTORY + str(osti_id) + ".pdf"
         final_txt = DIRECTORY + str(osti_id) + ".txt"
         if os.path.exists(final_pdf) or os.path.exists(final_txt):
+            if VERBOSE:
+                print final_pdf
+                print final_txt
             return True
     return False
 
@@ -537,6 +540,8 @@ def main(recids):
         if counter > ENDING_COUNTER:
             break
         if check_already_sent(recid):
+            if VERBOSE:
+                print "Already have", recid
             continue
         record_test = create_xml(recid, records)
         if record_test:

@@ -17,12 +17,15 @@ INPUT_FILE = 'FNALData.txt'
 INPUT_FILE = 'FNALData_thesis.txt'
 #INPUT_FILE = 'tmp_o.txt'
 INPUT_FILE = 'tmp_osti_elem.txt'
+#INPUT_FILE = 'tmp_osti_accel.txt'
 
 def find_recid(id):
     id = re.sub(r';', '', id)
     if id.isdigit():
         search = "001:" + id + " or 970__a:SPIRES-" + id + \
                  " 037:FERMILAB*"        
+        search = "035__a:" + id + " 035__9:osti"
+        #print search
     elif re.search(r'FERMILAB', id):
         id = re.sub(r'\/', '-', id)
         id = re.sub(r'[\-]+', '-', id)
@@ -73,6 +76,7 @@ def add_osti_id(string):
         pass
     try:
         osti_id = re.search(r'^FNAL[\t\s]*(\d+)', string).group(1)
+        #print '****', osti_id
         if not recid:
             recid = find_recid(osti_id)
     except:

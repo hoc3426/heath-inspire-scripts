@@ -10,7 +10,7 @@ from invenio.intbitset import intbitset
 
 VERBOSE = False
 VERBOSE = True
-LETTER = 'Y'
+LETTER = 'Z'
 
 def main():
     filename = 'tmp_' + __file__
@@ -34,8 +34,8 @@ def hepnames_search_ids(letter):
                          ['371__m', r'/\,/', 'HepNames'],
                          ['100__a', r'/[\{\}\\]/', 'HepNames'],
                          ['100__a', name_letter, 'HepNames'],
-                         ['100__j', r'*0000*', 'HEP'],
-                         ['700__j', r'*0000*', 'HEP'],
+                         ['100__j', r'ORCID:', 'HEP'],
+                         ['700__j', r'ORCID:', 'HEP'],
                          #['541__a', r'*0000*', 'HEP'],
                          #['541__b', r'*\@*', 'HEP']
                         ]
@@ -103,6 +103,10 @@ def examine(field_search):
                 field_value = re.sub(r'^\w+:', r'', field_value)
                 if not field_value:
                     continue
+                orcid_form = r'^0000-\d{4}-\d{4}-\d{3}[\dX]$'
+                if not re.match(orcid_form, field_value):
+                    print 'Bad ORCID ID: ', field_value
+                    bad_id = True
                 search_dup = '035__a:' + field_value
                 #collection = 'HepNames'
             if collection == 'HEP':

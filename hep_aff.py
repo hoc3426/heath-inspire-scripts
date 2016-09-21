@@ -1,81 +1,121 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Converts the raw affiliation strings into proper INSPIRE format."""
+
+
 import re
 import sys
 
-from invenio.search_engine import perform_request_search, get_fieldvalues, \
-     get_record
+from invenio.search_engine import perform_request_search, get_record
 from invenio.bibrecord import print_rec, record_get_field_instances, \
-     record_add_field, record_xml_output
-from invenio.intbitset import intbitset
-from afftranslator2 import *
+     record_add_field
+from afftranslator2 import bestmatch
 
 
-verbose = 0
+VERBOSE = False
 
 def find_records():
+    """Find records that have raw string affilations."""
     atsearch = '100__u:/UNDEFINED/ or 700__u:/UNDEFINED/'
     atsearch = '100__v:Fermilab or 700__v:Fermilab'
     atsearch = '700__v:/fermi.*batavia/ - 700__u:fermilab'
-    atsearch = '001:1475323'
+    #atsearch = '001:1475323'
     return perform_request_search(p=atsearch, cc='HEP')
 
 def get_aff(aff):
-    bm = bestmatch(aff,'ICN')
-    a = bm[0]
-    affNew = a[1]
-    affNew = re.sub(';', '</subfield><subfield code="u">', affNew)
-    return affNew
+    """Convert raw string affilation to INSPIRE form."""
+    best_match = bestmatch(aff,'ICN')
+    affiliation = best_match[0]
+    aff_new = affiliation[1]
+    aff_new = re.sub(';', '</subfield><subfield code="u">', aff_new)
+    return aff_new
 
-def create_xml(recid, tags, forceFlag):
+def create_xml(recid, tags, force_flag):
+    """Create xml file to replace to 100, 700 block."""
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
     flag = None
     for tag in tags:
-        field_instances = record_get_field_instances(record, tag[0:3], tag[3], tag[4])
+        field_instances = record_get_field_instances(record, tag[0:3], \
+                                                     tag[3], tag[4])
         correct_subfields = []
         for field_instance in field_instances:
             correct_subfields = []
             for code, value in field_instance[0]:
                 if code == 'u' or code == 'v':
-                    if  re.search(r'UNDEFINED', value) or forceFlag:
-                        new_value = get_aff(value)        
+                    if  re.search(r'UNDEFINED', value) or force_flag:
+                        new_value = get_aff(value)
                         if new_value:
                             correct_subfields.append(('v', value))
                             value = new_value
                             code = 'u'
                             flag = True
                 correct_subfields.append((code, value))
-            record_add_field(correct_record, tag[0:3], tag[3], tag[4], subfields=correct_subfields)
+            record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
+                             subfields=correct_subfields)
     #return print_rec(correct_record)
     if flag:
-        print print_rec(correct_record)
+        return print_rec(correct_record)
 
-def main(recordlist):
+def main_old(recordlist):
+    """Old."""
     if not recordlist:
-        forceFlag = False
-        forceFlag = True
-        if verbose: print "scanning all HEP records ..."
+        force_flag = False
+        force_flag = True
+        if VERBOSE:
+            print "scanning all HEP records ..."
         recordlist = find_records()
-        if verbose: print "%d records with '@' in author fields found" % len(recordlist)
+        if VERBOSE:
+            print "%d records with '@' in author fields found" % \
+                    len(recordlist)
     else:
-        forceFlag = True
+        force_flag = True
         try:
             recordlist = [int(r) for r in recordlist]
-        except:
+        except TypeError:
             print "ERROR: bad recid given"
     for record in recordlist:
-        if verbose > 0: print "doing %d" % (record)     
-        #print create_xml(record,['100__','700__'])
-        create_xml(record, ['100__','700__'], forceFlag)
+        if VERBOSE > 0:
+            print "doing %d" % (record)
+        create_xml(record, ['100__','700__'], force_flag)
+
+
+def main(recordlist):
+    """Take input in terms or recid list or generate a list."""
+    if not recordlist:
+        force_flag = True
+        if VERBOSE:
+            print "scanning all HEP records ..."
+        recordlist = find_records()
+        if VERBOSE:
+            print "%d records with '@' in author fields found" \
+                   % len(recordlist)
+    else:
+        try:
+            recordlist = [int(r) for r in recordlist]
+        except TypeError:
+            print "ERROR: bad recid given"
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_correct.out', filename)
+    output = open(filename,'w')
+    output.write('<collection>')
+    for record in recordlist:
+        if VERBOSE > 0:
+            print "doing %d" % (record)
+        update = create_xml(record, ['100__', '700__'], force_flag)
+        if update:
+            output.write(update)
+    output.write('</collection>')
+    output.close()
+
 
 
 if __name__ == '__main__':
-    recids = sys.argv[1:]
+    RECIDS = sys.argv[1:]
     try:
-        main(recids)   
+        main(RECIDS)
     except KeyboardInterrupt:
         print 'Exiting'
     except:

@@ -24,7 +24,8 @@ import copy
 import codecs
 from itertools import imap
 from operator import mul
-from sets import Set
+#from sets import Set
+import sys
 
 #from invenio.search_engine import search_pattern
 #from invenio.search_engine import get_most_popular_field_values
@@ -32,9 +33,8 @@ from sets import Set
 
 
 #settings
-knowledgebasepath = "/home/fschwenn/afftranslator/version2"
-knowledgebasepath = "/afs/desy.de/user/l/library/proc/aff-translation/version2"
 knowledgebasepath = "/afs/desy.de/user/l/library/proc/aff-translation"
+tmppath = "/afs/desy.de/user/l/library/tmp"
 
 #bonus for matching acronyms #opt 100412
 acronymbonus = 1.2 
@@ -54,7 +54,7 @@ icnpenalty = -3.8
 #keep at least $reduceselection in selection when trying to reduce it
 reduceselection = 10
 #to get more output, increase verbatim
-#verbatim = 3
+#verbatim = 2
 verbatim = 0
 #maximal number of affiliations to check in a detailed way
 maxaff = 20
@@ -99,7 +99,7 @@ weightMax = 0.8
 weightAve = 0.1
 
 #weight for  number of matches between a normalized affiliation strings and a normalized DLU(using routine normaff3) #opt 010412
-weightGrepDLU = 2.7
+weightGrepDLU = 2.7 
 #relative weight of matches between a normalized affiliation strings and the normalized part of DLU identifying the sub-institute part (using routine normaff3) #opt 120412
 subinstituterelativeweight = 1.25
 #relative weight of (negative) expected GrepDLU-matches  #opt 120412
@@ -133,7 +133,7 @@ weightPaperCount = .2 * 1
 afftoicnaverage = 6
 afftoicnweight = -.1 * 1
 #threshold to check string without accents instead
-thresholdquality = 5 * 1
+thresholdquality = 5 * 1 - 2
 
 
 ##to estimate maximal possible match of an affiliation string
@@ -171,6 +171,7 @@ inf.close()
 normcities.update({"Antwerpen":  "Antwerp",  "Cologne":  "Koeln",  "Cracow":  "Krakow",  "Daejeon":  "Taejon",  "Daejon":  "Taejon",  "Du<sseldorf":  "Dusseldorf",  "Duesseldorf":  "Dusseldorf",  "Firenze":  "Florence",  "Geneve":  "Geneva",  "Genova":  "Genoa",  "Go<teborg":  "Goeteborg",   "Go\"teborg":  "Goeteborg", "G\"oteborg":  "Goeteborg",  "Goettingen":  "Gottingen", "Goeteberg": "Goteborg",  "Goeteborg": "Goteborg",  "Gothenburg": "Goteborg", "Goettingen":  "Gottingen",  "Guangzhou":  "Quanzhou",  "Guilan":  "Gilan",  "Hohhot":  "Huhehot",  "Hongik":  "Hong-Ik",  "Ju<lich":  "Julich", "Ju\"lich":  "Julich", "J\"ulich":  "Julich",  "Juelich":  "Julich",  "Jyvalskyla":  "Jyvalskylae",  "Jyvalskyla<":  "Jyvalskylae", "Jyvalskyla\"":  "Jyvalskylae","Jyvalskyl\"a":  "Jyvalskylae",  "Ko<ln":  "Koeln", "Ko\"ln":  "Koeln", "K\"oln":  "Koeln",  "Kolkata":  "Calcutta",  "Koln":  "Koeln",  "Linko<ping":  "Linkoeping", "Linko\"ping":  "Linkoeping",  "Linkoping":  "Linkoeping",  "Lisboa":  "Lisbon",  "Lucknow":  "Lucknov",  "Malmo":  "Malmoe",  "Malmo<":  "Malmoe",  "Mu<nchen":  "Munich",  "Mu<nster":  "Munster", "Malmo\"":  "Malmoe",  "Mu\"nchen":  "Munich",  "Mu\"nster":  "Munster",  "Munchen": "Munich",  "Muenchen":  "Munich",  "Muenster":  "Munster",  "Napoli":  "Naples",  "Orebro":  "Oerebro",  "Osnabru<ck":  "Osnabruck", "Osnabru\"ck":  "Osnabruck",   "Osnabrueck":  "Osnabruck",  "Padova":  "Padua",  "Peking":  "Beijing",  "Praha": "Prague", "Praque":  "Prague",  "Roma":  "Rome",  "Saarbru<cken":  "Saarbrucken",  "Saarbru\"cken":  "Saarbrucken",  "Saarbruecken":  "Saarbrucken",  "Tehran":  "Teheran",  "Torino":  "Turin",  "Tro<mso<":  "Tromsoe", "Tro\"mso\"":  "Tromsoe",  "Tromso":  "Tromsoe",  "Tsinghua":  "Qinghua",  "Tu<bingen":  "Tubingen",  "Tu\"bingen":  "Tubingen",  "Tuebingen":  "Tubingen",  "Ulaanbaatar":  "Ulan-Bator",  "Va<skeras":  "Vaeskeras",  "Va<xjo<":  "Vaexjoe", "Va\"skeras":  "Vaeskeras",  "Va\"xjo\"":  "Vaexjoe",  "Vaskeras":  "Vaeskeras",  "Vaxjo":  "Vaexjoe",  "Venezia":  "Venice",  "Vienna":  "Wien",  "Wolfenbuettel": "Wolfenbuttel", "Wu<rzburg":  "Wurzburg",  "Wu\"rzburg":  "Wurzburg",  "Wuerzburg":  "Wurzburg",  "Yerevan":  "Erevan", "Zu<rich": "Zurich", "Zu\"rich": "Zurich", "Belgrad": "Belgrade", "Huazhong": "Hua-Zhong"})
 normcities.update({"Louisana": " Louisiana", "Massachussetts": "Massachusetts", "Massachussets": "Massachusetts", "Muenster": "Munster", "Milano": "Milan", "Benares": "Banaras", "Bhaba": "Bhabha", "Bhubaneshwar": "Bhubaneswar", "Compostella": "Compostela", "Budkar": "Budker", "Fiorentino": "Florence", "Bukarest": "Bucharest", "Villeurbane": "Villeurbanne"})
 normcities.update({u"San Sebastián": "San-Sebastian", u"Châtenay-Malabry": "Chatenay-Malabry", u"Québec": "Quebec", u"München": "Munich", u"Düsseldorf": "Dusseldorf", u"Göttingen": "Gottingen", u"Jülich": "Julich", u"Köln": "Koeln", u"Malmö": "Malmoe", u"Münster": "Munster", u"Osnabrück": "Osnabruck", u"Saarbrücken": "Saarbrucken", u"Tübingen": "Tubingen", u"Wolfenbüttel": "Wolfenbuttel", u"Würzburg": "Wurzburg", u"Orléans": "Orleans", u"Châtillon": "Chatillon", u"Kraków": "Cracow", u"Córdoba": "Cordoba", u"Tôkyô": "Tokyo", u"São Paulo": "Sao-Paulo", u"Timişoara": "Timisoara", u"Iaşi": "Iasi", u"Liège": "Liege", u"Montréal": "Montreal", u"Erlangen-Nuremberg": "Erlangen", u"Erlangen-Nürnberg": "Erlangen", u"Erlangen-Nurnberg": "Erlangen", u"Erlangen-Nuernberg": "Erlangen", u"Lódz": "Lodz", u"Zürich": "Zurich", u"Linköping": "Linkoeping"})
+normcities.update({'Genua' : 'Genoa'})
 #dictionaries to assign university type
 unitypes = {"Na[tzc]ion":  "n",  "Nat ":  "n",  "Nat'l": "n", "State" :  "s",  "Estad":  "s",  "Tech":  "t",  "Federal":  "f",  "Normal":  "r",  "Medi[zc]":  "m",  "Pedago":  "d"}
 directtypes = {"RWTH":  "t",  "MSU":  "s",  "TU":  "t",  "TUM":  "t" }
@@ -187,12 +188,12 @@ for frequentword in frequentwords:
 # loads list of cityambiguities and applies it to 'icncity'
 def resolvecityambiguities():
     global FILREPORT
-    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
     #pairs are of form (city-name in plain string, city to also check)
-    pairs = Set([("Essen","Duisburg"), ("Delhi","New-Delhi"), ("New-Delhi","Delhi"), ("Wonju","Gangneung-City"), ("Clermont","Aubiere"), ("Saint-Jean","Edmonton")])
+    pairs = set([("Essen","Duisburg"), ("Delhi","New-Delhi"), ("New-Delhi","Delhi"), ("Wonju","Gangneung-City"), ("Clermont","Aubiere"), ("Saint-Jean","Edmonton")])
     #find city in affiliation string
     for icn in icndictionary:
-        citiesinName = Set([])
+        citiesinName = set([])
         for na in icndictionary[icn].naffs:
             citiesinName = citiesinName.union(extractCities(na))
         for cityinName in citiesinName-icndictionary[icn].cities:
@@ -208,7 +209,7 @@ def resolvecityambiguities():
                 pairs.add((stamm,city))
     #work with copy to avoid 'chain reaction'
     institutescopy = icncity.institutes.copy()
-    for staedte in Set(pairs):
+    for staedte in set(pairs):
         if institutescopy.has_key(staedte[1]):
             if institutescopy.has_key(staedte[0]): 
                 icncity.institutes[staedte[0]] = icncity.institutes[staedte[0]].union(institutescopy[staedte[1]])
@@ -260,7 +261,7 @@ def generateknowledgebase(file,forced):
         #icnicn = collection()
         icndictionary = {}
         icnword = collection()
-        coreinstitutes = Set([])
+        coreinstitutes = set([])
         unlisted = {}
         countryofcity = {}
     else:
@@ -274,14 +275,14 @@ def generateknowledgebase(file,forced):
         icnword = cPickle.load(inf)
         unlisted = cPickle.load(inf)
         countryofcity = cPickle.load(inf)
-        coreinstitutes = Set([])
+        coreinstitutes = set([])
         #icnword = collection()
         inf.close()
-    newicns = Set([])
+    newicns = set([])
     databasefil = open(knowledgebasepath+'/aff-dlu-from-inspire.afb')
     databaseentries = map(tgstrip, databasefil.readlines())
     databasefil.close()
-    databasefil = codecs.open(knowledgebasepath+'/sj.afb',encoding='utf-8',mode='r')
+    databasefil = codecs.open(knowledgebasepath+'/sj.master.afb',encoding='utf-8',mode='r')
     sjset = map(tgstrip, databasefil.readlines())
     if (file  == 'aff-translator-1sthalf.pickle') or (file == 'aff-translator-2ndhalf.pickle'):
         #half=len(sjset)/2
@@ -303,9 +304,18 @@ def generateknowledgebase(file,forced):
             sjset = sjset2
     databaseentries.extend(sjset)
     databasefil.close()
-    databasefil = codecs.open(knowledgebasepath+'/ads.afb',encoding='utf-8',mode='r')
-    databaseentries.extend(map(tgstrip, databasefil.readlines()))
-    databasefil.close()
+    #databasefil = codecs.open(knowledgebasepath+'/sj.changed.afb',encoding='utf-8',mode='r')
+    #databaseentries.extend(map(tgstrip, databasefil.readlines()))
+    #databasefil.close()
+    #databasefil = codecs.open(knowledgebasepath+'/sj.unchanged.afb',encoding='utf-8',mode='r')
+    #databaseentries.extend(map(tgstrip, databasefil.readlines()))
+    #databasefil.close()
+    #databasefil = codecs.open(knowledgebasepath+'/sj.jiaotong.afb',encoding='utf-8',mode='r')
+    #databaseentries.extend(map(tgstrip, databasefil.readlines()))
+    #databasefil.close()
+    #databasefil = codecs.open(knowledgebasepath+'/ads.afb',encoding='utf-8',mode='r')
+    #databaseentries.extend(map(tgstrip, databasefil.readlines()))
+    #databasefil.close()
     databasefil = open(knowledgebasepath+'/footnotes.afb')
     databaseentries.extend(map(tgstrip, databasefil.readlines()))
     databasefil.close()
@@ -317,9 +327,12 @@ def generateknowledgebase(file,forced):
             if re.search('INST',entry): sou = 'INST' 
         else:
             if (i % 2000 == 0):
-                print ' [gen] '+str(i)+'/'+str(len(databaseentries)),sou,":",akzenteabstreifen(entry)
+                print ' [gen] '+str(i)+' out of '+str(len(databaseentries)),sou,":",akzenteabstreifen(entry)
+            elif (i % 200 == 0):
+                print ' [gen] %6i/%6i' % (i,len(databaseentries))
             #icnicn.addline(entry,sou)
             parts = re.split(';   ', entry)
+            parts[-1] = re.sub(';$','',parts[-1])
             #print '\n-----------------------\n',entry
             #print parts
             if len(parts) < 2:
@@ -334,15 +347,52 @@ def generateknowledgebase(file,forced):
                     elif re.search(';',icn):
                         newicns.add(icn)
                 else:
-                    parts[-1] = re.sub(';$','',parts[-1])
-                    icndictionary[icn] = standardinstitute(icn, parts[2], parts[0], parts[4], parts[3], sou, parts[-1])
-                    newicns.add(icn)
+                    try:
+                        if len(parts) > 4:
+                            icndictionary[icn] = standardinstitute(icn, parts[2], parts[0], parts[4], parts[3], sou, parts[-1])
+                            newicns.add(icn)
+                        else:
+                            tdlu = ''
+                            tcc = ''
+                            tcity = ''
+                            tcore = ''
+                            for sicn in re.split('; ', icn):
+                                #print ' [sicn] %s' % (sicn)                                
+                                inst = icndictionary[sicn]
+                                #inst.display()
+                                if hasattr(inst, 'dlu'):
+                                    if tdlu == '':
+                                        tdlu = inst.dlu
+                                    else:
+                                        tdlu += '; '+inst.dlu
+                                if hasattr(inst, 'countries'):
+                                    for cc in inst.countries:
+                                        if tcc == '':
+                                            tcc = cc
+                                        elif not re.search(cc, tcc):
+                                            tcc += '; '+cc
+                                if hasattr(inst, 'cities'):
+                                    for city in inst.cities:
+                                        if tcity == '':
+                                            tcity = city
+                                        elif not re.search(city, tcity):
+                                            tcity += '; '+city
+                                if hasattr(inst,'core') and inst.core:
+                                    tcore = 'CORE'
+                            #print " [constructed] standardinstitute(%s, %s, %s, %s, %s, %s, %s)" % (icn, tdlu, parts[0], tcity, tcc, sou, tcore)
+                            icndictionary[icn] = standardinstitute(icn, tdlu, parts[0], tcity, tcc, sou, tcore)
+                            newicns.add(icn)
+                    except:
+                        try:
+                            print '[!]','(((%s)))' % (icn), entry
+                        except:
+                            print '[!] not able to print no.', i
             i += 1
     i=1
     #completely unknown institute
     icndictionary['Unlisted'] = standardinstitute(u'Unlisted', u'unlisted', u'Unlisted', u'', u'XX', u'INST', u'')
-    unlisted[u'XX'] = Set([u'Unlisted'])
-    unlisted[u'NONE'] = Set([u'Unlisted'])
+    unlisted[u'XX'] = set([u'Unlisted'])
+    unlisted[u'NONE'] = set([u'Unlisted'])
     print "finding omnipresent words and propagating informations to combinations..."
     #for icn in icndictionary:
     for icn in newicns:
@@ -370,7 +420,7 @@ def generateknowledgebase(file,forced):
             land = list(icndictionary[icn].countries)[0]
             if stadt == '':
                 if re.search('^Unlisted',icn):
-                    unlisted[land] = Set([icn])
+                    unlisted[land] = set([icn])
                 #print ' ',land
             else:
                 countryofcity[list(icndictionary[icn].cities)[0]] = land
@@ -400,7 +450,7 @@ def generateknowledgebase(file,forced):
         if icndictionary[icn].core:
             coreinstitutes.add(icn)
     #remove cities and countries from word lists
-    nowords = Set(icncity.institutes.keys()).union(countriescc.keys())
+    nowords = set(icncity.institutes.keys()).union(countriescc.keys())
     print "cleaning words..."
     #for icn in icndictionary:
     i = 1
@@ -420,7 +470,7 @@ def generateknowledgebase(file,forced):
         i += 1
     print "resolving city ambiguities..."    
     resolvecityambiguities()
-    allinstitutes = Set(icndictionary.keys())
+    allinstitutes = set(icndictionary.keys())
     #save database and indices
     ouf = open(knowledgebasepath+'/'+file, 'w')
     cPickle.dump(icndictionary,ouf,2)
@@ -463,10 +513,17 @@ def loadknowledgebase(file):
     countryofcity = cPickle.load(inf)
     coreinstitutes = cPickle.load(inf)
     inf.close()
-    allinstitutes = Set(icndictionary.keys())
-    unlisted[u'NONE'] = Set([u'Unlisted'])
-
-
+    allinstitutes = set(icndictionary.keys())
+    unlisted[u'NONE'] = set([u'Unlisted'])
+    unlisted[u'CN'] = set([u'Unlisted, CN'])
+    unlisted[u'IT'] = set([u'Unlisted, IT'])
+    unlisted[u'KR'] = set([u'Unlisted, KR'])
+    unlisted[u'UK'] = set([u'Unlisted, UK']) 
+    unlisted[u'JP'] = set([u'Unlisted, JP'])
+    unlisted[u'FR'] = set([u'Unlisted, FR'])
+    unlisted[u'BR'] = set([u'Unlisted, BR'])
+    unlisted[u'RU'] = set([u'Unlisted, RU'])
+    return
  
 #how often is a word
 def lenicnword(word):
@@ -555,7 +612,7 @@ def extractPLZ(plzt):
 def extractCities(na):
     na = re.sub('(.*?) State ', 'State ', na)
     nparts = re.split(' ',na)
-    cities = Set()
+    cities = set()
     for npart in nparts:
         npart = re.sub('^[A-Z][A-Z]*\-','',npart)
         #CERN is in Geneva!
@@ -565,7 +622,7 @@ def extractCities(na):
         if icncity.institutes.has_key(npart):
             city = npart
             #if (verbatim > 0):
-            #    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            #    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             #    FILREPORT.write(" City = "+city+"\n")
             #    FILREPORT.close()
             cities.add(city)
@@ -575,7 +632,7 @@ def extractCities(na):
 #extracts country (countries) type from a (normalized) affiliation string
 def extractCountries(na):
     nparts = re.split(' ', na)
-    countries = Set()
+    countries = set()
     for npart in nparts:
         if not countriescc.has_key(npart):
             npart = npart.title()
@@ -583,14 +640,14 @@ def extractCountries(na):
 	    country =  countriescc[npart]
             #if (verbatim > 0):
             #    global FILREPORT
-            #    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            #    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             #    FILREPORT.write(" Country = "+country+"\n")
             #    FILREPORT.close()
             countries.add(country)
     #pick country code at end of adress
     if npart.upper() in countriescc.values():
         if (verbatim > 0):
-            FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write(" Country = "+npart.upper()+"\n")
             FILREPORT.close()
         countries.add(npart.upper())        
@@ -599,7 +656,7 @@ def extractCountries(na):
 #extracts acronyms from a (normalized) affiliation string
 def extractAcronyms(na):
     #print ' eA from',na
-    acronyms = Set()
+    acronyms = set()
     #does it make sense to look for acronyms?
     if re.search(r'[a-z]{3}', na) or not re.search(' ', na):
         nparts = re.split('[ ,]', na)
@@ -631,6 +688,8 @@ def normcity(str,cities):
         #str = re.sub(key, normcountries[key], str)
         #str = re.sub(r'(\W|^)'+key+'(\W|$)', r'\1'+normcountries[key]+r'\2', str)
         str = re.sub(r'(?i)(\W|^)'+key+'(\W|$)', r'\1'+normcountries[key]+r'\2', str)
+    #Japanes cities
+    str = re.sub(r'([a-z])\-[sS]hi(\W|$)', r'\1\2', str)
     return str
     #return str.title()
 
@@ -934,7 +993,7 @@ def grepmatch(af,ka):
     if re.search(r'[a-z]{3}', af):
         acronyms = True
         #check whether acronym is written explicitly
-        for part in Set(kaparts):
+        for part in set(kaparts):
             if re.search('^[A-Z][A-Z]+$', part) and not re.search(part,af) and len(part) > 2:
                 acronym = '.* '+''.join([x+'.* ' for x in part])
                 if re.search(acronym,af):
@@ -943,7 +1002,7 @@ def grepmatch(af,ka):
         acronyms = False
     if (len(ka) > 1):
         #for part in afparts:
-        for part in Set(afparts):
+        for part in set(afparts):
             if len(part) > 2: 
                 part = re.sub('(\*|\(|\)|\$|\^|\-)',r'\\\1',part)
 		nparts += 1
@@ -994,7 +1053,7 @@ def grepmatchmax(af):
     else:
         acronyms = False
     #for part in afparts:
-    for part in Set(afparts):
+    for part in set(afparts):
         if len(part) > 2: 
             nparts += 1
             length += len(part)*len(part)
@@ -1024,12 +1083,12 @@ def grepmatchmax(af):
 def grepmatchTEST(af,ka):
     afparts = re.split(' ', af)
     kaparts = re.split(' ', ka)
-    gemeinsam = Set(afparts).intersection(Set(kaparts))
+    gemeinsam = set(afparts).intersection(set(kaparts))
     kparts = 0
     length=0
     matches = 0
     nparts = 0
-    for part in Set(afparts):
+    for part in set(afparts):
         if len(part) > 2:
             nparts += 1
     #does it make sense to look for acronyms?
@@ -1193,7 +1252,7 @@ def enrichcandidates(kmenge, insti):
 
 def bestmatchsimple(string, identifier,run,onlycore=False):
     global FILREPORT
-    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
     if not globals().has_key('icndictionary'): loadknowledgebase('aff-translator.pickle')
     if resulthash.has_key(string):
         return resulthash[string]    
@@ -1211,13 +1270,13 @@ def bestmatchsimple(string, identifier,run,onlycore=False):
         kandidatenmenge = icnsaff.institutes[list(inst.saffs)[0]]
         run = 3
     else:
-        kandidatenmenge = Set([])
+        kandidatenmenge = set([])
         #try city match
         if len(inst.cities) > 0:
             if verbatim > 1: FILREPORT.write(' city match\n')
             for city in inst.cities:
                 if icncity.institutes.has_key(city):
-                    if not ((city == 'Normal') and (len(inst.countries & Set(['US'])) == 0)):
+                    if not ((city == 'Normal') and (len(inst.countries & set(['US'])) == 0)):
                         kandidatenmenge = kandidatenmenge.union(icncity.institutes[city])
                         if verbatim > 1: FILREPORT.write('   - kandidatenmenge +'+str(len(icncity.institutes[city]))+' = '+str(len(kandidatenmenge))+'\n')
         #try country match
@@ -1260,7 +1319,7 @@ def bestmatchsimple(string, identifier,run,onlycore=False):
                             kandidatenmenge = kandidatenmenge2.intersection(icnword.institutes[liste[0][1]])
                             if verbatim > 1: FILREPORT.write('   - kandidatenmenge [1word] = '+str(len(kandidatenmenge))+'\n')
                 else:
-                    kandidatenmenge = Set([])
+                    kandidatenmenge = set([])
         #try to reduce to core institutes
         if onlycore:
             nurcorekandidaten = kandidatenmenge.intersection(coreinstitutes)
@@ -1322,8 +1381,11 @@ def crossloop(sequences):
     return result
 
 def bestmatch(string, identifier,onlycore=False):
-    bm = bestmatchu(string, identifier,1,onlycore)
-    return [(res[0],res[1].encode('ascii','ignore'),res[2]) for res in bm]
+    if string:
+        bm = bestmatchu(string, identifier,1,onlycore)
+        return [(res[0],res[1].encode('ascii','ignore'),res[2]) for res in bm]
+    else:
+        return [(0,'Unlisted',0)]
 
 def bestmatchu(string, identifier,run,onlycore=False):
     try:
@@ -1331,7 +1393,7 @@ def bestmatchu(string, identifier,run,onlycore=False):
     except:
         print '[unicodeproblem in bestmatchu]',type(string)
     global FILREPORT
-    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
     if not globals().has_key('icndictionary'): loadknowledgebase('aff-translator.pickle')
     if plaindictionary.has_key(string):
         inst = plaindictionary[string]
@@ -1356,7 +1418,7 @@ def bestmatchu(string, identifier,run,onlycore=False):
         for combo in combinations:
             allhavecities = min([len(spafcities[x]) for x in combo])
             if not allhavecities:
-                cities = Set()
+                cities = set()
                 for substring in combo:
                     cities = cities.union(spafcities[substring])
                 citystring = ''.join([x+' ' for x in cities])
@@ -1371,11 +1433,15 @@ def bestmatchu(string, identifier,run,onlycore=False):
             for crosscombos in crossloop([spaflists[substring]  for substring in combo]):
                 value = 0
                 valuemax = 0
-                assignedicns = Set()
+                assignedicns = set()
                 for x in crosscombos:
                     value += x[0]
                     valuemax += x[2]
-                    assignedicns.add(str(x[1])+"; ")
+                    try:
+                        assignedicns.add(str(x[1])+"; ")
+                    except:
+                        print string, x
+                        sys.exit(0)
                 stri = ''.join(list(assignedicns))[0:-2]
                 value -= (len(crosscombos)-1) * combominus
                 valuemax -= (len(crosscombos)-1) * combominus
@@ -1407,7 +1473,7 @@ class institute:
                     saff = simplifyaff(naff1)
                     if saff not in self.saffs:
                         self.saffs.add(saff)
-            words = Set(re.split(' ',re.sub(' , ',' ',naff1)))
+            words = set(re.split(' ',re.sub(' , ',' ',naff1)))
             #PLZ#plz = extractPLZ(aff)
             acros = extractAcronyms(naff)
             #print " plz = ",plz
@@ -1422,7 +1488,7 @@ class institute:
             #print aff, "|",plz, "|",saff
             #return (plz,saff,acros)
         #else:
-            #return ("","",Set())
+            #return ("","",set())
     def quickmatch(self,otheraff):
         grep = -666
         grepdlu = -666
@@ -1435,7 +1501,7 @@ class institute:
                 grepdlu = max(grepdlu,grepmatch(naff,otheraff.nicn)[0])
         grepNEW = self.word.intersection(otheraff.word)
         grep = len(grepNEW)
-        if (len(Set(self.unitypes) & Set(otheraff.unitypes))>0) or ((len(self.unitypes) == 0) and (len(otheraff.unitypes) == 0)):
+        if (len(set(self.unitypes) & set(otheraff.unitypes))>0) or ((len(self.unitypes) == 0) and (len(otheraff.unitypes) == 0)):
             sauni = 0
         else:
             if (len(self.unitypes) == 0) or (len(otheraff.unitypes) == 0):
@@ -1445,7 +1511,7 @@ class institute:
         return grep + sauni + weightGrepDLU * grepdlu
     def match(self,otheraff):
         if verbatim > 2:
-            FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write(" <?> "+otheraff.icn+"\n")
             FILREPORT.close()
         if hasattr(otheraff,'dlu') and (otheraff.dlu != "NONE"):
@@ -1464,7 +1530,7 @@ class institute:
                 grepsummed += grept
             quality.append(weightMax*grep + weightAve*grepsummed/len(otheraff.naffs))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  grep=("+str(grep)+ ";" + str(grepsummed/len(otheraff.naffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightModifiedLevenshtein != 0:
@@ -1476,7 +1542,7 @@ class institute:
                 simsummed += simt
             quality.append(weightModifiedLevenshtein * (weightMax*sim + weightAve*simsummed/len(otheraff.saffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  sim=("+str(sim)+ ";" + str(simsummed/len(otheraff.saffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightSmithWaterman != 0:
@@ -1488,7 +1554,7 @@ class institute:
                 swsummed += swt
             quality.append(weightSmithWaterman * (weightMax*sw + weightAve*swsummed/len(otheraff.saffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  sw=("+str(sw)+ ";" + str(swsummed/len(otheraff.saffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightModifiedLevenshteinN != 0:
@@ -1500,7 +1566,7 @@ class institute:
                 simNsummed += simNt
             quality.append(weightModifiedLevenshteinN * (weightMax*simN + weightAve*simNsummed/len(otheraff.naffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  simN=("+str(simN)+ ";" + str(simNsummed/len(otheraff.naffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightSmithWatermanN != 0:
@@ -1512,7 +1578,7 @@ class institute:
                 swNsummed += swNt
             quality.append(weightSmithWatermanN * (weightMax*swN + weightAve*swNsummed/len(otheraff.naffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  swN=("+str(swN)+ ";" + str(swNsummed/len(otheraff.naffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightModifiedLevenshteinN1 != 0:
@@ -1524,7 +1590,7 @@ class institute:
                 simN1summed += simN1t
             quality.append(weightModifiedLevenshteinN1 * (weightMax*simN1 + weightAve*simN1summed/len(otheraff.naffs1)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  simN1=("+str(simN1)+ ";" + str(simN1summed/len(otheraff.naffs1))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightSmithWatermanN1 != 0:
@@ -1536,7 +1602,7 @@ class institute:
                 swN1summed += swN1t
             quality.append(weightSmithWatermanN1 * (weightMax*swN1 + weightAve*swN1summed/len(otheraff.naffs1)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  swN1=("+str(swN1)+ ";" + str(swN1summed/len(otheraff.naffs1))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if (weightGrepCount10 != 0) or (weightGrepCount11 != 0) or (weightGrepCount12 != 0) or (weightWeightOfWords != 0):
@@ -1548,7 +1614,7 @@ class institute:
                 grep1summed += grep1t
             quality.append(weightMax*grep1 + weightAve*grep1summed/len(otheraff.naffs1))
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  grep1=("+str(grep1)+ ";" + str(grep1summed/len(otheraff.naffs1))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightGrepDLU != 0:
@@ -1557,19 +1623,19 @@ class institute:
                 gd = grepmatch(naff,otheraff.ndlu)[0]
                 gi = grepmatch(naff,otheraff.nicn)[0]
                 if gd > gi:
-                    grepdlut = gd - len(Set(re.split(' ',otheraff.dlu))) * grepdluexpect
+                    grepdlut = gd - len(set(re.split(' ',otheraff.dlu))) * grepdluexpect
                 else:
-                    grepdlut = gi - len(Set(re.split(' ',otheraff.icn))) * grepdluexpect
+                    grepdlut = gi - len(set(re.split(' ',otheraff.icn))) * grepdluexpect
                 #grepdlut = max(grepdlu,grepmatch(naff,otheraff.ndlu)[0],grepmatch(naff,otheraff.nicn)[0])                
             else:
-                grepdlut = max(grepdlu,grepmatch(naff,otheraff.nicn)[0]) - len(Set(re.split(' ',otheraff.icn))) * grepdluexpect
+                grepdlut = max(grepdlu,grepmatch(naff,otheraff.nicn)[0]) - len(set(re.split(' ',otheraff.icn))) * grepdluexpect
             grepdlu = max(grepdlu,grepdlut)
             if hasattr(otheraff,'mother') and len(otheraff.mother) > 0:
 	        subinstitute = re.sub(icndictionary[list(otheraff.mother)[0]].nicn, '', otheraff.nicn)
                 grepdlu += subinstituterelativeweight * (grepmatch(naff1,subinstitute)[0] - 1) 
             quality.append(weightGrepDLU * grepdlu)
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  grepdlu="+str(grepdlu)+" quality="+str(quality)+"\n")
                 FILREPORT.close()
         if re.search(';',otheraff.icn) and not re.search(' and ',naff1):
@@ -1582,7 +1648,7 @@ class institute:
             simdlu = max(simdlu,simdlut)
             quality.append(weightSimDLU * simdlu)
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  simdlu="+str(simdlu)+" quality="+str(quality)+"\n")
                 FILREPORT.close()
         if omnibonus != 0:
@@ -1592,10 +1658,10 @@ class institute:
                     omnib += omnibonus
             quality.append(omnib)
             if verbatim > 2:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  omnib="+str(omnib)+" quality="+str(quality)+"\n")
                 FILREPORT.close()
-        if (len(Set(self.unitypes) & Set(otheraff.unitypes))>0) or ((len(self.unitypes) == 0) and (len(otheraff.unitypes) == 0)):
+        if (len(set(self.unitypes) & set(otheraff.unitypes))>0) or ((len(self.unitypes) == 0) and (len(otheraff.unitypes) == 0)):
             sauni = 0
         else:
             if (len(self.unitypes) == 0) or (len(otheraff.unitypes) == 0):
@@ -1604,7 +1670,7 @@ class institute:
                 sauni = unipenalty
         quality.append(sauni)
         if verbatim > 2: 
-            FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write("  sauni="+str(sauni)+" quality="+str(quality)+"\n")            
             FILREPORT.close()
         #weight number of papers
@@ -1639,7 +1705,7 @@ class institute:
                     if re.search('Wisconsin',otheraff.icn):
                         quality.append(INFNpenalty)
         if verbatim > 1:
-            FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write('qualityvector = (')
             for qu in quality:
                 FILREPORT.write("%7.3f, " % (qu))
@@ -1650,8 +1716,8 @@ class institute:
         #    if saff in otheraff.sidentifier:
         #        quality.append(1000
         #TEST2
-        #if len(Set(self.cities) & Set(otheraff.cities))>0:
-        #    print "___",len(Set(self.cities) & Set(otheraff.cities)),otheraff.icn,quality
+        #if len(set(self.cities) & set(otheraff.cities))>0:
+        #    print "___",len(set(self.cities) & set(otheraff.cities)),otheraff.icn,quality
         #TESTwordicn
         return sum(quality)
     def matchmax(self):
@@ -1704,22 +1770,22 @@ class institute:
                 else:
                     qmhash[qm] = [aff]
             #lieber erstmal als echte liste
-            liste2 = Set([])
+            liste2 = set([])
             qms = qmhash.keys()
             qms.sort(anticmp)
             if verbatim > 2:
                 print "qms", [(qm,len(qmhash[qm])) for qm in qms]
             for qm in qms:
-                liste2 = liste2.union(Set(qmhash[qm]))
+                liste2 = liste2.union(set(qmhash[qm]))
                 if (len(liste2) > reduceselection) or ((len(liste2) > 0) and (qm < 0)):
                     break
             if verbatim > 1:
-                FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write(" %d reduced to %d (qm>=%f)\n" % (len(liste),len(liste2),qm))
                 FILREPORT.close()
             liste = liste2
         if verbatim > 1:
-            FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write('qualityvector = ( icnpen   ')
             if (weightGrepCount0 != 0) or (weightGrepCount != 0) or (weightGrepLength != 0):
                 FILREPORT.write(" grep    ")
@@ -1755,11 +1821,11 @@ class institute:
         score.sort(anticmp)
         return score
     def findomnipresent(self):
-        self.omni = Set([])
+        self.omni = set([])
         if len(self.naffs1) >= omniminimum:
             omnihash = {}
             for na1 in self.naffs1:
-                nparts = Set(re.split(' ', na1))
+                nparts = set(re.split(' ', na1))
                 for npart in nparts:
                     if len(npart) > 3:
                         if omnihash.has_key(npart):
@@ -1845,28 +1911,28 @@ class institute:
 #class for affiliation given by author/ journal
 class plaininstitute(institute):
     def __init__(self,aff):
-        self.affs = Set()
-        self.saffs = Set()
-        self.naffs = Set()
-        self.naffs1 = Set()
-        #PLZ#self.plzs = Set()
-        self.acronyms = Set()
-        self.unitypes = Set()
-        self.omni = Set()
-        self.word = Set()
+        self.affs = set()
+        self.saffs = set()
+        self.naffs = set()
+        self.naffs1 = set()
+        #PLZ#self.plzs = set()
+        self.acronyms = set()
+        self.unitypes = set()
+        self.omni = set()
+        self.word = set()
         self.addaff(aff)
         self.cities = extractCities(list(self.naffs)[0])
         #extract country only if needed, i.e. if no city is found
         #if len(self.cities) == 0:
         self.countries = extractCountries(list(self.naffs)[0])
         #else:
-        #    self.countries = Set([])
+        #    self.countries = set([])
 
 #class for affiliation in knowledge base 
 class standardinstitute(institute):
     def __init__(self, ic, dl, aff, cit, cou, sou, core):
         #print ic, dl, aff, cit, cou, sou, core
-        self.cities = Set(re.split(' *; *', normcity(cit.title(),[])))
+        self.cities = set(re.split(' *; *', normcity(cit.title(),[])))
         ic = ordericns(ic)
         dl = ordericns(dl)
         self.icn = ic        
@@ -1874,39 +1940,39 @@ class standardinstitute(institute):
         if dl != None:
             self.dlu = dl
             self.ndlu = normaff1(normaff3(normcity(dl,self.cities)))
-            self.sidentifier = Set([simplifyaff(self.nicn),simplifyaff(self.ndlu)])
+            self.sidentifier = set([simplifyaff(self.nicn),simplifyaff(self.ndlu)])
         else:
             #self.ndlu = self.nicn
-            self.sidentifier = Set([simplifyaff(self.nicn)])
+            self.sidentifier = set([simplifyaff(self.nicn)])
         self.core = (core == 'CORE')
-        self.affs = Set()
-        self.saffs = Set()
-        self.naffs = Set()
-        self.naffs1 = Set()
-        #PLZ#self.plzs = Set()
-	#self.acronyms = Set()
+        self.affs = set()
+        self.saffs = set()
+        self.naffs = set()
+        self.naffs1 = set()
+        #PLZ#self.plzs = set()
+	#self.acronyms = set()
         self.acronyms = extractAcronyms(ic+' '+dl)
-        self.unitypes = Set()
-        self.sources = Set([sou])
-        self.omni = Set()
-        self.word = Set()
-        self.mother = Set()
-        self.daughter = Set()
+        self.unitypes = set()
+        self.sources = set([sou])
+        self.omni = set()
+        self.word = set()
+        self.mother = set()
+        self.daughter = set()
         self.addaff(aff)
         if dl != None:
-            self.word = self.word.union(Set(re.split(' ',re.sub(' , ',' ',self.ndlu))))
-        self.word = self.word.union(Set(re.split(' ',re.sub(' , ',' ',self.nicn))))
+            self.word = self.word.union(set(re.split(' ',re.sub(' , ',' ',self.ndlu))))
+        self.word = self.word.union(set(re.split(' ',re.sub(' , ',' ',self.nicn))))
         #several cities possible + fill city-hash
         #cit = cit.title()
         #if re.search(';', cit):
-        #    self.cities = Set(re.split(' *; *', normcity(cit)))
+        #    self.cities = set(re.split(' *; *', normcity(cit)))
         #else:
-        #    self.cities = Set([normcity(cit)])
+        #    self.cities = set([normcity(cit)])
         #several countries possible + fill country-hash
         if re.search(';', cou):
-            self.countries = Set(re.split(' *; *', cou))
+            self.countries = set(re.split(' *; *', cou))
         else:
-            self.countries = Set([cou])
+            self.countries = set([cou])
         #papercount
         icrequest = "100__u:\""
         ics = re.split('; ',ic)
@@ -1933,10 +1999,12 @@ class standardinstitute(institute):
     def addline(self, line, sou):
         line = re.sub(';$','',line)
         parts = re.split(';   ', line)
-        if len(parts)>4:
+        if len(parts) > 4:
             self.addvariation(parts[0], parts[4], parts[3], sou)
+        elif len(parts) > 3:
+            self.addvariation(parts[0], '', parts[3], sou)
         else:
-            print '!',line
+            self.addvariation(parts[0], '', '', sou)
     def __len__(self):
         return len(self.affs)
 
@@ -1946,18 +2014,18 @@ class collection:
         self.institutes = {}
     def addinst(self,icn,keys):
         if len(keys) > 0:
-            if type(keys) != type(Set()):
-                keys = Set([keys])
+            if type(keys) != type(set()):
+                keys = set([keys])
             for key in keys:                
                 if self.institutes.has_key(key):
                     self.institutes[key].add(ordericns(icn))
                 else:
-                    self.institutes[key] = Set([ordericns(icn)])
+                    self.institutes[key] = set([ordericns(icn)])
 
 #just for debugging of knowldegebase:
 def checksjbas():
     global FILREPORT
-    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
     loadknowledgebase('aff-translator.pickle')
     dlulist = []
     for icn in icndictinary:
@@ -1985,7 +2053,7 @@ def checksjbas():
             tempsim = []
             for aff in icndictionary[icn].affs:
                 mass = 0
-                for aff2 in (icndictionary[icn].affs-Set([aff])):
+                for aff2 in (icndictionary[icn].affs-set([aff])):
                     mass += tempinstitutes[aff].match(tempinstitutes[aff2])                
                 #print ' -',aff,mass
                 tempsim.append((mass/(len(icndictionary[icn].affs)-1),aff))
@@ -1997,7 +2065,7 @@ def checksjbas():
 #just for debugging of knowldegebase (translates one half of knowledgebase's affiliations strings using other half's information and vice versa)
 def checksjbasII():
     global FILREPORT
-    FILREPORT = codecs.open('/tmp/afftranslatorreport2', encoding='utf-8',mode='a')
+    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
     CHECKREPORT = open(knowledgebasepath+'/checksjbasII', 'w')
     generateknowledgebase('aff-translator-1sthalf.pickle',False)
     generateknowledgebase('aff-translator-2ndhalf.pickle',False)
@@ -2057,7 +2125,7 @@ def promote(file):
         if hasattr(icndictionary[icn],'cities'):
             citydlu[dlu] = icndictionary[icn].cities
         else:
-            citydlu[dlu] = Set([])
+            citydlu[dlu] = set([])
         icndlu[dlu] = icn
         ccdlu[dlu] = icndictionary[icn].countries
     #load file
@@ -2073,8 +2141,8 @@ def promote(file):
         else:
             parts = re.split(';   ', entry)
             icn = []
-            city = Set([])
-            cc = Set([])
+            city = set([])
+            cc = set([])
             if len(parts) < 2:
                 print 'problematic line:',entry            
             elif icndlu.has_key(parts[0]):
@@ -2082,9 +2150,9 @@ def promote(file):
             else:
                 if len(parts) > 2:
                     if not re.search('\?$',parts[2]):
-                        cc = Set(re.split('; ',re.sub(';$', '', parts[2])))
+                        cc = set(re.split('; ',re.sub(';$', '', parts[2])))
                     if (len(parts) > 3) and not re.search('\?$',parts[3]):
-                        city = Set(re.split('; ',re.sub(';$','',parts[3])))
+                        city = set(re.split('; ',re.sub(';$','',parts[3])))
                 for dlu in re.split('; ',re.sub(';$', '', parts[1])):
                     dlu = re.sub('find or create DLU for', 'find or create a DLU for', dlu)
                     if icndlu.has_key(dlu):
@@ -2099,42 +2167,4 @@ def promote(file):
                     if icndlu.has_key(parts[0]):
                         print 'aff \"'+parts[0]+'\" is a DLU (line '+str(zeile)+')'
                 line = parts[0] + ';   '
-                for it in Set(icn):
-                    try:
-                        line += it+'; '
-                    except:
-                        print "PROBLEM IN ZEILE "+str(zeile)
-                        print entry
-                        line += it+'; '
-                line += '  '+re.sub(';$', '', parts[1])+';   '
-                for ct in cc:
-                    line += ct+'; '
-                line += '  '
-                for ct in city:
-                    line += ct+'; '
-                line = re.sub(';* *$', ';\n',line)
-                if re.search('noICNfound',line):
-                    databasenoICNfil.write(line)
-                else:
-                    databasefil.write(line)
-        zeile += 1
-    databasefil.close()
-    databasenoICNfil.close()
-
-
-
-
-#------------------
-#displayall()
-#print bestmatch(unicode('Alabama Universität','utf-8'),'ICN')
-#generateknowledgebase('aff-translator.pickle',True)
-#generateknowledgebase('aff-translator-1sthalf.pickle',True)
-#generateknowledgebase('aff-translator-2ndhalf.pickle',True)
-#loadknowledgebase('aff-translator.pickle')
-#icndictionary['LMU Munich (main)'].display()
-#icndictionary['LBL, Berkeley'].display()
-#checksjbasII()
-#promote('sj.bas.ccc')
-#icndictionary['Brandeis U.'].display()
-#icndictionary['Boskovic Inst., Zagreb'].display()
-#print coreinstitutes
+           
