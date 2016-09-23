@@ -2,7 +2,7 @@
 
 import lxml.html as LH
 
-from lxml.html.builder import A, LI, UL, ElementMaker, html_parser
+from lxml.html.builder import ElementMaker, html_parser
 from BeautifulSoup import BeautifulSoup as BS
 
 import re
@@ -46,16 +46,16 @@ EXPT_DICT = {("1", "Collider Experiments"):[
 ("7.4", "Gravity waves")]
 }
 
-element = ElementMaker(makeelement=html_parser.makeelement)
+ELEMENT = ElementMaker(makeelement=html_parser.makeelement)
 
-def populate_ul(ul, input):
+def populate_ul(input_ul, input_tuple):
     """Creates the ul list."""
-    li_display = input[0] + ":" + input[1]
-    li_href = input[0]
-    li = element.A(li_display, href=li_href)
-    li = element.LI(li)
-    ul.append(li)
-    return li
+    li_display = input_tuple[0] + ":" + input_tuple[1]
+    li_href = input_tuple[0]
+    li_final = ELEMENT.A(li_display, href=li_href)
+    li_final = ELEMENT.LI(li_final)
+    input_ul.append(li_final)
+    return li_final
 
 def create_table():
     """HTML TABLE generation by lxml.html tree.
@@ -64,10 +64,10 @@ def create_table():
 
     #element = ElementMaker(makeelement=html_parser.makeelement)
 
-    ul_top = element.UL()
+    ul_top = ELEMENT.UL()
     for key in sorted(EXPT_DICT):
         li_top = populate_ul(ul_top, key)
-        ul_sub = element.UL()
+        ul_sub = ELEMENT.UL()
         for value in EXPT_DICT[key]:
             populate_ul(ul_sub, value)
         li_top.append(ul_sub)
