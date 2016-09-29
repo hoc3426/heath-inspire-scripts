@@ -272,7 +272,7 @@ def titleFix(x):
 #search = 'refersto:author:Giorgio.Bellettini.1 245__a:/\\pi/ -245__a:/\$/'
 #search = '001:1339902'
 #x = perform_request_search(p=search,cc='HEP')
-search = '119__a:FNAL*'
+search = '372__9:inspire'
 if VERBOSE: print search
 x = perform_request_search(p=search,cc='Experiments')
 if VERBOSE: print search, len(x)
@@ -283,11 +283,15 @@ print "<collection>"
 iter_flag = 1
 for r in x:
   if VERBOSE: print r, iter_flag
-  title = get_fieldvalues(r,'245__a')[0]
+  try:
+      title = get_fieldvalues(r,'245__a')[0]
+  except IndexError:
+      print '*** No title on', r
   if re.search(r'[aeiou]', title):
       continue
   if iter_flag > 50:
-      continue
+      #continue
+      pass
   oldTitle = title
   oldTitle = re.sub(r'&',r' and ',oldTitle) 
   oldTitle = re.sub(r'\s+',' ',oldTitle)
@@ -300,6 +304,7 @@ for r in x:
       print '<record>'
       print '  <controlfield tag="001">'+str(r)+'</controlfield>'
       print '  <datafield tag="245" ind1=" " ind2=" ">'
+      print '***', oldTitle
       print '    <subfield code="a">' + title + '</subfield>'
       print '  </datafield>'
       #print '  <datafield tag="246" ind1=" " ind2=" ">'

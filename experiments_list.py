@@ -1,13 +1,29 @@
 """Dictionary of experiment categories."""
 
 import lxml.html as LH
+import lxml.etree as ET
 
 from lxml.html.builder import ElementMaker, html_parser
 from BeautifulSoup import BeautifulSoup as BS
 
 import re
 
-BASE_URL = 'http://inspirehep.net/search?cc=Experiments&p='
+BASE_URL = 'http://inspirehep.net/search?cc=Experiments'
+BASE_URL += '&sf=experimentname&so=a&p=372__a:'
+TITLE = 'WebDoc-Page-Title:Major HEP Experiments'
+PARAGRAPH = """The following list of major experiments in HEP and related
+fields seeks to organize the experiments by their primary characteristic.
+Where experiments could reasonably be included in more than one
+category, we have attempted to select the most meaningful.
+For example, although LHCb could be included in the "Hadron collider" 
+category, its primary focus is the investigation of beauty sector physics
+and as such it has been included in the "Heavy Flavor Factory" category.
+If you have any questions or comments please feel free to contact us about it
+at
+"""
+
+EMAIL = 'feedback@inspirehep.net'
+MAILTO = 'mailto:' + EMAIL
 
 EXPT_DICT = {("1", "Collider Experiments"):[
 ("1.1", "Hadron Collider"),
@@ -50,10 +66,12 @@ ELEMENT = ElementMaker(makeelement=html_parser.makeelement)
 
 def populate_ul(input_ul, input_tuple):
     """Creates the ul list."""
-    li_display = input_tuple[0] + ":" + input_tuple[1]
-    li_href = input_tuple[0]
-    li_final = ELEMENT.A(li_display, href=li_href)
-    li_final = ELEMENT.LI(li_final)
+    href_display = input_tuple[0]
+    href_link = BASE_URL + input_tuple[0]
+    if len(input_tuple[0]) == 1:
+        href_link += '*'
+    href = ELEMENT.A(href_display, href=href_link)
+    li_final = ELEMENT.LI(href, input_tuple[1])
     input_ul.append(li_final)
     return li_final
 
@@ -61,8 +79,6 @@ def create_table():
     """HTML TABLE generation by lxml.html tree.
        Follows http://lxml.de/3.3/api/lxml.html.builder-module.html
     """
-
-    #element = ElementMaker(makeelement=html_parser.makeelement)
 
     ul_top = ELEMENT.UL()
     for key in sorted(EXPT_DICT):
@@ -72,16 +88,25 @@ def create_table():
             populate_ul(ul_sub, value)
         li_top.append(ul_sub)
 
-
-    #out = lxml.html.tostring(ul, encoding='UTF-8', pretty_print=True,
-    #                         method='html').rstrip('\n')
-
     root = LH.tostring(ul_top) #convert the generated HTML to a string
+
+    comment = ET.Comment(TITLE)
+    comment = ET.tostring(comment)
+  
+    email = ELEMENT.A(EMAIL, href=MAILTO)
+    paragraph = ELEMENT.P(PARAGRAPH, email, ".")
+    paragraph = LH.tostring(paragraph)
+    paragraph = re.sub(r' \.', '.', paragraph)
+
+    root = comment + paragraph + root
+
     soup = BS(root)                #make BeautifulSoup
     out = soup.prettify()   #prettify the html
 
     return out
 
+def create_title():
+    comment = ELEMENT.Comment("some comment")
 
 def main():
     """Creates and opens a file and writes the table to it."""

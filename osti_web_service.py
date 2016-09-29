@@ -194,9 +194,13 @@ def get_url(recid):
 
 def get_title(recid):
     """Get title with in xml compliant form."""
-    title = get_fieldvalues(recid, '245__a')[0]
-    title = cgi.escape(title)
-    return title
+    try:
+        title = get_fieldvalues(recid, '245__a')[0]
+        title = cgi.escape(title)
+        return title
+    except IndexError:
+        print 'Problem with title on', recid
+        return None
 
 def get_pubnote(recid):
     """Gets publication information"""
@@ -593,6 +597,7 @@ def find_records(search_input=None):
                     + str(len(result)) + '\n'
         log.write(date_time_stamp)
         log.close()
+        result.reverse()
         return result
     else:
         print "No results found."
@@ -602,6 +607,8 @@ if __name__ == '__main__':
     try:
         if sys.argv[1:][0] == 'i':
             RECIDS = find_records(ACCEPTED_SEARCH)
+        elif sys.argv[1:][0] == 'a':
+            RECIDS = find_records('     ')
     except IndexError:
         pass
     if not RECIDS:
