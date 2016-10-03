@@ -183,7 +183,6 @@ def get_url(recid):
             print "Check recid", recid
             print "Problem with (try) ", url
             return [None, accepted]
- 
         #if checkURL(url):
         #    return [url, accepted]
         #else:
@@ -310,6 +309,13 @@ def get_author_details(recid, authors, tag):
         ET.SubElement(authors_detail, 'affiliation').text = affiliation
         ET.SubElement(authors_detail, 'private_email').text = email
         ET.SubElement(authors_detail, 'orcid_id').text = orcid
+
+def get_corporate_author(recid):
+    """Check to see if there is a corporte author and return it."""
+    try:
+        return get_fieldvalues(recid, "110__a")[0]
+    except IndexError:
+        return None
 
 def get_author_first(recid):
     """Get authors as a long string, truncate at 10."""
@@ -487,7 +493,13 @@ def create_xml(recid, records):
     ET.SubElement(record, 'title').text = get_title(recid)
     collaborations = get_collaborations(recid)
     author_number = get_author_number(recid)
-    if author_number > 20:
+
+    corporate_author = get_corporate_author(recid)
+    if corporate_author:
+        author = ET.SubElement(record, 'author')
+        author.text = corporate_author
+
+    elif author_number > 20:
         author = ET.SubElement(record, 'author')
         author_first = get_author_first(recid)
         if author_first:
