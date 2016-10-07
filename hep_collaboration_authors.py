@@ -11,6 +11,7 @@ import urllib
 
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
+from invenio.textutils import translate_latex2unicode
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
@@ -51,7 +52,7 @@ def download_source(eprint, download_path = ""):
     os.remove(filename)
     return file_type
 
-def process_author(author):
+def process_author_name(author):
     """Convert author to INSPIRE form."""
 
     author = author.replace(r'\~', r'xxxx')
@@ -69,6 +70,7 @@ def process_author(author):
     author = author.replace(r'\s+', ' ')
     author = author.replace(r'\s+$', '')
     author = re.sub(r'\.\s+', r'.', author)
+    author = translate_latex2unicode(author)
     return author
 
 def create_xml(eprint, author_dict):
@@ -109,23 +111,35 @@ def process_file(eprint, file_type='tex'):
     affiliation_dict = {}
     for line in read_data:
         line = line.replace(r'\\', '')
-        #Find author
+
+        #Find author/affiliations for $^{1}$
         match = re.search(r'^([A-Z].*)\$\^\{?([\w\s\,]+)\}?\$', line)
         if match:
             author = match.group(1)
-            author = process_author(author)
+            author = process_author_name(author)
             author_affilations = match.group(2).split(',')
             author_dict[author_position] = [author, author_affilations]
             author_position += 1
-        #Find author's affiliations
         match = re.search(r'^\$\^\{?([\w\s\,]+)\}?\$\s*(.*)', line)
         if match:
             affiliation_dict[match.group(1)] = match.group(2)
-    print 'Number of authors:', author_position
 
-    for key in author_dict:
-        for position, affiliation_key in enumerate(author_dict[key][1]):
-            author_dict[key][1][position] = affiliation_dict[affiliation_key]
+        #Find author/affiliations for \\author, \\affiliation
+        match = re.search(r'\\author\{(.*)\}', line)
+        if match:
+            author = process_author_name(match.group(1))
+            author_dict[author_position] = [author, []]
+            author_position += 1
+        match = re.search(r'\\affiliation\{(.*)\}', line)
+        if match:
+            #print author_dict[author_position - 1], match.group(1)
+            author_dict[author_position - 1][1].append(match.group(1))
+
+    print 'Number of authors:', author_position
+    if affiliation_dict:
+        for key in author_dict:
+            for position, affiliation_key in enumerate(author_dict[key][1]):
+                author_dict[key][1][position] = affiliation_dict[affiliation_key]
 
     return create_xml(eprint, author_dict)
 
@@ -140,7 +154,7 @@ def main(eprint):
         download_source(eprint)
 
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_correct.out', filename)
+    filename = re.sub('.py', '_' + eprint + '_correct.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
     update = process_file(eprint)
