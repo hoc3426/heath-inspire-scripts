@@ -188,7 +188,7 @@ for frequentword in frequentwords:
 # loads list of cityambiguities and applies it to 'icncity'
 def resolvecityambiguities():
     global FILREPORT
-    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
     #pairs are of form (city-name in plain string, city to also check)
     pairs = set([("Essen","Duisburg"), ("Delhi","New-Delhi"), ("New-Delhi","Delhi"), ("Wonju","Gangneung-City"), ("Clermont","Aubiere"), ("Saint-Jean","Edmonton")])
     #find city in affiliation string
@@ -622,7 +622,7 @@ def extractCities(na):
         if icncity.institutes.has_key(npart):
             city = npart
             #if (verbatim > 0):
-            #    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            #    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             #    FILREPORT.write(" City = "+city+"\n")
             #    FILREPORT.close()
             cities.add(city)
@@ -640,14 +640,14 @@ def extractCountries(na):
 	    country =  countriescc[npart]
             #if (verbatim > 0):
             #    global FILREPORT
-            #    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            #    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             #    FILREPORT.write(" Country = "+country+"\n")
             #    FILREPORT.close()
             countries.add(country)
     #pick country code at end of adress
     if npart.upper() in countriescc.values():
         if (verbatim > 0):
-            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write(" Country = "+npart.upper()+"\n")
             FILREPORT.close()
         countries.add(npart.upper())        
@@ -1252,7 +1252,7 @@ def enrichcandidates(kmenge, insti):
 
 def bestmatchsimple(string, identifier,run,onlycore=False):
     global FILREPORT
-    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
     if not globals().has_key('icndictionary'): loadknowledgebase('aff-translator.pickle')
     if resulthash.has_key(string):
         return resulthash[string]    
@@ -1393,7 +1393,7 @@ def bestmatchu(string, identifier,run,onlycore=False):
     except:
         print '[unicodeproblem in bestmatchu]',type(string)
     global FILREPORT
-    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
     if not globals().has_key('icndictionary'): loadknowledgebase('aff-translator.pickle')
     if plaindictionary.has_key(string):
         inst = plaindictionary[string]
@@ -1511,7 +1511,7 @@ class institute:
         return grep + sauni + weightGrepDLU * grepdlu
     def match(self,otheraff):
         if verbatim > 2:
-            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write(" <?> "+otheraff.icn+"\n")
             FILREPORT.close()
         if hasattr(otheraff,'dlu') and (otheraff.dlu != "NONE"):
@@ -1530,7 +1530,7 @@ class institute:
                 grepsummed += grept
             quality.append(weightMax*grep + weightAve*grepsummed/len(otheraff.naffs))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  grep=("+str(grep)+ ";" + str(grepsummed/len(otheraff.naffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightModifiedLevenshtein != 0:
@@ -1542,7 +1542,7 @@ class institute:
                 simsummed += simt
             quality.append(weightModifiedLevenshtein * (weightMax*sim + weightAve*simsummed/len(otheraff.saffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  sim=("+str(sim)+ ";" + str(simsummed/len(otheraff.saffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightSmithWaterman != 0:
@@ -1554,7 +1554,7 @@ class institute:
                 swsummed += swt
             quality.append(weightSmithWaterman * (weightMax*sw + weightAve*swsummed/len(otheraff.saffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  sw=("+str(sw)+ ";" + str(swsummed/len(otheraff.saffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightModifiedLevenshteinN != 0:
@@ -1566,7 +1566,7 @@ class institute:
                 simNsummed += simNt
             quality.append(weightModifiedLevenshteinN * (weightMax*simN + weightAve*simNsummed/len(otheraff.naffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  simN=("+str(simN)+ ";" + str(simNsummed/len(otheraff.naffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightSmithWatermanN != 0:
@@ -1578,7 +1578,7 @@ class institute:
                 swNsummed += swNt
             quality.append(weightSmithWatermanN * (weightMax*swN + weightAve*swNsummed/len(otheraff.naffs)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  swN=("+str(swN)+ ";" + str(swNsummed/len(otheraff.naffs))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightModifiedLevenshteinN1 != 0:
@@ -1590,7 +1590,7 @@ class institute:
                 simN1summed += simN1t
             quality.append(weightModifiedLevenshteinN1 * (weightMax*simN1 + weightAve*simN1summed/len(otheraff.naffs1)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  simN1=("+str(simN1)+ ";" + str(simN1summed/len(otheraff.naffs1))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightSmithWatermanN1 != 0:
@@ -1602,7 +1602,7 @@ class institute:
                 swN1summed += swN1t
             quality.append(weightSmithWatermanN1 * (weightMax*swN1 + weightAve*swN1summed/len(otheraff.naffs1)))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  swN1=("+str(swN1)+ ";" + str(swN1summed/len(otheraff.naffs1))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if (weightGrepCount10 != 0) or (weightGrepCount11 != 0) or (weightGrepCount12 != 0) or (weightWeightOfWords != 0):
@@ -1614,7 +1614,7 @@ class institute:
                 grep1summed += grep1t
             quality.append(weightMax*grep1 + weightAve*grep1summed/len(otheraff.naffs1))
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  grep1=("+str(grep1)+ ";" + str(grep1summed/len(otheraff.naffs1))+") quality="+str(quality)+"\n")
                 FILREPORT.close()
         if weightGrepDLU != 0:
@@ -1635,7 +1635,7 @@ class institute:
                 grepdlu += subinstituterelativeweight * (grepmatch(naff1,subinstitute)[0] - 1) 
             quality.append(weightGrepDLU * grepdlu)
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  grepdlu="+str(grepdlu)+" quality="+str(quality)+"\n")
                 FILREPORT.close()
         if re.search(';',otheraff.icn) and not re.search(' and ',naff1):
@@ -1648,7 +1648,7 @@ class institute:
             simdlu = max(simdlu,simdlut)
             quality.append(weightSimDLU * simdlu)
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  simdlu="+str(simdlu)+" quality="+str(quality)+"\n")
                 FILREPORT.close()
         if omnibonus != 0:
@@ -1658,7 +1658,7 @@ class institute:
                     omnib += omnibonus
             quality.append(omnib)
             if verbatim > 2:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write("  omnib="+str(omnib)+" quality="+str(quality)+"\n")
                 FILREPORT.close()
         if (len(set(self.unitypes) & set(otheraff.unitypes))>0) or ((len(self.unitypes) == 0) and (len(otheraff.unitypes) == 0)):
@@ -1670,7 +1670,7 @@ class institute:
                 sauni = unipenalty
         quality.append(sauni)
         if verbatim > 2: 
-            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write("  sauni="+str(sauni)+" quality="+str(quality)+"\n")            
             FILREPORT.close()
         #weight number of papers
@@ -1705,7 +1705,7 @@ class institute:
                     if re.search('Wisconsin',otheraff.icn):
                         quality.append(INFNpenalty)
         if verbatim > 1:
-            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write('qualityvector = (')
             for qu in quality:
                 FILREPORT.write("%7.3f, " % (qu))
@@ -1780,12 +1780,12 @@ class institute:
                 if (len(liste2) > reduceselection) or ((len(liste2) > 0) and (qm < 0)):
                     break
             if verbatim > 1:
-                FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+                FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
                 FILREPORT.write(" %d reduced to %d (qm>=%f)\n" % (len(liste),len(liste2),qm))
                 FILREPORT.close()
             liste = liste2
         if verbatim > 1:
-            FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+            FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
             FILREPORT.write('qualityvector = ( icnpen   ')
             if (weightGrepCount0 != 0) or (weightGrepCount != 0) or (weightGrepLength != 0):
                 FILREPORT.write(" grep    ")
@@ -2025,7 +2025,7 @@ class collection:
 #just for debugging of knowldegebase:
 def checksjbas():
     global FILREPORT
-    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
     loadknowledgebase('aff-translator.pickle')
     dlulist = []
     for icn in icndictinary:
@@ -2065,7 +2065,7 @@ def checksjbas():
 #just for debugging of knowldegebase (translates one half of knowledgebase's affiliations strings using other half's information and vice versa)
 def checksjbasII():
     global FILREPORT
-    FILREPORT = codecs.open('/afs/desy.de/user/l/library/tmp/afftranslatorreport2', encoding='utf-8',mode='a+')
+    FILREPORT = codecs.open('afftranslatorreport2', encoding='utf-8',mode='a+')
     CHECKREPORT = open(knowledgebasepath+'/checksjbasII', 'w')
     generateknowledgebase('aff-translator-1sthalf.pickle',False)
     generateknowledgebase('aff-translator-2ndhalf.pickle',False)

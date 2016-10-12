@@ -14,6 +14,7 @@ from afftranslator2 import bestmatch
 
 
 VERBOSE = False
+VERBOSE = True
 
 def find_records():
     """Find records that have raw string affilations."""
@@ -25,14 +26,19 @@ def find_records():
 
 def get_aff(aff):
     """Convert raw string affilation to INSPIRE form."""
-    best_match = bestmatch(aff,'ICN')
-    affiliation = best_match[0]
-    aff_new = affiliation[1]
-    aff_new = re.sub(';', '</subfield><subfield code="u">', aff_new)
-    return aff_new
+    #best_match = bestmatch(aff,'ICN')
+    #affiliation = best_match[0]
+    #aff_new = affiliation[1]
+    #aff_new = re.sub(';', '</subfield><subfield code="u">', aff_new)
+    #return aff_new
+    return bestmatch(aff, 'ICN')[0][1].split(';')
 
-def create_xml(recid, tags, force_flag):
+
+def create_xml(recid, tags, force_flag=False):
     """Create xml file to replace to 100, 700 block."""
+
+    if VERBOSE:
+        print 'force_flag =', force_flag
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
@@ -68,7 +74,7 @@ def main_old(recordlist):
             print "scanning all HEP records ..."
         recordlist = find_records()
         if VERBOSE:
-            print "%d records with '@' in author fields found" % \
+            print "%d records with unprocessed affiliations fields found" % \
                     len(recordlist)
     else:
         force_flag = True
@@ -84,11 +90,15 @@ def main_old(recordlist):
 
 def main(recordlist):
     """Take input in terms or recid list or generate a list."""
+
+    force_flag = True
     if not recordlist:
         force_flag = True
         if VERBOSE:
             print "scanning all HEP records ..."
         recordlist = find_records()
+        if len(recordlist) == 0:
+            return None
         if VERBOSE:
             print "%d records with '@' in author fields found" \
                    % len(recordlist)
