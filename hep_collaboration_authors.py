@@ -253,7 +253,7 @@ def main(eprint):
     output.close()
 
     filename = __file__
-    filename.replace('.py', '.log')
+    filename = filename.replace('.py', '.log')
     log = open(filename, 'a')
     date_time_stamp = time.strftime('%Y-%m-%d %H:%M:%S')
     date_time_stamp = date_time_stamp + ' ' + eprint + '\n'
