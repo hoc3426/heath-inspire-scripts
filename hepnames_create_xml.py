@@ -2,7 +2,8 @@
 # -*- coding: UTF-8 -*-
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
-from hep_convert_email_to_id import get_hepnames_recid_from_email
+from hep_convert_email_to_id import get_hepnames_recid_from_email, \
+                                    get_hepnames_anyid_from_recid
 from invenio.search_engine import print_record
 from hep_convert_email_to_id import *
 from collections import OrderedDict
@@ -52,7 +53,10 @@ def xml_affiliations(affiliations):
             print 'Problem affiliation', affiliation
         if VERBOSE:
             print search
-        x = perform_request_search(p = search, cc = 'Institutions')
+        try:
+            x = perform_request_search(p = search, cc = 'Institutions')
+        except UnboundLocalError:
+            print 'Problem with', search
         if len(x) == 1:
             y = get_fieldvalues(x[0], '110__a')
             if y: name = cgi.escape(y[0])
@@ -101,8 +105,16 @@ def xml_authors(authors):
         output += '      <cal:authorids>\n'
         try:
             output += '        <cal:authorid source="INSPIRE">' + authors[key]['author_id'] + '</cal:authorid>\n'
-        except:
+        except KeyError:
             print authors[key]
+        except TypeError:
+            pass
+        try:
+            output += '        <cal:authorid source="INSPIRE">' + authors[key]['orcid'] + '</cal:authorid>\n'
+        except KeyError:
+            print authors[key]
+        except TypeError:
+            pass
         output += '      </cal:authorids>\n'
         output += '    </foaf:Person>\n'
     output  += '  </cal:authors>\n'
@@ -128,10 +140,11 @@ def main(experiment, collaboration):
         foaf_givenName  = re.sub(r'.*\, ', '', name)
         foaf_familyName =  re.sub(r'\,.*', '', name)
         author_id = find_inspire_id_from_record(r)
+        orcid      = get_hepnames_anyid_from_recid(r, 'ORCID')
         if VERBOSE:
             print r
         affiliation = get_hepnames_affiliation_from_recid(r, 'Current')
-        if not affiliation: print 'find recid', r
+        if not affiliation: print 'No aff - find recid', r
         d = {}
         d['foaf_givenName']  = foaf_givenName
         d['foaf_familyName'] = foaf_familyName

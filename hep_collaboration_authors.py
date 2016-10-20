@@ -15,7 +15,15 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
-from hep_aff import get_aff
+TEST = True
+TEST = False
+
+if TEST:
+    def get_aff(aff):
+        """Does nothing to affiliation."""
+        return [aff]
+else:
+    from hep_aff import get_aff
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
@@ -26,7 +34,11 @@ def download_source(eprint, download_path = ""):
     filename_dum = filename + ".dum"
     try:
         print '%20s  %s' % (filename_dum, tarfile.is_tarfile(filename_dum))
-        this_tarfile = tarfile.open(filename_dum, 'r')
+        try:
+            this_tarfile = tarfile.open(filename_dum, 'r')
+        except tarfile.ReadError:
+            print 'No tarfile for', eprint
+            return None
         tarfiles = {}
         file_count = 1
         for this_file in this_tarfile.getnames():
@@ -61,20 +73,26 @@ def process_author_name(author):
 
     #re.search(ur'[\u0041-\u005A\u00c0-\u024e\u0370-\u03e0]', name, re.U)
     #http://www.fileformat.info/info/unicode/category/Lu/list.htm
+    #for i in range(int('c0', 16), int('024e', 16)+1):
+    #    print unichr(int("{0:0{1}x}".format(i, 4), 16))
 
-
-    #print author
+    author = author.replace(r'.', '. ')
+    author = re.sub('[ ]+', ' ', author)
+    author = re.sub(r'\\(cor|fn)ref\{\w+\}', r'', author)
+    author = re.sub(r'\}?\\thanks\{\\?.*\}?', r'', author)
     author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
     author = author.replace(r'xxxx', r'\~')
-    if re.search(r'^\\?\"?[A-Z][\.\-]', author):
-        author = re.sub(r'(\\?\"?[A-Z][\.\-]\\?\"?[A-Z\s\.\-]*) (\w.*)', \
+
+    #Include A-Zu to allow for Russian Yu. and German Th.
+    if re.search(r'^\\?\"?[A-Z][uh]?[\.\-]', author):
+        author = re.sub(r'(\\?\"?[A-Z][uh]?[\.\-]\\?\"?[A-Zuh\s\.\-]*) (\w.*)', \
                         r'\2, \1', author)
     elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Z][a-z]+$', author):
         author =  re.sub(r'(^\\?\"?[A-Z]\w+) (\\?\"?[A-Z][a-z]+)', \
                          r'\2, \1', author)
-    elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Z\.\-]+', author):
-        author =  re.sub(r'(.* \\?\"?[A-Z\.\-]+) (.*)', r'\2, \1', author)
+    elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Zuh\.\-]+', author):
+        author =  re.sub(r'(.* \\?\"?[A-Zu\.\-]+) (.*)', r'\2, \1', author)
     elif re.search(r' [a-z]', author):
         match = re.search(r' ([a-z].*)', author)
         compound_surname = match.group(1)
@@ -108,13 +126,13 @@ def create_xml(eprint, author_dict):
             affiliation = translate_latex2unicode(affiliation)
             affiliation = re.sub(r'(\w)\W*$', r'\1', affiliation)
             try:
-                #subfields.append(('u', affiliation_dict[affiliation]))
                 for inst in affiliation_dict[affiliation]:
+                    inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
             except KeyError:
                 inspire_affiliation = get_aff(unidecode(affiliation))
-                #subfields.append(('u', inspire_affiliation))
                 for inst in inspire_affiliation:
+                    inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
                 affiliation_dict[affiliation] = inspire_affiliation
             subfields.append(('v', affiliation))
@@ -132,40 +150,62 @@ def preprocess_file(read_data):
     for line in read_data.split('\n'):
         match = re.search(r'\\r?e?newcommand\{\\(\w+)\}\{(.*)\}', line)
         if match:
-            command_dict[match.group(1)] = match.group(2)
+            command_value = match.group(2)
+            if re.search(r'^\\\w', command_value):
+                command_value = '\\' + command_value
+            command_dict[match.group(1)] = command_value
     for key in command_dict:
         command_string = re.compile(r'\\%s\b' % key)
         read_data = re.sub(command_string, command_dict[key], read_data)
+
+    #Special treatment for BaBar
+    for line in read_data.split('\n'):
+        #BaBar \affiliation{Fermilab$^{a}$, SLAC$^{b}$}
+        if re.search(r'\\affiliation\{.*\$\^\{?[abc]\}?\$', line):
+            line_new = re.sub(r'\$\^\{?[abc]\}?\$', ' and ', line)
+            read_data = read_data.replace(line, line_new)
+        elif re.search(r'\\author\{.*\$\^\{?[abc]+\}?\$', line):
+            line_new = re.sub(r'[ ]*\$\^\{?[abc]+\}?\$[ ]*', '', line)
+            read_data = read_data.replace(line, line_new)
+        elif re.search(r'\\author\{.*\\altaffiliation', line):
+            line_new = re.sub(r'\\altaffiliation.*', '', line)
+            read_data = read_data.replace(line, line_new)
+
 
     #Remove spaces around braces and commas
     read_data = re.sub(r'[ ]*([\]\}\[\{\,])[ ]*', r'\1', read_data)
     read_data = re.sub(r'^[ ]+', '', read_data)
 
     read_data = re.sub(r'%.*\n', '', read_data)
-    read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
     read_data = re.sub(r'}\$,\s*', '}$\n', read_data)
+    read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
+    read_data = re.sub(r'\\address', r'\\affiliation', read_data)
+    read_data = re.sub(r'\\affil\{', r'\\affiliation{', read_data)
+    read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
+    read_data = re.sub(r'\\and[ ]+', '', read_data)
 
+    #I.J.~Arnquist\inst{10}
+    read_data = re.sub(r'(\w)\\inst\{(.*)\}', r'\1$^{\2}$', read_data)
     #\author[b,c]{M. Zimmermann} \affiliation[b]{Fermilab}
     read_data = \
         re.sub(r'\\author\[([\w\,]+)\]\{(.*)\}', r'\2$^{\1}$', read_data)
     read_data = \
         re.sub(r'\\affiliation\[([\w\,]+)\]\{(.*)\}', r'$^{\1}$ \2', read_data)
-    #\author{M. Zimmermann$^{b,c}$} \affiliation$^{b}$Fermilab} remove \author
+    #\author{M. Zimmermann$^{b,c}$} \affiliation{$^{b}$Fermilab} remove \author
     read_data = \
         re.sub(r'\\author\{(.*\$\^\{?[\w\,]+\}?\$)\}', r'\1', read_data)
     read_data = \
-        re.sub(r'affiliation\{(\$\^\{?[\w\,]+\}?\$.*)', r'\1', read_data)
+        re.sub(r'\\affiliation\{(\$\^\{?[\w\,]+\}?\$.*)\}', r'\1', read_data)
 
     read_data = re.sub(r'[\, ]+\}', '}', read_data)
     read_data = re.sub(r'[\, ]+\$\^', '$^', read_data)
 
     new_read_data = []
     for line in read_data.split('\n'):
-        if re.search('abstract', line):
+        if re.search('abstract', line, re.IGNORECASE):
             break
         else:
             new_read_data.append(line)
-    #print new_read_data
     return new_read_data
 
 
@@ -203,6 +243,8 @@ def process_file(eprint, file_type='tex'):
         if match:
             if author_previous:
                 babar_flag = True
+            if babar_flag:
+                author = re.sub(r'\$\^\{?[abc]+\}\$', '', author)
             author = process_author_name(match.group(1))
             author_dict[author_position] = [author, []]
             author_position += 1
@@ -211,14 +253,19 @@ def process_file(eprint, file_type='tex'):
             author_previous = False
         match = re.search(r'\\affiliation\{(.*)\}', line)
         if match and babar_flag:
+            author_affiliation = match.group(1)
+            author_affiliation = re.sub(r'\$\^\{?[abc]+\}?\$', ' and ', \
+                                        author_affiliation)
             for key in author_dict:
                 if not author_dict[key][1]:
-                    author_dict[key][1].append(match.group(1))
+                    #author_dict[key][1].append(match.group(1))
+                    author_dict[key][1].append(author_affiliation)
         elif match:
             try:
                 author_dict[author_position - 1][1].append(match.group(1))
             except KeyError:
-                print author_position,  match.group(1)
+                #print 'BaBar-style', author_position,  match.group(1)
+                pass
 
     print 'Number of authors:', author_position
     if affiliation_dict:
@@ -240,7 +287,8 @@ def main(eprint):
     if os.path.exists(eprint_tex) or os.path.exists(eprint_xml):
         pass
     else:
-        download_source(eprint)
+        if not download_source(eprint):
+            return
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_' + eprint + '_correct.out', filename)
@@ -251,6 +299,8 @@ def main(eprint):
         output.write(update)
     output.write('</collection>')
     output.close()
+    print filename
+
 
     filename = __file__
     filename = filename.replace('.py', '.log')
@@ -259,7 +309,7 @@ def main(eprint):
     date_time_stamp = date_time_stamp + ' ' + eprint + '\n'
     log.write(date_time_stamp)
     log.close()
-
+    print filename
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ EXPT_DICT = {("1", "Collider Experiments"):[
 ("3.2", "Accelerator - Long baseline"),
 ("3.3", "Reactor"),
 ("3.4", "Neutrino telescopes"),
-("3.5", "0nubb")],
+("3.5", "Neutrinoless double beta decay")],
 ("4", "Dark matter search experiments"):[
 ("4.1", "Non-accelerator"),
 ("4.2", "Axion search experiments"),
@@ -52,14 +52,18 @@ EXPT_DICT = {("1", "Collider Experiments"):[
 ("5.2", "Cerenkov array"),
 ("5.3", "Satellite")],
 ("6", "Other Rare-process non-accelerator experiments" ):[
-("6.1", "proton decay"),
-("6.2", "modified gravity"),
-("6.3", "magnetic monopoles")],
-("7", "Astronomy experiments"):[
-("7.1", "CMB"),
-("7.2", "Survey"),
-("7.3", "Supernovae"),
-("7.4", "Gravity waves")]
+("6.1", "Proton decay"),
+("6.2", "Modified gravity"),
+("6.3", "Magnetic monopoles")],
+("7", "Accelerator Test Facility Experiments" ):[
+("7.1", "Electron and positron beams"),
+("7.2", "Muon beams"),
+("7.3", "Proton beams")],
+("8", "Astronomy experiments"):[
+("8.1", "CMB"),
+("8.2", "Survey"),
+("8.3", "Supernovae"),
+("8.4", "Gravity waves")]
 }
 
 ELEMENT = ElementMaker(makeelement=html_parser.makeelement)

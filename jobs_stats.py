@@ -8,12 +8,13 @@ regions = ('Africa', 'Asia', 'Australasia', 'Europe', 'Middle East', \
 fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
 
-search = 'dadd:2015-01-01->2015-03-31'
+search = 'dadd:2016-06-01->2016-10-01'
 print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 
-if False:
+#if False:
 #for field in fields:
-  search = '65017:' + field
+if True:
+  #search = '65017:' + field
   x = perform_request_search(p=search, cc='Jobs')
   y = perform_request_search(p=search, cc='Jobs Hidden')
   total = len(x+y)
@@ -29,8 +30,8 @@ if False:
 
 
 
-
-for year in range(2012, 2017):
+if False:
+#for year in range(2012, 2017):
   #for month in range(1, 13):
   #  if month < 10:
   #      month = '0' + str(month)
