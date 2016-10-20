@@ -16,7 +16,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
 TEST = True
-TEST = False
+#TEST = False
 
 if TEST:
     def get_aff(aff):
@@ -68,6 +68,31 @@ def download_source(eprint, download_path = ""):
     os.remove(filename)
     return file_type
 
+def author_first_last(author):
+    """Determines the components of the author's name.."""
+
+    #Anything ending in a period is the firstname block
+    if re.search(ur'\. [^\.]+$', author, re.U):
+        return re.sub(ur'(.*\.) ([^\.]+)', r'\2, \1', author, re.U)
+    #Anything with only two parts
+    if re.search(ur'^\S+ \S+$', author, re.U):
+        return re.sub(ur'(.*) (.*)', r'\2, \1', author, re.U)
+    #Anything starting with a lower-case letter, e.g. Oscar de la Hoya
+    pattern = re.compile(ur' (\w+)', re.U)
+    for last_guess in re.findall(pattern, author):
+        firstname = False
+        if last_guess in ['Da', 'De', 'Van', 'Von']:
+            firstname = re.sub(last_guess + u'.*', '', author)
+        elif last_guess[0].lower() == last_guess[0]:
+            firstname = re.sub(last_guess + u'.*', '', author)
+        if firstname:
+            return author.replace(firstname, '') + ',' + firstname
+    match = re.match(u'(.*) (.*)', author, re.U)
+    if match:
+        return match.group(2) + u', ' + match.group(1)
+    return author
+
+
 def process_author_name(author):
     """Convert author to INSPIRE form."""
 
@@ -76,32 +101,42 @@ def process_author_name(author):
     #for i in range(int('c0', 16), int('024e', 16)+1):
     #    print unichr(int("{0:0{1}x}".format(i, 4), 16))
 
+    author = translate_latex2unicode(author)
     author = author.replace(r'.', '. ')
     author = re.sub('[ ]+', ' ', author)
     author = re.sub(r'\\(cor|fn)ref\{\w+\}', r'', author)
     author = re.sub(r'\}?\\thanks\{\\?.*\}?', r'', author)
-    author = author.replace(r'\~', r'xxxx')
+    #author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
-    author = author.replace(r'xxxx', r'\~')
+    #author = author.replace(r'xxxx', r'\~')
 
-    #Include A-Zu to allow for Russian Yu. and German Th.
-    if re.search(r'^\\?\"?[A-Z][uh]?[\.\-]', author):
-        author = re.sub(r'(\\?\"?[A-Z][uh]?[\.\-]\\?\"?[A-Zuh\s\.\-]*) (\w.*)', \
-                        r'\2, \1', author)
-    elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Z][a-z]+$', author):
-        author =  re.sub(r'(^\\?\"?[A-Z]\w+) (\\?\"?[A-Z][a-z]+)', \
-                         r'\2, \1', author)
-    elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Zuh\.\-]+', author):
-        author =  re.sub(r'(.* \\?\"?[A-Zu\.\-]+) (.*)', r'\2, \1', author)
-    elif re.search(r' [a-z]', author):
-        match = re.search(r' ([a-z].*)', author)
-        compound_surname = match.group(1)
-        firstnames = author.replace(compound_surname, '')
-        author = compound_surname + ', ' + firstnames
-    author = author.replace(r'\s+', ' ')
-    author = author.replace(r'\s+$', '')
-    author = re.sub(r'\.\s+', r'.', author)
-    author = translate_latex2unicode(author)
+    author = author_first_last(author)
+
+    #Get author name into Last, First format.
+    #Include A-Zuh to allow for Russian Yu. and German Th.
+    #compound_letters = ["Ch", "Chr", "Gy", "Iu", "Ju",
+    #                    "Kh", "Md", "Ph", "Sh", "St",
+    #                    "Sz", "Th", "Ts", "Ya", "Ye",
+    #                    "Yu", "Zh", "Zs"
+    #                   ]
+
+    #if re.search(r'^\\?\"?[A-Z][uh]?[\.\-]', author):
+    #    author = re.sub(r'(\\?\"?[A-Z][uh]?[\.\-]\\?\"?[A-Zuh\s\.\-]*) (\w.*)', \
+    #                    r'\2, \1', author)
+    #elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Z][a-z]+$', author):
+    #    author =  re.sub(r'(^\\?\"?[A-Z]\w+) (\\?\"?[A-Z][a-z]+)', \
+    #                     r'\2, \1', author)
+    #elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Zuh\.\-]+', author):
+    #    author =  re.sub(r'(.* \\?\"?[A-Zu\.\-]+) (.*)', r'\2, \1', author)
+    #elif re.search(r' [a-z]', author):
+    #    match = re.search(r' ([a-z].*)', author)
+    #    compound_surname = match.group(1)
+    #    firstnames = author.replace(compound_surname, '')
+    #    author = compound_surname + ', ' + firstnames
+    #author = author.replace(r'\s+', ' ')
+    #author = author.replace(r'\s+$', '')
+    #author = re.sub(r'\.\s+', r'.', author)
+    #author = translate_latex2unicode(author)
 
     #print author
     return author
@@ -182,6 +217,8 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\{', r'\\affiliation{', read_data)
     read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
+    read_data = re.sub(r'}\s*\\author', '}\n\\\\author', read_data)
+    read_data = re.sub(r'[ ]*\\scriptsize[ ]+', '', read_data)
     read_data = re.sub(r'\\and[ ]+', '', read_data)
 
     #I.J.~Arnquist\inst{10}
