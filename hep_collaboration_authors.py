@@ -16,7 +16,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
 TEST = True
-TEST = False
+#TEST = False
 
 if TEST:
     def get_aff(aff):
@@ -33,7 +33,7 @@ def download_source(eprint, download_path = ""):
     urllib.urlretrieve('http://arxiv.org/e-print/' + eprint, filename + ".dum")
     filename_dum = filename + ".dum"
     try:
-        print '%20s  %s' % (filename_dum, tarfile.is_tarfile(filename_dum))
+        #print '%20s  %s' % (filename_dum, tarfile.is_tarfile(filename_dum))
         try:
             this_tarfile = tarfile.open(filename_dum, 'r')
         except tarfile.ReadError:
@@ -187,6 +187,8 @@ def create_xml(eprint, author_dict):
 def preprocess_file_braces(read_data):
     """Try to close braces."""
     #print repr(read_data)
+    read_data = re.sub(r'\\institute\{', \
+                       r'\\section*{Affiliations}', read_data)
     read_data = re.sub(r'(\{[^\}]*)\n+', r'\1', read_data)
     read_data = re.sub(r'(\{[^\}]*\{[^\}]*\}[^\}]*)\n+', r'\1', read_data)
 
@@ -223,18 +225,24 @@ def preprocess_file(read_data):
             line_new = re.sub(r'\\altaffiliation.*', '', line)
             read_data = read_data.replace(line, line_new)
 
-    #Special treatment for DES
-    des_aff_counter = 0
+    #Special treatment for DES and Fermi-LAT
+    astro_aff_counter = 0
     for line in read_data.split('\n'):
         if re.search(r'\\section\*\{Affiliations\}', line):
-            des_aff_counter = 1
-        if des_aff_counter and re.search(r'^\\item', line):
+            astro_aff_counter = 1
+        if astro_aff_counter and re.search(r'^\\item', line):
             line_new = \
-                re.sub(r'^\\item', r'$^{' + str(des_aff_counter) + r'}$', \
+                re.sub(r'^\\item', r'$^{' + str(astro_aff_counter) + r'}$', \
                 line)
             read_data = read_data.replace(line, line_new)
-            des_aff_counter += 1
-    #print read_data
+            astro_aff_counter += 1
+        elif astro_aff_counter and re.search(r'\\and\s*$', line):
+            line_new = \
+                re.sub(r'(.*)\s*\\and$', r'$^{' + str(astro_aff_counter) + r'}$ \1', \
+                line)
+            read_data = read_data.replace(line, line_new)
+            astro_aff_counter += 1
+    print read_data
 
     #Remove spaces around braces and commas
     read_data = re.sub(r'[ ]*([\]\}\[\{\,])[ ]*', r'\1', read_data)
@@ -271,7 +279,7 @@ def preprocess_file(read_data):
     #print read_data
     new_read_data = []
     for line in read_data.split('\n'):
-        if re.search('abstract', line, re.IGNORECASE) and des_aff_counter < 1:
+        if re.search('abstract', line, re.IGNORECASE) and astro_aff_counter < 1:
             break
         else:
             new_read_data.append(line)
