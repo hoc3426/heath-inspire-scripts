@@ -16,7 +16,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
 TEST = True
-#TEST = False
+TEST = False
 
 if TEST:
     def get_aff(aff):
@@ -40,14 +40,17 @@ def download_source(eprint, download_path = ""):
             print 'No tarfile for', eprint
             return None
         tarfiles = {}
-        file_count = 1
+        file_count = 0
         for this_file in this_tarfile.getnames():
             if re.search(r'.(tex|xml)', this_file):
+                file_count += 1
                 tarfiles[file_count] = this_file
                 print file_count, tarfiles[file_count]
-                file_count += 1
-        file_choice = raw_input('Chose a file: ')
-        file_choice = int(file_choice)
+        if file_count == 1:
+            file_choice = file_count
+        else:
+            file_choice = raw_input('Choose a file: ')
+            file_choice = int(file_choice)
         source_file = this_tarfile.extractfile(tarfiles[file_choice])
         if re.search(r'xml', getattr(source_file, "name")):
             output = open(filename + ".xml", 'w')
@@ -81,7 +84,7 @@ def author_first_last(author):
     pattern = re.compile(ur' (\w+)', re.U)
     for last_guess in re.findall(pattern, author):
         firstname = False
-        if last_guess in ['Da', 'De', 'Van', 'Von']:
+        if last_guess in ['Da', 'De', 'Del', 'Della', 'Van', 'Von']:
             firstname = re.sub(last_guess + u'.*', '', author)
         elif last_guess[0].lower() == last_guess[0]:
             firstname = re.sub(last_guess + u'.*', '', author)
@@ -101,15 +104,16 @@ def process_author_name(author):
     #for i in range(int('c0', 16), int('024e', 16)+1):
     #    print unichr(int("{0:0{1}x}".format(i, 4), 16))
 
-    author = translate_latex2unicode(author)
+    #author = translate_latex2unicode(author)
     author = author.replace(r'.', '. ')
     author = re.sub('[ ]+', ' ', author)
-    author = re.sub(r'\\(cor|fn)ref\{\w+\}', r'', author)
+    author = re.sub(r'\\(cor|corauth|fn)ref\{\w+\}', r'', author)
     author = re.sub(r'\}?\\thanks\{\\?.*\}?', r'', author)
     #author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
     #author = author.replace(r'xxxx', r'\~')
 
+    author = translate_latex2unicode(author)
     author = author_first_last(author)
 
     #Get author name into Last, First format.
@@ -121,7 +125,8 @@ def process_author_name(author):
     #                   ]
 
     #if re.search(r'^\\?\"?[A-Z][uh]?[\.\-]', author):
-    #    author = re.sub(r'(\\?\"?[A-Z][uh]?[\.\-]\\?\"?[A-Zuh\s\.\-]*) (\w.*)', \
+    #    author = re.sub(r'(\\?\"?[A-Z][uh]?[\.\-]\\?\"?[A-Zuh\s\.\-]*)
+    #                    (\w.*)', \
     #                    r'\2, \1', author)
     #elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Z][a-z]+$', author):
     #    author =  re.sub(r'(^\\?\"?[A-Z]\w+) (\\?\"?[A-Z][a-z]+)', \
@@ -133,9 +138,11 @@ def process_author_name(author):
     #    compound_surname = match.group(1)
     #    firstnames = author.replace(compound_surname, '')
     #    author = compound_surname + ', ' + firstnames
-    #author = author.replace(r'\s+', ' ')
-    #author = author.replace(r'\s+$', '')
-    #author = re.sub(r'\.\s+', r'.', author)
+    author = re.sub(r'\s+', ' ', author)
+    author = re.sub(r'\s+$', '', author)
+    author = re.sub(r'^\s+', '', author)
+    author = re.sub(r'\.\s+', r'.', author)
+    author = re.sub(r'(.*) ([IVJr.]+), (.*)', r'\1, \3, \2', author)
     #author = translate_latex2unicode(author)
 
     #print author
@@ -177,8 +184,18 @@ def create_xml(eprint, author_dict):
 
     return print_rec(record)
 
+def preprocess_file_braces(read_data):
+    """Try to close braces."""
+    #print repr(read_data)
+    read_data = re.sub(r'(\{[^\}]*)\n+', r'\1', read_data)
+    read_data = re.sub(r'(\{[^\}]*\{[^\}]*\}[^\}]*)\n+', r'\1', read_data)
+
+    return read_data
+
 def preprocess_file(read_data):
     """Get file into a form that can be properly processed."""
+
+    read_data = preprocess_file_braces(read_data)
 
     #Process any user commands in latex.
     command_dict = {}
@@ -206,10 +223,24 @@ def preprocess_file(read_data):
             line_new = re.sub(r'\\altaffiliation.*', '', line)
             read_data = read_data.replace(line, line_new)
 
+    #Special treatment for DES
+    des_aff_counter = 0
+    for line in read_data.split('\n'):
+        if re.search(r'\\section\*\{Affiliations\}', line):
+            des_aff_counter = 1
+        if des_aff_counter and re.search(r'^\\item', line):
+            line_new = \
+                re.sub(r'^\\item', r'$^{' + str(des_aff_counter) + r'}$', \
+                line)
+            read_data = read_data.replace(line, line_new)
+            des_aff_counter += 1
+    #print read_data
 
     #Remove spaces around braces and commas
     read_data = re.sub(r'[ ]*([\]\}\[\{\,])[ ]*', r'\1', read_data)
     read_data = re.sub(r'^[ ]+', '', read_data)
+
+    read_data = re.sub(r'\-+', r'-', read_data)
 
     read_data = re.sub(r'%.*\n', '', read_data)
     read_data = re.sub(r'}\$,\s*', '}$\n', read_data)
@@ -225,21 +256,22 @@ def preprocess_file(read_data):
     read_data = re.sub(r'(\w)\\inst\{(.*)\}', r'\1$^{\2}$', read_data)
     #\author[b,c]{M. Zimmermann} \affiliation[b]{Fermilab}
     read_data = \
-        re.sub(r'\\author\[([\w\,]+)\]\{(.*)\}', r'\2$^{\1}$', read_data)
+        re.sub(r'\\author\[([\w\,\-]+)\]\{(.*)\}', r'\2$^{\1}$', read_data)
     read_data = \
-        re.sub(r'\\affiliation\[([\w\,]+)\]\{(.*)\}', r'$^{\1}$ \2', read_data)
+        re.sub(r'\\affiliation\[([\w\,\-]+)\]\{(.*)\}', r'$^{\1}$ \2', \
+               read_data)
     #\author{M. Zimmermann$^{b,c}$} \affiliation{$^{b}$Fermilab} remove \author
     read_data = \
-        re.sub(r'\\author\{(.*\$\^\{?[\w\,]+\}?\$)\}', r'\1', read_data)
+        re.sub(r'\\author\{(.*\$\^\{?[\w\,\-]+\}?\$)\}', r'\1', read_data)
     read_data = \
-        re.sub(r'\\affiliation\{(\$\^\{?[\w\,]+\}?\$.*)\}', r'\1', read_data)
+        re.sub(r'\\affiliation\{(\$\^\{?[\w\,\-]+\}?\$.*)\}', r'\1', read_data)
 
     read_data = re.sub(r'[\, ]+\}', '}', read_data)
     read_data = re.sub(r'[\, ]+\$\^', '$^', read_data)
-
+    #print read_data
     new_read_data = []
     for line in read_data.split('\n'):
-        if re.search('abstract', line, re.IGNORECASE):
+        if re.search('abstract', line, re.IGNORECASE) and des_aff_counter < 1:
             break
         else:
             new_read_data.append(line)
