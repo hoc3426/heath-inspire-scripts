@@ -16,7 +16,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
 TEST = True
-#TEST = False
+TEST = False
 
 if TEST:
     def get_aff(aff):
@@ -109,9 +109,9 @@ def process_author_name(author):
     author = re.sub('[ ]+', ' ', author)
     author = re.sub(r'\\(cor|corauth|fn)ref\{\w+\}', r'', author)
     author = re.sub(r'\}?\\thanks\{\\?.*\}?', r'', author)
-    #author = author.replace(r'\~', r'xxxx')
+    author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
-    #author = author.replace(r'xxxx', r'\~')
+    author = author.replace(r'xxxx', r'\~')
 
     author = translate_latex2unicode(author)
     author = author_first_last(author)
@@ -202,7 +202,11 @@ def preprocess_file(read_data):
     #Process any user commands in latex.
     command_dict = {}
     for line in read_data.split('\n'):
-        match = re.search(r'\\r?e?newcommand\{\\(\w+)\}\{(.*)\}', line)
+        match = None
+        if re.search('command', line):
+            match = re.search(r'\\r?e?newcommand\{\\(\w+)\}\{(.*)\}', line)
+        elif re.search(r'\\def\\', line):
+            match = re.search(r'\\def\\(\w+)\{(.*)\}', line)
         if match:
             command_value = match.group(2)
             if re.search(r'^\\\w', command_value):
@@ -236,13 +240,13 @@ def preprocess_file(read_data):
                 line)
             read_data = read_data.replace(line, line_new)
             astro_aff_counter += 1
-        elif astro_aff_counter and re.search(r'\\and\s*$', line):
+        elif astro_aff_counter and re.search(r'\\and[ ]*$', line):
             line_new = \
-                re.sub(r'(.*)\s*\\and$', r'$^{' + str(astro_aff_counter) + r'}$ \1', \
+                re.sub(r'(.*)[ ]*\\and[ ]*$', r'$^{' + str(astro_aff_counter) + r'}$ \1', \
                 line)
             read_data = read_data.replace(line, line_new)
             astro_aff_counter += 1
-    print read_data
+    #print read_data
 
     #Remove spaces around braces and commas
     read_data = re.sub(r'[ ]*([\]\}\[\{\,])[ ]*', r'\1', read_data)
@@ -250,8 +254,9 @@ def preprocess_file(read_data):
 
     read_data = re.sub(r'\-+', r'-', read_data)
 
-    read_data = re.sub(r'%.*\n', '', read_data)
+    read_data = re.sub(r'%.*\n', '\n', read_data)
     read_data = re.sub(r'}\$,\s*', '}$\n', read_data)
+    read_data = re.sub(r'\$\^(\w)\$,\s*', r'$^\1$\n', read_data)
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\{', r'\\affiliation{', read_data)
@@ -261,7 +266,7 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\\and[ ]+', '', read_data)
 
     #I.J.~Arnquist\inst{10}
-    read_data = re.sub(r'(\w)\\inst\{(.*)\}', r'\1$^{\2}$', read_data)
+    read_data = re.sub(r'(\w)[ ]*\\inst\{(.*)\}', r'\1$^{\2}$', read_data)
     #\author[b,c]{M. Zimmermann} \affiliation[b]{Fermilab}
     read_data = \
         re.sub(r'\\author\[([\w\,\-]+)\]\{(.*)\}', r'\2$^{\1}$', read_data)
