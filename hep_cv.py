@@ -14,9 +14,9 @@ author = 'Lowe, Andrew'
 author = 'Vellidis, Konstantinos (Costas)'
 author = 'Vellidis'
 author = 'Bellettini, Giorgio'
-author = 'Damgov, Jordan V.'
-author = 'Stoynev, Stoyan'
-author = 'Betancourt, Minerba'
+#author = 'Damgov, Jordan V.'
+#author = 'Stoynev, Stoyan'
+#author = 'Betancourt, Minerba'
 #author = 'Schappert, Warren'
 fileName = re.sub(r'(.*)\,.*',r'\1',author)
 fileName = fileName.replace(' ','_')
@@ -27,11 +27,13 @@ search = 'find ea C.O.Escobar.1'
 search = 'fin a F. Khalid or a f fahim'
 search = 'find ea A.Lowe.1'
 search = 'find a Vellidis'
-search = 'find ea Giorgio.Bellettini.1'
-search = 'find ea J.Damgov.1'
-search = 'find ea Stoyan.Stoynev.1'
-search = 'find ea Minerba.Betancourt.1'
+bai = 'Giorgio.Bellettini.1'
+#search = 'find ea J.Damgov.1'
+#search = 'find ea Stoyan.Stoynev.1'
+#search = 'find ea Minerba.Betancourt.1'
 #search = 'find ea Warren.Schappert.1'
+
+search = "exactauthor:" + bai
 
 print search
 
@@ -65,7 +67,7 @@ def clean(r) :
 for r in x:
   fr = clean(r)
   output.write(fr)
-  search = 'refersto:recid:' + str(r) + ' -author:"' + author + '"'
+  search = 'refersto:recid:' + str(r) + ' -exactauthor:"' + bai + '"'
   print search
   xx = perform_request_search(p=search,cc='HEP')
   if len(xx) > 0 :

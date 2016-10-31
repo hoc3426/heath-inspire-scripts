@@ -2,7 +2,7 @@
 A system to extract collaboration author lists from tex files.
 """
 
-import gzip
+import getopt, gzip
 import os
 import re
 import sys
@@ -14,16 +14,6 @@ from unidecode import unidecode
 from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
-
-TEST = True
-TEST = False
-
-if TEST:
-    def get_aff(aff):
-        """Does nothing to affiliation."""
-        return [aff]
-else:
-    from hep_aff import get_aff
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
@@ -105,14 +95,15 @@ def process_author_name(author):
     #    print unichr(int("{0:0{1}x}".format(i, 4), 16))
 
     #author = translate_latex2unicode(author)
+    author = author.replace(r'\.', r'xxxx')
     author = author.replace(r'.', '. ')
+    author = author.replace(r'xxxx', r'\.')
     author = re.sub('[ ]+', ' ', author)
     author = re.sub(r'\\(cor|corauth|fn)ref\{\w+\}', r'', author)
     author = re.sub(r'\}?\\thanks\{\\?.*\}?', r'', author)
     author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
     author = author.replace(r'xxxx', r'\~')
-
     author = translate_latex2unicode(author)
     author = author_first_last(author)
 
@@ -191,6 +182,7 @@ def preprocess_file_braces(read_data):
                        r'\\section*{Affiliations}', read_data)
     read_data = re.sub(r'(\{[^\}]*)\n+', r'\1', read_data)
     read_data = re.sub(r'(\{[^\}]*\{[^\}]*\}[^\}]*)\n+', r'\1', read_data)
+    read_data = read_data.replace(r'\\', '\n')
 
     return read_data
 
@@ -242,8 +234,9 @@ def preprocess_file(read_data):
             astro_aff_counter += 1
         elif astro_aff_counter and re.search(r'\\and[ ]*$', line):
             line_new = \
-                re.sub(r'(.*)[ ]*\\and[ ]*$', r'$^{' + str(astro_aff_counter) + r'}$ \1', \
-                line)
+                re.sub(r'(.*)[ ]*\\and[ ]*$', r'$^{' + \
+                       str(astro_aff_counter) + r'}$ \1', \
+                       line)
             read_data = read_data.replace(line, line_new)
             astro_aff_counter += 1
     #print read_data
@@ -258,6 +251,7 @@ def preprocess_file(read_data):
     read_data = re.sub(r'}\$,\s*', '}$\n', read_data)
     read_data = re.sub(r'\$\^(\w)\$,\s*', r'$^\1$\n', read_data)
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
+    read_data = re.sub(r'\\item\[(\$\^\{?\w+\}?\$)\]', r'\1', read_data)
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\{', r'\\affiliation{', read_data)
     read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
@@ -307,8 +301,6 @@ def process_file(eprint, file_type='tex'):
     babar_flag = False
     author_previous = False
     for line in read_data:
-        line = line.replace(r'\\', '')
-
         #Find author/affiliations for $^{1}$
         match = re.search(r'^(\\?\"?[A-Z].*)\$\^\{?([\w\-\s\,]+)\}?\$', line)
         if match:
@@ -395,12 +387,45 @@ def main(eprint):
 
 
 if __name__ == '__main__':
-    EPRINT = sys.argv[1:]
+
+    TEST = False
+
     try:
-        EPRINT = EPRINT[0]
-        main(EPRINT)
-    except IndexError:
-        print "Bad input", EPRINT
-    except KeyboardInterrupt:
-        print 'Exiting'
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 't')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        sys.exit(0)
+
+    for option, aargument in OPTIONS:
+        if option == '-t':
+            TEST = True
+
+    if TEST:
+        def get_aff(aff):
+            """Does nothing to affiliation."""
+            return [aff]
+    else:
+        from hep_aff import get_aff
+
+    if len(ARGUMENTS) != 1:
+        print 'you didn\'t specify an eprint number'
+        sys.exit(0)
+    else:
+        try:
+            EPRINT = ARGUMENTS[0]
+            main(EPRINT)
+        except IndexError:
+            print "Bad input", EPRINT
+        except KeyboardInterrupt:
+            print 'Exiting'
+
+    #EPRINT = sys.argv[1:]
+    #try:
+    #    #EPRINT = EPRINT[0]
+    #    #main(EPRINT)
+    #    main(eprint)
+    #except IndexError:
+    #    print "Bad input", eprint
+    #except KeyboardInterrupt:
+    #    print 'Exiting'
 

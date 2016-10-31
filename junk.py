@@ -20,6 +20,69 @@ from invenio.intbitset import intbitset
 #from hep_aff import get_aff
 #from numbers_beijing import IDS
 
+emails = ["qinnian@ihep.ac.cn",
+"hcai@whu.edu.cn",
+"hanshuang@ihep.ac.cn",
+"huanghp@ihep.ac.cn",
+"jianglw@ihep.a.cn",
+"yangle@ihep.ac.cn",
+"zhangzhenyu@ihep.ac.cn",
+"xiangzhou@whu.edu.cn",
+"Marcel.Werner@physik.uni-giessen.de",
+"fanjz@ihep.ac.cn",
+"helloliukai@126.com",
+"wangxf@ihep.ac.cn",
+"like2029@163.com",
+"liteng_shiyan@163.com",
+"malte@ep1.rub.de",
+"chuxk@ihep.ac.cn",
+"qinyao@ihep.ac.cn",
+"shanwei@ihep.ac.cn",
+"kingyu.pku@gmail.com",
+"dongchao@ihep.ac.cn",
+"kangxsh@ihep.ac.cn",
+"chizhangphy@gmail.com",
+"guot@ihep.ac.cn",
+"huchen@ihep.ac.cn",
+"julin@physics.umn.edu",
+"kloss@kph.uni-mainz.de",
+"D.Lin@gsi.de",
+"schumans@kph.uni-mainz.de",
+"whyaqm@gmail.com",
+"dwbennet@imail.iu.edu",
+"lurq@mail.ihep.ac.cn",
+"puyn@ihep.ac.cn",
+"renhl@mail.ihep.ac.cn",
+"rainxiayucat@163.com",
+"yunzeng@hnu.edu.cn",
+"yu.ruai@163.com",
+"zhzhang@ihep.ac.cn",
+"luhj9404@hsu.edu.cn",
+"liuhh123qwe@126.com",
+"licui@mail.ustc.edu.cn",
+"simonlh@ustc.edu.cn",
+"wzh1988@mail.ustc.edu.cn",
+"yanl@ihep.ac.cn",
+"wencheng@mail.ustc.edu.cn",
+"kangli60@yahoo.com.cn",
+"z.haddadi@rug.nl",
+"m.tiemens@rug.nl",
+"Svende.Braun@physik.uni-giessen.de",
+"alperen.yuncu@boun.edu.tr",
+"onurkolcu@gmail.com",
+"baiciank@andrew.cmu.edu",
+"liuqian@ucas.ac.cn",
+"liuxiaoxia12@mails.ucas.ac.cn",
+"wangbinlong12@mails.ucas.ac.cn"]
+
+for email in emails:
+    search = '371:' + email + ' 035__9:INSPIRE'
+    result = perform_request_search(p=search,cc='HepNames')
+    if len(result) != 1:
+        print email
+
+print 'Done!'
+
 search = '100__m:/\@/ or 700__m:/\@/'
 result = perform_request_search(p=search,cc='HEP')
 unique_emails = []
