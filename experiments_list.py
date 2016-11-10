@@ -38,11 +38,12 @@ EXPT_DICT = {("1", "Collider Experiments"):[
 ("2.5", "Flavor physics"),
 ("2.6", "Lepton precision experiments")],
 ("3", "Neutrino (flavor) experiments"):[
-("3.1", "Accelerator - Short baseline"),
-("3.2", "Accelerator - Long baseline"),
-("3.3", "Reactor"),
-("3.4", "Neutrino telescopes"),
-("3.5", "Neutrinoless double beta decay")],
+("3.1", "Accelerator - short baseline"),
+("3.2", "Accelerator - long baseline"),
+("3.3", "Reactor - ultra short baseline"),
+("3.4", "Reactor - short, medium and long baseline"),
+("3.5", "Neutrino telescopes (atmospheric, solar, cosmic)"),
+("3.6", "Neutrinoless double beta decay")],
 ("4", "Dark matter search experiments"):[
 ("4.1", "Non-accelerator"),
 ("4.2", "Axion search experiments"),

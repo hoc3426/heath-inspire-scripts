@@ -32,7 +32,7 @@ def download_source(eprint, download_path = ""):
         tarfiles = {}
         file_count = 0
         for this_file in this_tarfile.getnames():
-            if re.search(r'.(tex|xml)', this_file):
+            if re.search(r'(tex|xml)$', this_file):
                 file_count += 1
                 tarfiles[file_count] = this_file
                 print file_count, tarfiles[file_count]
@@ -182,8 +182,10 @@ def preprocess_file_braces(read_data):
                        r'\\section*{Affiliations}', read_data)
     read_data = re.sub(r'(\{[^\}]*)\n+', r'\1', read_data)
     read_data = re.sub(r'(\{[^\}]*\{[^\}]*\}[^\}]*)\n+', r'\1', read_data)
+    read_data = re.sub(r'([\{\(\[])\s+', r'\1', read_data)
+    read_data = re.sub(r'\s+([\}\)\]])', r'\1', read_data)
     read_data = read_data.replace(r'\\', '\n')
-
+    #print repr(read_data)
     return read_data
 
 def preprocess_file(read_data):
@@ -241,6 +243,27 @@ def preprocess_file(read_data):
             astro_aff_counter += 1
     #print read_data
 
+
+    #Special treatment for LIGO and Virgo
+    pattern_au = re.compile("([A-Z])\.([^-]*)([A-Z])([^A-Z]+)\s*\%\s*"
+                         "([a-z])([a-z]+)\.([a-z])([a-z]+)")
+    pattern_af = re.compile(r"\\affiliation\s*\{(.*)\}\s*\%.*(\{\d+\})")
+    for line in read_data.split('\n'):
+        match = re.match(pattern_au, line)
+        if match:
+            if match.group(5).upper() == match.group(1) and \
+               match.group(7).upper() == match.group(3):
+                line_new = match.group(1) + match.group(6) + \
+                           match.group(2) + match.group(3) + \
+                           match.group(4)
+                #print line_new, '\t\t', line
+                read_data = read_data.replace(line, line_new)
+        match = re.match(pattern_af, line)
+        if match:
+            line_new = "$^" + match.group(2) + "$" + match.group(1)
+            #print line_new
+            read_data = read_data.replace(line, line_new)
+
     #Remove spaces around braces and commas
     read_data = re.sub(r'[ ]*([\]\}\[\{\,])[ ]*', r'\1', read_data)
     read_data = re.sub(r'^[ ]+', '', read_data)
@@ -253,7 +276,7 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
     read_data = re.sub(r'\\item\[(\$\^\{?\w+\}?\$)\]', r'\1', read_data)
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
-    read_data = re.sub(r'\\affil\{', r'\\affiliation{', read_data)
+    read_data = re.sub(r'\\affil\b', r'\\affiliation', read_data)
     read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
     read_data = re.sub(r'}\s*\\author', '}\n\\\\author', read_data)
     read_data = re.sub(r'[ ]*\\scriptsize[ ]+', '', read_data)
@@ -282,6 +305,7 @@ def preprocess_file(read_data):
             break
         else:
             new_read_data.append(line)
+
     return new_read_data
 
 

@@ -20,6 +20,13 @@ from invenio.intbitset import intbitset
 #from hep_aff import get_aff
 #from numbers_beijing import IDS
 
+
+search = "245__a:/\)$/ 372__9:inspire"
+result = perform_request_search(p=search, cc='Experiments')
+for recid in result:
+    print print_record(recid, ot=['245'], format='hx')
+quit()
+
 emails = ["qinnian@ihep.ac.cn",
 "hcai@whu.edu.cn",
 "hanshuang@ihep.ac.cn",

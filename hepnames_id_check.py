@@ -10,7 +10,7 @@ from invenio.intbitset import intbitset
 
 VERBOSE = False
 VERBOSE = True
-LETTER = 'Z'
+LETTER = 'D'
 
 def main():
     filename = 'tmp_' + __file__
