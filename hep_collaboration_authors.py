@@ -275,6 +275,7 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\$\^(\w)\$,\s*', r'$^\1$\n', read_data)
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
     read_data = re.sub(r'\\item\[(\$\^\{?\w+\}?\$)\]', r'\1', read_data)
+    read_data = re.sub(r'\\llap\{(\$\S+\$)\}', r'\1 ', read_data) 
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\b', r'\\affiliation', read_data)
     read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
