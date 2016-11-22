@@ -31,7 +31,7 @@ def get_aff(aff):
     #aff_new = affiliation[1]
     #aff_new = re.sub(';', '</subfield><subfield code="u">', aff_new)
     #return aff_new
-    return bestmatch(aff, 'ICN')[0][1].split(';')
+    return bestmatch(aff, 'ICN')[0][1].split(';')[0]
 
 
 def create_xml(recid, tags, force_flag=False):
@@ -63,6 +63,7 @@ def create_xml(recid, tags, force_flag=False):
                              subfields=correct_subfields)
     #return print_rec(correct_record)
     if flag:
+        print correct_record
         return print_rec(correct_record)
 
 def main_old(recordlist):
@@ -100,7 +101,7 @@ def main(recordlist):
         if len(recordlist) == 0:
             return None
         if VERBOSE:
-            print "%d records with '@' in author fields found" \
+            print "%d records found" \
                    % len(recordlist)
     else:
         try:

@@ -313,7 +313,10 @@ def get_author_details(recid, authors, tag):
 def get_corporate_author(recid):
     """Check to see if there is a corporte author and return it."""
     try:
-        return get_fieldvalues(recid, "110__a")[0]
+        #return get_fieldvalues(recid, "110__a")[0]
+        author_list = get_fieldvalues(recid, "110__a") \
+                    + get_fieldvalues(recid, "710__a")
+        return '; '.join([unicode(a, "utf-8") for a in author_list])
     except IndexError:
         return None
 

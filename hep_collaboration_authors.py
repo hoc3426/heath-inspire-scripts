@@ -282,9 +282,12 @@ def preprocess_file(read_data):
     read_data = re.sub(r'}\s*\\author', '}\n\\\\author', read_data)
     read_data = re.sub(r'[ ]*\\scriptsize[ ]+', '', read_data)
     read_data = re.sub(r'\\and[ ]+', '', read_data)
+    read_data = re.sub(r'\$\s*\^', '$^', read_data)
+
 
     #I.J.~Arnquist\inst{10}
-    read_data = re.sub(r'(\w)[ ]*\\inst\{(.*)\}', r'\1$^{\2}$', read_data)
+    read_data = re.sub(r'(\w)[ ]*\\(inst|altaffilmark)\{(.*)\}', \
+                       r'\1$^{\3}$', read_data)
     #\author[b,c]{M. Zimmermann} \affiliation[b]{Fermilab}
     read_data = \
         re.sub(r'\\author\[([\w\,\-]+)\]\{(.*)\}', r'\2$^{\1}$', read_data)

@@ -7,6 +7,7 @@ TYPE_DICT = {
 'ANNUAL':'PD',
 'BACHELORS':'TD',
 'CONF':'CO',
+'CRADA':'TR',
 'DESIGN':'TR',
 'FN':'TR',
 'HABILITATION':'TD',

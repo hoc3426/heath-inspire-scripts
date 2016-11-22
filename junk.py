@@ -22,9 +22,11 @@ from invenio.intbitset import intbitset
 
 
 search = "245__a:/\)$/ 372__9:inspire"
-result = perform_request_search(p=search, cc='Experiments')
+search = "037:/fermilab\-(apnote|d0\-en|en|exp|industrial|linac|pbarnote|research|review|upc|workbook)\-/ 8564_u:/shtml$/"
+print search
+result = perform_request_search(p=search, cc='HEP')
 for recid in result:
-    print print_record(recid, ot=['245'], format='hx')
+    print print_record(recid, ot=['856'], format='xm')
 quit()
 
 emails = ["qinnian@ihep.ac.cn",

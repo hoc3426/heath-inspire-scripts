@@ -36,13 +36,13 @@ EXPT_DICT = {
 ("1", "Collider Experiments"):[
     {("1.1", "Hadrons"):[
         ("1.1.1", "p anti-p"),
-        ("1.1.2", "p p"),
-        ("1.1.3", "Heavy ion"),
+        ("1.1.2", "p p")
         ]
     },
     ("1.2", "e+ e-"),
     ("1.3", "e p"),
-    ("1.4", "Heavy Flavor Factory")
+    ("1.4", "Heavy Flavor Factory"),
+    ("1.5", "Heavy ion")
     ],
 ("2", "Fixed Target Experiments"):[
     ("2.1", "High-momentum transfer"),
