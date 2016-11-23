@@ -8,6 +8,8 @@ from BeautifulSoup import BeautifulSoup as BS
 
 import re
 
+FILE = "/afs/cern.ch/project/inspire/info/Experiments/list.webdoc"
+
 BASE_URL = 'http://inspirehep.net/search?cc=Experiments'
 BASE_URL += '&sf=experimentname&so=a&p=372__a:'
 TITLE = 'WebDoc-Page-Title:Major HEP Experiments'
@@ -19,7 +21,8 @@ For example, although LHCb could be included in the "Hadron collider"
 category, its primary focus is the investigation of beauty sector physics
 and as such it has been included in the "Heavy Flavor Factory" category.
 However, this is not always possible and some experiments have more than
-one category. 
+one category.
+This is very much a work in progress and we value your feedback.
 If you have any questions or comments please feel free to contact us about it
 at
 """
@@ -158,8 +161,9 @@ def create_html(experiment_dictionary):
 def main():
     """Creates and opens a file and writes the table to it."""
 
-    filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_correct.out', filename)
+    #filename = 'tmp_' + __file__
+    #filename = re.sub('.py', '_correct.out', filename)
+    filename = FILE
     output = open(filename,'w')
     table = create_html(EXPT_DICT)
     output.write(table)

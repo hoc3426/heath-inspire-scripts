@@ -288,6 +288,10 @@ def preprocess_file(read_data):
     #I.J.~Arnquist\inst{10}
     read_data = re.sub(r'(\w)[ ]*\\(inst|altaffilmark)\{(.*)\}', \
                        r'\1$^{\3}$', read_data)
+    #\altaffiltext{2}{Fermilab, Batavia}
+    read_data = \
+        re.sub(r'\\altaffiltext\{([\w\,\-]+)\}\{(.*)\}', r'$^{\1}$ \2', \
+               read_data)
     #\author[b,c]{M. Zimmermann} \affiliation[b]{Fermilab}
     read_data = \
         re.sub(r'\\author\[([\w\,\-]+)\]\{(.*)\}', r'\2$^{\1}$', read_data)
