@@ -207,8 +207,12 @@ def preprocess_file(read_data):
                 command_value = '\\' + command_value
             command_dict[match.group(1)] = command_value
     for key in command_dict:
-        command_string = re.compile(r'\\%s\b' % key)
-        read_data = re.sub(command_string, command_dict[key], read_data)
+        try:
+            command_string = re.compile(r'\\%s\b' % key)
+            read_data = re.sub(command_string, command_dict[key], read_data)
+        except re.error:
+            print '!!! Problem with user commands:', key, command_dict[key]
+            sys.exit()
 
     #Special treatment for BaBar
     for line in read_data.split('\n'):
@@ -245,8 +249,8 @@ def preprocess_file(read_data):
 
 
     #Special treatment for LIGO and Virgo
-    pattern_au = re.compile("([A-Z])\.([^-]*)([A-Z])([^A-Z]+)\s*\%\s*"
-                         "([a-z])([a-z]+)\.([a-z])([a-z]+)")
+    pattern_au = re.compile(r"([A-Z])\.([^-]*)([A-Z])([^A-Z]+)\s*\%\s*"
+                         r"([a-z])([a-z]+)\.([a-z])([a-z]+)")
     pattern_af = re.compile(r"\\affiliation\s*\{(.*)\}\s*\%.*(\{\d+\})")
     for line in read_data.split('\n'):
         match = re.match(pattern_au, line)
@@ -275,7 +279,7 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\$\^(\w)\$,\s*', r'$^\1$\n', read_data)
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
     read_data = re.sub(r'\\item\[(\$\^\{?\w+\}?\$)\]', r'\1', read_data)
-    read_data = re.sub(r'\\llap\{(\$\S+\$)\}', r'\1 ', read_data) 
+    read_data = re.sub(r'\\llap\{(\$\S+\$)\}', r'\1 ', read_data)
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\b', r'\\affiliation', read_data)
     read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
@@ -286,7 +290,7 @@ def preprocess_file(read_data):
 
 
     #I.J.~Arnquist\inst{10}
-    read_data = re.sub(r'(\w)[ ]*\\(inst|altaffilmark)\{(.*)\}', \
+    read_data = re.sub(r'(\w\.?)[ \,]*\\(inst|altaffilmark)\{(.*)\}', \
                        r'\1$^{\3}$', read_data)
     #\altaffiltext{2}{Fermilab, Batavia}
     read_data = \
