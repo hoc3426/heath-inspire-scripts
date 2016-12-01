@@ -10,7 +10,7 @@ from invenio.intbitset import intbitset
 
 VERBOSE = False
 VERBOSE = True
-LETTER = 'F'
+LETTER = 'G'
 
 def main():
     filename = 'tmp_' + __file__
@@ -69,7 +69,7 @@ def examine(field_search):
             result = intbitset(result) & intbitset(core)
     if VERBOSE:
         print 'VERBOSE', field, search, collection, len(result)
-    already_seen_field_values = []
+    already_seen_field_values = set()
     for recid in result:
         recid_print = ""
         field_values = get_fieldvalues(recid, field)
@@ -147,7 +147,7 @@ def examine(field_search):
                     if len(result_hep) > 0:
                         print 'Bad ID in HEP', search_hep, \
                             len(result_hep)
-            already_seen_field_values.append(field_value)
+            already_seen_field_values.add(field_value)
 
 if __name__ == '__main__':
     try:

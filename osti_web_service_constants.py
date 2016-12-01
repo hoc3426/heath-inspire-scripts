@@ -19,7 +19,8 @@ TYPE_DICT = {
 'PUB':'JA',
 'REVIEW':'PD',
 'THESIS':'TD',
-'TM':'TR'
+'TM':'TR',
+'VLHCPUB':'TR'
 }
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
