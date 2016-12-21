@@ -1,157 +1,115 @@
+# -*- coding: utf-8 -*-
+"""
+This module looks for duplicate names and bad IDs in HEPNames.
+"""
+
 import re
 import sys
-from invenio.search_engine import perform_request_search
+
+from invenio.search_engine import get_collection_reclist
 from invenio.search_engine import get_fieldvalues
-#from hep_convert_email_to_id import get_hepnames_recid_from_email
-from hep_convert_email_to_id import find_inspire_id_from_record, \
-                                    get_hepnames_anyid_from_recid
-from invenio.search_engine import search_unit
-from invenio.intbitset import intbitset
+from invenio.search_engine import perform_request_search
 
-VERBOSE = False
-VERBOSE = True
-LETTER = 'G'
+from hep_convert_email_to_id import find_inspire_id_from_record
+from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 
-def main():
-    filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_correct.out', filename)
-    output = open(filename,'w')
-    sys.stdout = output
-    hepnames_search_ids(LETTER)
-    output.close()
+#EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@\.]+\w$")
+EMAIL_REGEX = re.compile(r"[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+ORCID_REGEX = re.compile(r'0000-\d{4}-\d{4}-\d{3}[\dX]')
+INSPIRE_REGEX = re.compile(r'INSPIRE-\d{8}')
+LETTER = None
+RECIDS = get_collection_reclist('HepNames')
 
-def email_search(email):
-    email_fields = '371__m:"{0}" or 371__o:"{0}"'
-    email_fields += ' or 595__o:"{0}" or 595__m:"{0}"'
-    return email_fields.format(email)
 
-def hepnames_search_ids(letter):
-    name_letter = letter + '*'
-    id_search = '035__9:bai or 035__9:inspire'
-    id_search += ' or 035__9:orcid or 035__9:jacow'
-    field_search_list = [['035__a', id_search, 'HepNames'],
-                         ['371__m', r'/\@/', 'HepNames'],
-                         ['371__m', r'/\,/', 'HepNames'],
-                         ['100__a', r'/[\{\}\\]/', 'HepNames'],
-                         ['100__a', name_letter, 'HepNames'],
-                         ['100__j', r'ORCID:', 'HEP'],
-                         ['700__j', r'ORCID:', 'HEP'],
-                         #['541__a', r'*0000*', 'HEP'],
-                         #['541__b', r'*\@*', 'HEP']
-                        ]
+def bad_id_check(id_num):
+    """Check various IDs for correct format."""
 
-    #field_search_list = [['100__a', name_letter, 'HepNames']]
-    #field_search_list = [['541__a', r'*0000*', 'HEP'],
-    #                     ['541__b', r'*\@*', 'HEP']]
-    #field_search_list = [['100__j', r'*0000*', 'HEP'],
-    #                     ['700__j', r'*0000*', 'HEP']]
-
-    for field_search in field_search_list:
-        examine(field_search)
-
-def examine(field_search):
-    field = field_search[0]
-    search = field_search[1]
-    collection = field_search[2]
-    core = perform_request_search(p='980:CORE', cc='HEP')
-    #search_theory = 'find fc p or fc t or fc l or fc n or fc g 980:core'
-    search_core = '980:core'
-    core = perform_request_search(p=search_core, cc='HEP')
-    if re.search(r'541.*', field):
-        result = search_unit(p = search, m = 'a', f = field)
-        #result = result & get_collection_reclist('HEP')
-        result = result & intbitset(core)
+    if id_num.startswith('INSP') and not \
+       re.match(INSPIRE_REGEX, id_num):
+        return True
+    elif re.search(r'000\-', id_num) and not \
+         re.match(ORCID_REGEX, id_num):
+        return True
+    elif re.search(r'\@', id_num) and not \
+         re.match(EMAIL_REGEX, id_num):
+        return True
     else:
-        if not re.search(r'\:', search):
-            search = field + ':' + search
-        result = perform_request_search(p = search, cc = collection)
-        if collection == 'HEP':
-            result = intbitset(result) & intbitset(core)
-    if VERBOSE:
-        print 'VERBOSE', field, search, collection, len(result)
-    already_seen_field_values = set()
-    for recid in result:
-        recid_print = ""
+        return False
+
+def main(letter=None):
+    """Go through HEPNames looking for bad IDs."""
+
+    already_seen = {}
+    duplicates   = set()
+    bad_id_set   = set()
+    fields = ['035__a', '371__m']
+    if letter:
+        fields.append('100__a')
+
+    for recid, field in [(recid, field) for recid in RECIDS \
+                                        for field in fields]:
         field_values = get_fieldvalues(recid, field)
+        if field == '100__a' and not field_values[0].startswith(letter):
+            continue
         for field_value in field_values:
-            bad_id = False
-            if field_value in already_seen_field_values:
+            if field_value in already_seen:
+                duplicates.add(field + ':"' + field_value + '"')
                 continue
-            if re.search(r'INSPIRE', field_value):
-                inspire_form = r'^INSPIRE-\d{8}$'
-                if not re.match(inspire_form, field_value):
-                    print 'Bad INSPIRE ID: ', field_value
-                    bad_id = True
-            elif re.search(r'^0000-', field_value):
-                orcid_form = r'^0000-\d{4}-\d{4}-\d{3}[\dX]$'
-                if not re.match(orcid_form, field_value):
-                    print 'Bad ORCID ID: ', field_value
-                    bad_id = True
-            search_dup = '{0}:"{1}"'.format(field, field_value)
-            if field == '371__m' or field == '541__b':
-                search_dup = email_search(field_value)
-                if re.search(r"\'", field_value):
-                    field_value_mod = \
-                        re.sub(r"\'", r".", field_value)
-                    search_dup = email_search(field_value_mod)
-            elif collection == 'HEP':
-#field == '541__a' or field == '100__j' \
-#                                   or field == '700__j':
-                ignore = r'(CCID|JACoW|uid|arxiv)'
-                if re.search(ignore, field_value):
-                    continue
-                field_value = re.sub(r'^\w+:', r'', field_value)
-                if not field_value:
-                    continue
-                orcid_form = r'^0000-\d{4}-\d{4}-\d{3}[\dX]$'
-                if not re.match(orcid_form, field_value):
-                    print 'Bad ORCID ID: ', field_value
-                    bad_id = True
-                search_dup = '035__a:' + field_value
-                #collection = 'HepNames'
-            if collection == 'HEP':
-#field == '541__a' or field == '541__b':
-                recid_print = "http://inspirehep.net/record/" \
-                              + str(recid) + "/export/xm"
-            #print search_dup
-            if field_value in already_seen_field_values:
+            already_seen[field_value] = field
+            if bad_id_check(field_value):
+                bad_id_set.add(field + ':"' + field_value + '"')
+
+    print "Duplicates"
+    for duplicate in sorted(duplicates):
+        if duplicate.startswith('100__a'):
+            result = perform_request_search(p=duplicate, cc='HepNames')
+            for recid in result:
+                print '{0:40s} {1:20s} {2:20s}'.\
+                       format(duplicate, \
+                         find_inspire_id_from_record(recid), \
+                         get_hepnames_anyid_from_recid(recid, 'ORCID'))
+        elif duplicate.startswith('035__a'):
+            print duplicate
+            search = r'100__a:{0} or 700__a:{0}'.\
+                     format(duplicate.strip('035__a:'))
+            result = perform_request_search(p=duplicate, cc='HEP')
+            if len(result) > 0:
+                print "Duplicate ID in HEP records"
+                print "  ", search
+
+    print "Bad metadata"
+    for bad_id in sorted(bad_id_set):
+        print bad_id
+
+    new_orcids(already_seen)
+
+def new_orcids(already_seen):
+    """Search for new ORCIDs in HEP."""
+
+    fields = ('100__j', '700__j')
+    search = "{0}:ORCID:* or {1}:ORCID:* 980:CORE".format(*fields)
+    result = perform_request_search(p=search, cc='HEP')
+    for recid, field in [(recid, field) for recid in result \
+                                        for field in fields]:
+        for orcid in get_fieldvalues(recid, field):
+            if not orcid.startswith('ORCID:'):
                 continue
-            result_dup =  perform_request_search(p = search_dup, \
-                              cc = 'HepNames')
-            if len(result_dup) != 1 or bad_id:
-                if field == '100__a':
-                    for recid_dup in result_dup:
-                        author_id = \
-                            find_inspire_id_from_record(recid_dup)
-                        orcid = \
-                        get_hepnames_anyid_from_recid(recid_dup, 'ORCID')
-                        print '{0:11d} {1:40s} {2:20s} {3:20s}'.\
-                              format(recid_dup, field_value, author_id,
-                                     orcid)
-                else:
-                    if len(result_dup) == 0:
-                        print_field_value = field_value
-                        if collection == 'HEP' and \
-                               re.search(r'^0000-', field_value):
-                            print_field_value = 'http://orcid.org/' + \
-                                          field_value
-                        print '{0:40s} {1:30s}'. \
-                              format(print_field_value, recid_print)
-                    else:
-                        print search_dup, recid_print, result_dup, bad_id
-                if field == '035__a' and field_value:
-                    author_search = r'100__a:"{0}" or 700__a:"{0}"'
-                    search_hep = author_search.format(field_value)
-                    result_hep = perform_request_search(p = search_hep, \
-                        cc = 'HEP')
-                    if len(result_hep) > 0:
-                        print 'Bad ID in HEP', search_hep, \
-                            len(result_hep)
-            already_seen_field_values.add(field_value)
+            orcid = orcid.strip('ORCID:')
+            if orcid in already_seen:
+                continue
+            already_seen[orcid] = recid
+            print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
+                  format(str(recid), orcid)
+
 
 if __name__ == '__main__':
     try:
+        LETTER = str(sys.argv[1:][0])
+        main(LETTER.upper())
+    except IndexError:
         main()
     except KeyboardInterrupt:
         print 'Exiting'
+
+
 

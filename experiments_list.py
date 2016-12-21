@@ -12,7 +12,7 @@ FILE = "/afs/cern.ch/project/inspire/info/Experiments/list.webdoc"
 
 BASE_URL = 'http://inspirehep.net/search?cc=Experiments'
 BASE_URL += '&sf=experimentname&so=a&p=372__a:'
-TITLE = 'WebDoc-Page-Title:Major HEP Experiments'
+TITLE = 'WebDoc-Page-Title:Experiment categories'
 PARAGRAPH = """The following list of major experiments in HEP and related
 fields seeks to organize the experiments by their primary characteristic.
 Where experiments could reasonably be included in more than one
@@ -27,7 +27,7 @@ If you have any questions or comments please feel free to contact us about it
 at
 """
 
-EMAIL = 'feedback@inspirehep.net'
+EMAIL = 'experiments@inspirehep.net'
 MAILTO = 'mailto:' + EMAIL
 
 STYLE = '''li:last-of-type{
@@ -72,7 +72,8 @@ EXPT_DICT = {
         ("3.3.3", "cosmic"),
         ]
     },
-    ("3.4", "Neutrinoless double beta decay")
+    ("3.4", "Neutrinoless double beta decay"),
+    ("3.5", "Neutrino mass"),
     ],
 ("4", "Dark matter search experiments"):[
     ("4.1", "Non-accelerator"),
@@ -98,7 +99,7 @@ EXPT_DICT = {
     ("8.1", "CMB"),
     ("8.2", "Survey"),
     ("8.3", "Supernovae"),
-    ("8.4", "Gravity waves")
+    ("8.4", "Gravitational waves")
     ]
 }
 

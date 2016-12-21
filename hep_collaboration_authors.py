@@ -198,7 +198,7 @@ def preprocess_file(read_data):
     for line in read_data.split('\n'):
         match = None
         if re.search('command', line):
-            match = re.search(r'\\r?e?newcommand\{\\(\w+)\}\{(.*)\}', line)
+            match = re.search(r'\\r?e?newcommand\*?\{\\(\w+)\}\{(.*)\}', line)
         elif re.search(r'\\def\\', line):
             match = re.search(r'\\def\\(\w+)\{(.*)\}', line)
         if match:
@@ -290,11 +290,29 @@ def preprocess_file(read_data):
 
 
     #I.J.~Arnquist\inst{10}
-    read_data = re.sub(r'(\w\.?)[ \,]*\\(inst|altaffilmark)\{(.*)\}', \
-                       r'\1$^{\3}$', read_data)
+    read_data = re.sub(r'Irefn{(\w+)}\\Aref{(\w+)}\\Aref{(\w+)}', \
+                       r'Irefn{\1,\2,\3}', read_data)
+    read_data = re.sub(r'Irefnn?\{(.*)\}\\?A?r?e?f?s?\{(.*)\}', \
+                       r'Irefn{\1,\2}', read_data)
+    read_data = re.sub(r'Arefs?{(\w+)}', r'Irefn{\1}', read_data)
+    #read_data = \
+    #    re.sub(r'(\w\.?)[ \,]*\\(inst|altaffilmark|Irefn)\{(.*)\}', \
+    #           r'\1$^{\3}$', read_data)
+    read_data = \
+        re.sub(r'[ \,]*\\(inst|altaffilmark|Irefn|thanksref)\{(.*)\}', \
+               r'$^{\2}$', read_data)
     #\altaffiltext{2}{Fermilab, Batavia}
     read_data = \
         re.sub(r'\\altaffiltext\{([\w\,\-]+)\}\{(.*)\}', r'$^{\1}$ \2', \
+               read_data)
+    read_data = \
+        re.sub(r'\\item\s*\\[IA]def\{([\w\,\-]+)\}\{(.*)\}', r'$^{\1}$ \2', \
+               read_data)
+    read_data = \
+        re.sub(r'\\[IA]def\{([\w\,\-]+)\}\{(.*)\}', r'$^{\1}$ \2', \
+               read_data)
+    read_data = \
+        re.sub(r'(.*)\s*\\label\{(.*)\}', r'$^{\2}$ \1', \
                read_data)
     #\author[b,c]{M. Zimmermann} \affiliation[b]{Fermilab}
     read_data = \

@@ -18,7 +18,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 #from afftranslator2 import bestmatch
 from hepnames_fermilab_aff_from_email import *
-from tmp_email import EMAILS
+#from tmp_email import EMAILS
 
 from hepnames_add_from_list_authors import AUTHORS
 EXPERIMENT = 'FNAL-E-0974'
@@ -26,10 +26,13 @@ EXPERIMENT = 'AUGER'
 EXPERIMENT = 'BNL-RHIC-STAR'
 EXPERIMENT = 'DUNE'
 EXPERIMENT = 'GERDA'
+EXPERIMENT = 'EXO-200'
+
 #INSPIRE = 537896
 #INSPIRE = 52682
-INSPIRE =  52765
-INSPIRE =  55286
+#INSPIRE =  52765
+#INSPIRE =  55286
+INSPIRE = 55401
 
 #for email in EMAILS:
 if False:
@@ -70,7 +73,7 @@ def create_xml(author,email,af,experiment,inspire_id):
 search = "371__u:/a/ or 371__u:/e/ or 371__u:/i/ or 371__u:/o/ or 371__u:/u/"
 
 fileName = 'tmp_hepnames_add_from_list.out'
-input = open('tmp.bnl.in', 'r')
+#input = open('tmp.bnl.in', 'r')
 output = open(fileName,'w')
 #for line in input.readlines():
 if False:
@@ -95,7 +98,7 @@ if False:
         pass
     line = line + '\n'
     output.write(line)
-input.close()
+#input.close()
 output.close()
 
 
@@ -109,9 +112,9 @@ for author in AUTHORS:
 #if False:
     #print author
     au = author[0] 
-    email = author[1]
+    email = author[2]
     email = email.lower()
-    #af = author[2]
+    af = author[1]
     af = ''
     #au = re.sub(r'(.*[A-Z][A-Z]) ([A-Z][a-z].*)',r'\1, \2',au)
     #au = re.sub(r'(.*[a-z]) ([A-Z][A-Z].*)',r'\2, \1',au)
@@ -126,7 +129,7 @@ for author in AUTHORS:
         search = "001:" + str(recid) + " -693__e:" + EXPERIMENT
         x = perform_request_search(p=search,cc='HepNames')
         if len(x) == 1:
-            print search
+            #print search
             print 'or ', x[0]
             pass
     #elif len(x) < 1 and not recid:

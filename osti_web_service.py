@@ -467,9 +467,9 @@ def create_xml(recid, records):
     product_type = get_product_type(recid)
     if accepted:
         product_type = 'JA'
-    journal_info = get_pubnote(recid)
-    if product_type == 'JA' and journal_info[0] == None:
-        return None
+    ##journal_info = get_pubnote(recid)
+    ##if product_type == 'JA' and journal_info[0] == None:
+    ##    return None
     #Begin building record
     record = ET.SubElement(records, 'record')
     if osti_id:
@@ -518,10 +518,12 @@ def create_xml(recid, records):
     ET.SubElement(record, 'description').text = get_abstract(recid)
     ET.SubElement(record, 'originating_research_org').text = \
         get_affiliations(recid, True)
-    #journal_info = get_pubnote(recid)
-    #if product_type == 'JA' and journal_info[0] == None:
-    #    return None
-    journal_elements = ['journal_name', 'journal_volume', 'journal_issue',
+    journal_info = get_pubnote(recid)
+    if product_type == 'JA' and journal_info[0] == None:
+        journal_elements = ['journal_name']
+        journal_info = ['TBD']
+    else:
+        journal_elements = ['journal_name', 'journal_volume', 'journal_issue',
                         'product_size', 'doi']
     i_count = 0
     for journal_element in journal_elements:
