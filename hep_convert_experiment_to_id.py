@@ -1,137 +1,28 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# import re
+"""
+This module adds INSPIRE IDs and ORCIDs to names in HEP records
+for people on experimental collaborations.
+"""
+
+
 import sys
 import os
 
 from invenio.search_engine import perform_request_search, get_record, \
-     get_fieldvalues                 
+     get_fieldvalues
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
-from invenio.intbitset import intbitset
 from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     get_hepnames_anyid_from_recid
-
-VERBOSE = False
-#VERBOSE = True
-
-COUNT_MAX = 1000
-
-BAD_EXPERIMENTS = ['CERN-LEP-DELPHI',
-'BIGBOSS',
-'BOREXINO',
-'DAYA-BAY',
-'ICARUS',
-'MEG',
-'VERITAS',
-'XENON']
-
-EXPERIMENTS = [#'AMANDA',
-'AUGER',
-'BEPC-BES-III',
-'BNL-RHIC-PHENIX',
-'BNL-RHIC-PHOBOS',
-'BNL-RHIC-STAR',
-'CDMS',
-#'CERN-LHC-ALICE',
-#'CERN-LHC-ATLAS',
-#'CERN-LHC-CMS',
-#'CERN-LHC-LHCB',
-#'CERN-LHC-TOTEM',
-#'CERN-NA-049',
-#'CERN-NA-058',
-#'CERN-NA-061',
-#'CERN-WA-096',
-#'DESY-HERA-H1',
-#'DESY-HERA-HERMES',
-#'DESY-HERA-ZEUS',
-'DOUBLECHOOZ',
-'DUNE',
-'FERMI-LAT',
-#'FNAL-E-0740',
-#'FNAL-E-0741',
-'FNAL-E-0799',
-'FNAL-E-0799',
-'FNAL-E-0823',
-'FNAL-E-0823',
-'FNAL-E-0830',
-'FNAL-E-0832',
-'FNAL-E-0871',
-'FNAL-E-0875',
-'FNAL-E-0898',
-'FNAL-E-0898',
-'FNAL-E-0907',
-'FNAL-E-0929',
-'FNAL-E-0938',
-'DES',
-'FNAL-E-0954',
-'FNAL-E-0973',
-'FNAL-E-0974',
-'FNAL-E-0987',
-'FNAL-T-0962',
-#'FRASCATI-DAFNE-KLOE',
-#'FREJUS-NEMO-3',
-'GERDA',
-#'GSI-FAIR-PANDA',
-#'GSI-HADES',
-'IceCube',
-'JUNO',
-#'KAMLAND',
-'KEK-BF-BELLE',
-'KEK-BF-BELLE-II',
-'T2K',
-'LBNE',
-#'LIGO',
-#'MAGIC',
-#'MAJORANA',
-#'MICE',
-#'OPERA',
-#'PAMELA',
-#'PLANCK',
-'SDSS',
-'SLAC-PEP2-BABAR',
-'SUPER-KAMIOKANDE',
-#'TRIUMF-614',
-#'WASA-COSY'
-]
-
-EXPERIMENTS1 = [
-'AUGER',
-'DUNE',
-#'FNAL-E-0740',
-#'FNAL-E-0741',
-'FNAL-E-0799',
-'FNAL-E-0799',
-'FNAL-E-0823',
-'FNAL-E-0823',
-'FNAL-E-0830',
-'FNAL-E-0832',
-'FNAL-E-0871',
-'FNAL-E-0875',
-'FNAL-E-0898',
-'FNAL-E-0898',
-'FNAL-E-0907',
-'FNAL-E-0929',
-'FNAL-E-0938',
-'DES',
-'FNAL-E-0954',
-'FNAL-E-0973',
-'FNAL-E-0974',
-'FNAL-E-0987',
-'FNAL-T-0962']
-
-#EXPERIMENTS = ['FNAL-E-0740', 'DES']
-#EXPERIMENTS = ['FNAL-E-0740']
-#EXPERIMENTS = ['CERN-LHC-LHCB']
-#EXPERIMENTS = ['DES', 'FNAL-E-0929', 'DUNE', 'FNAL-E-0823', 'FNAL-E-0830', 'SLAC-PEP2-BABAR']
-#EXPERIMENTS = ['BNL-RHIC-STAR']
-#EXPERIMENTS = ['FNAL-E-0823']
-#EXPERIMENTS = ['FERMI-LAT']
-#EXPERIMENTS = ['DES', 'SLAC-PEP2-BABAR']
-#EXPERIMENTS = ['CERN-LHC-LHCB']
+from hep_convert_experiment_to_id_constants import EXPERIMENTS, \
+                                                   VERBOSE, \
+                                                   COUNT_MAX
 
 def get_hepnames_recid_from_search(search):
+    """Find recid in HEPNames from a search."""
+
     reclist = perform_request_search(p = search, cc='HepNames')
     if len(reclist) == 1:
         return reclist[0]
@@ -147,6 +38,8 @@ def get_hepnames_recid_from_search(search):
         return None
 
 def convert_search_to_inspire_id(search):
+    """Convert a search to an INSPIRE ID."""
+
     inspire_id = None
     orcid      = None
     recid = get_hepnames_recid_from_search(search)
@@ -156,7 +49,9 @@ def convert_search_to_inspire_id(search):
     return [inspire_id, orcid]
 
 
-def create_xml(recid, tags, experiment):
+def create_xml(recid, tags, experiment, author_dict):
+    """Create the new author list with IDs."""
+
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
@@ -169,14 +64,16 @@ def create_xml(recid, tags, experiment):
             correct_subfields = []
             for code, value in field_instance[0]:
                 if code == 'a':
-                    search = 'find a ' + value + ' and exp ' + experiment
-                    new_value = convert_search_to_inspire_id(search)
-                    if new_value[0]:
+                    if not author_dict[value]:
+                        search = 'find a ' + value + ' and exp ' + experiment
+                        author_dict[value] = \
+                           convert_search_to_inspire_id(search)
+                    if author_dict[value][0]:
                         flag = True
-                        correct_subfields.append(('i', new_value[0]))
-                    if new_value[1]:
+                        correct_subfields.append(('i', author_dict[value][0]))
+                    if author_dict[value][1]:
                         flag = True
-                        orcid_value = 'ORCID:' + new_value[1]
+                        orcid_value = 'ORCID:' + author_dict[value][1]
                         correct_subfields.append(('j', orcid_value))
                 correct_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4],
@@ -184,23 +81,20 @@ def create_xml(recid, tags, experiment):
     #return print_rec(correct_record)
     if flag:
         #print print_rec(correct_record)
-        return print_rec(correct_record)
+        return [print_rec(correct_record), author_dict]
+    else:
+        return [None, author_dict]
 
 def find_records_with_no_id(experiment):
+    """Find records in HEP that have no INSPIRE IDs or ORCIDs."""
+
     print experiment
-    osearch = "693__e:" + experiment
-    oresult = perform_request_search(p=osearch, cc='HEP')
-    #psearch = 'authorcount:100->9000' + ' -100__i:INSPIRE* -700__i:INSPIRE*'
-    psearch = ' -100__i:INSPIRE* -700__i:INSPIRE*'
-    if VERBOSE:
-        print psearch
-    presult = perform_request_search(p=psearch, cc='HEP')
-    oresult = intbitset(oresult)
-    presult = intbitset(presult)
-    result = oresult & presult
+    search = "693__e:" + experiment + " date:2010->2017"
+    search += " -100__i:INSPIRE* -700__i:INSPIRE* \
+                -100__j:ORCID* -700__j:ORCID*"
+    result = perform_request_search(p=search, cc='HEP')
     if VERBOSE:
         print len(result)
-    #result = result[:400]
     clean_result = []
     for recid in result:
         if len(get_fieldvalues(recid, '693__e')) == 1:
@@ -208,7 +102,10 @@ def find_records_with_no_id(experiment):
     return clean_result
 
 def experiment_convert(experiment):
+    """Update the HEP entries for an experiment with author IDs."""
+
     i_count = 1
+    author_dict = {}
     recordlist = find_records_with_no_id(experiment)
     if recordlist:
         if VERBOSE:
@@ -224,11 +121,13 @@ def experiment_convert(experiment):
                 print "%d doing %d" % (i_count, record)
             #print create_xml(record,['100__','700__'])
             #create_xml(record, ['100__','700__'], experiment)
-            new_author_list = create_xml(record, ['100__','700__'], experiment)
-            if new_author_list:
-                output.write(new_author_list)
+            new_author_list = create_xml(record, ['100__','700__'], \
+                                         experiment, author_dict)
+            if new_author_list[0]:
+                output.write(new_author_list[0])
                 output.write("\n")
                 i_count += 1
+            author_dict = new_author_list[1]
         output.close()
         if (os.stat(file_name)[6] == 0):
             os.unlink(file_name)
@@ -237,6 +136,8 @@ def experiment_convert(experiment):
             print "No " + experiment + " records with no author ids found"
 
 def main(experiments_input):
+    """Run the script."""
+
     if not experiments_input:
         experiment_list = EXPERIMENTS
     else:
