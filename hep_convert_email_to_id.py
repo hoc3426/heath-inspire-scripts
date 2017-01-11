@@ -19,7 +19,7 @@ def find_records_containing_email():
     Searches for HEP records with emails
     """
 
-    atsearch = r'100__m:/\@/ or 700__m:/\@/ and ac 1->20'
+    atsearch = r'100__m:/\@/ or 700__m:/\@/'
     return perform_request_search(p=atsearch, cc='HEP')
 
 def get_hepnames_recid_from_email(email):
@@ -29,7 +29,7 @@ def get_hepnames_recid_from_email(email):
 
     emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
     reclist = perform_request_search(p = \
-        emailsearch % (email, email, email, email), cc='HepNames')
+        emailsearch % (email, email, email, email), cc='HepNames', ap=-9)
     if len(reclist) == 1:
         return reclist[0]
     elif len(reclist) > 1:

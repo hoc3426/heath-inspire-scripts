@@ -31,6 +31,7 @@ experiments = {'ALICE':'CERN-LHC-ALICE',
 'Belle':'KEK-BF-BELLE',
 'DES':'DES',
 'IceCube':'ICECUBE',
+'T2K':'T2K',
 'Telescope Array':'TELESCOPE-ARRAY'
 }
 

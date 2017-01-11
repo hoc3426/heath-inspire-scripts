@@ -36,7 +36,7 @@ def bad_id_check(id_num):
     else:
         return False
 
-def main(letter=None):
+def check_ids(letter=None):
     """Go through HEPNames looking for bad IDs."""
 
     already_seen = {}
@@ -97,9 +97,23 @@ def new_orcids(already_seen):
             orcid = orcid.strip('ORCID:')
             if orcid in already_seen:
                 continue
+            if bad_id_check(orcid):
+                print "Bad ORCID in HEP:", orcid
             already_seen[orcid] = recid
             print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
                   format(str(recid), orcid)
+
+
+def main(input_value):
+    """Runs the script, outputting to a file."""
+
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_correct.out', filename)
+    output = open(filename,'w')
+    sys.stdout = output
+    check_ids(input_value)
+    output.close()
+    print filename
 
 
 if __name__ == '__main__':
@@ -107,7 +121,7 @@ if __name__ == '__main__':
         LETTER = str(sys.argv[1:][0])
         main(LETTER.upper())
     except IndexError:
-        main()
+        main(None)
     except KeyboardInterrupt:
         print 'Exiting'
 

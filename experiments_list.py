@@ -67,9 +67,9 @@ EXPT_DICT = {
         ]
     },
     {("3.3", "Non terrestrial"):[
-        ("3.3.1", "atmospheric"),
-        ("3.3.2", "solar"),
-        ("3.3.3", "cosmic"),
+        ("3.3.1", "Atmospheric"),
+        ("3.3.2", "Solar"),
+        ("3.3.3", "Cosmic"),
         ]
     },
     ("3.4", "Neutrinoless double beta decay"),
@@ -85,10 +85,11 @@ EXPT_DICT = {
     ("5.2", "Cerenkov array"),
     ("5.3", "Satellite")
     ],
-("6", "Other Rare-process non-accelerator experiments" ):[
+("6", "Other Rare-process/exotic experiments" ):[
     ("6.1", "Proton decay"),
-    ("6.2", "Modified gravity"),
-    ("6.3", "Magnetic monopoles")
+    ("6.2", "Modified gravity and space-time"),
+    ("6.3", "Magnetic monopoles"),
+    ("6.4", "Fractionally charged particles")
     ],
 ("7", "Accelerator Test Facility Experiments" ):[
     ("7.1", "Electron and positron beams"),

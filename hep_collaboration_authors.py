@@ -184,6 +184,7 @@ def preprocess_file_braces(read_data):
     read_data = re.sub(r'(\{[^\}]*\{[^\}]*\}[^\}]*)\n+', r'\1', read_data)
     read_data = re.sub(r'([\{\(\[])\s+', r'\1', read_data)
     read_data = re.sub(r'\s+([\}\)\]])', r'\1', read_data)
+    read_data = re.sub(r'\\scriptsize\{(.*)\}', r'\1', read_data)
     read_data = read_data.replace(r'\\', '\n')
     #print repr(read_data)
     return read_data
@@ -227,10 +228,11 @@ def preprocess_file(read_data):
             line_new = re.sub(r'\\altaffiliation.*', '', line)
             read_data = read_data.replace(line, line_new)
 
-    #Special treatment for DES and Fermi-LAT
+    #Special treatment for DES and Fermi-LAT and Planck
     astro_aff_counter = 0
     for line in read_data.split('\n'):
-        if re.search(r'\\section\*\{Affiliations\}', line):
+        if re.search(r'\\section\*\{Affiliations\}', line) or \
+           re.search(r'\\institute\{\\small', line):
             astro_aff_counter = 1
         if astro_aff_counter and re.search(r'^\\item', line):
             line_new = \
@@ -238,7 +240,14 @@ def preprocess_file(read_data):
                 line)
             read_data = read_data.replace(line, line_new)
             astro_aff_counter += 1
-        elif astro_aff_counter and re.search(r'\\and[ ]*$', line):
+        elif astro_aff_counter and re.search(r'\\goodbreak[ ]*$', line):
+            line_new = \
+                re.sub(r'(.*)[ ]*\\goodbreak[ ]*$', r'$^{' + \
+                       str(astro_aff_counter) + r'}$ \1', \
+                       line)
+            read_data = read_data.replace(line, line_new)
+            astro_aff_counter += 1
+        elif astro_aff_counter and re.search(r'.\\and[ ]*$', line):
             line_new = \
                 re.sub(r'(.*)[ ]*\\and[ ]*$', r'$^{' + \
                        str(astro_aff_counter) + r'}$ \1', \
@@ -303,8 +312,8 @@ def preprocess_file(read_data):
                r'$^{\2}$', read_data)
     #\altaffiltext{2}{Fermilab, Batavia}
     read_data = \
-        re.sub(r'\\altaffiltext\{([\w\,\-]+)\}\{(.*)\}', r'$^{\1}$ \2', \
-               read_data)
+        re.sub(r'\\(altaffiltext|thankstext)\{([\w\,\-]+)\}\{(.*)\}', \
+               r'$^{\2}$ \3', read_data)
     read_data = \
         re.sub(r'\\item\s*\\[IA]def\{([\w\,\-]+)\}\{(.*)\}', r'$^{\1}$ \2', \
                read_data)

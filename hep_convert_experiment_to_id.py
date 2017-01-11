@@ -64,7 +64,7 @@ def create_xml(recid, tags, experiment, author_dict):
             correct_subfields = []
             for code, value in field_instance[0]:
                 if code == 'a':
-                    if not author_dict[value]:
+                    if value not in author_dict:
                         search = 'find a ' + value + ' and exp ' + experiment
                         author_dict[value] = \
                            convert_search_to_inspire_id(search)

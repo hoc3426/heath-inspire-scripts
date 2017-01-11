@@ -19,6 +19,88 @@ from invenio.intbitset import intbitset
 
 #from hep_aff import get_aff
 #from numbers_beijing import IDS
+from experiments_list import EXPT_DICT
+
+EXPT_DICT_FLAT = {}
+def create_expt_flat(experiment_dictionary):
+    for key in experiment_dictionary:
+        EXPT_DICT_FLAT[key[0]] = key[1]
+        for value in experiment_dictionary[key]:
+            if isinstance(value, dict):
+                create_expt_flat(value)
+            else:
+                EXPT_DICT_FLAT[value[0]] = value[1]
+    
+create_expt_flat(EXPT_DICT)
+
+total = 0
+experiment_thesis = set()
+search = "037__a:fermilab-thesis*"
+result = perform_request_search(p=search, cc='HEP')
+THESIS_DICT = {}
+for recid in result:
+    try:
+        experiment = get_fieldvalues(recid, '693__e')[0]
+    except IndexError:
+        try:
+            category = get_fieldvalues(recid, '65017a')[0]
+            print category
+        except IndexError:
+            print 'No experiment on ', 'http://inspirehep.net/record/', recid
+        continue
+    if experiment in experiment_thesis:
+        continue
+    experiment_thesis.add(experiment)
+    search = "037__a:fermilab-thesis* 693__e:" + experiment
+    num_theses = len(perform_request_search(p=search, cc='HEP'))
+    total += num_theses
+    search1 = "119__a:" + experiment
+    result1 = perform_request_search(p=search1, cc='Experiments')
+    try:
+        category = ''
+        title = get_fieldvalues(result1[0], '245__a')[0]
+        try:
+            category = EXPT_DICT_FLAT[get_fieldvalues(result1[0], \
+                                      '372__a')[0].split('.')[0]]
+        except IndexError:
+            category = 'Unknown'
+        except KeyError:
+            category = ''
+            print 'No match for 372 = ', get_fieldvalues(result1[0], \
+                                         '372__a')[0], result1[0]
+        if not category in THESIS_DICT:
+            THESIS_DICT[category] = []
+        THESIS_DICT[category].append((experiment, title, num_theses))
+    except:
+        print 'problem', experiment, 'http://inspirehep.net/record/', recid
+
+for key, value in THESIS_DICT.iteritems():
+    print key
+    number = 0
+    for experiment_stats in sorted(value):
+        number += experiment_stats[2]
+        if key == 'Unknown':
+            print '  ', experiment_stats
+    print '  Number of theses:', number
+
+print "Total number of theses:", total
+quit()       
+            
+
+search = "372__9:inspire 119__a:fnal*"
+result = perform_request_search(p=search, cc='Experiments')
+total = 0
+for recid in result:
+    experiment = get_fieldvalues(recid, '119__a')[0]
+    title = get_fieldvalues(recid, '245__a')[0]
+    search1 = "693__e:" + experiment + " 980:thesis"
+    result1 = perform_request_search(p=search1, cc='HEP')
+    if len(result1) > 0:
+        print experiment, title
+        print '  Number of theses:', len(result1)
+        total += len(result1)
+print "Total number of theses:", total
+quit()
 
 
 search = "245__a:/\)$/ 372__9:inspire"
