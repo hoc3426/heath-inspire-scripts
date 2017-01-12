@@ -27,7 +27,7 @@ def download_source(eprint, download_path = ""):
         try:
             this_tarfile = tarfile.open(filename_dum, 'r')
         except tarfile.ReadError:
-            print 'No tarfile for', eprint
+            #print 'No tarfile for', eprint
             return None
         tarfiles = {}
         file_count = 0
@@ -89,12 +89,6 @@ def author_first_last(author):
 def process_author_name(author):
     """Convert author to INSPIRE form."""
 
-    #re.search(ur'[\u0041-\u005A\u00c0-\u024e\u0370-\u03e0]', name, re.U)
-    #http://www.fileformat.info/info/unicode/category/Lu/list.htm
-    #for i in range(int('c0', 16), int('024e', 16)+1):
-    #    print unichr(int("{0:0{1}x}".format(i, 4), 16))
-
-    #author = translate_latex2unicode(author)
     author = author.replace(r'\.', r'xxxx')
     author = author.replace(r'.', '. ')
     author = author.replace(r'xxxx', r'\.')
@@ -106,34 +100,11 @@ def process_author_name(author):
     author = author.replace(r'xxxx', r'\~')
     author = translate_latex2unicode(author)
     author = author_first_last(author)
-
-    #Get author name into Last, First format.
-    #Include A-Zuh to allow for Russian Yu. and German Th.
-    #compound_letters = ["Ch", "Chr", "Gy", "Iu", "Ju",
-    #                    "Kh", "Md", "Ph", "Sh", "St",
-    #                    "Sz", "Th", "Ts", "Ya", "Ye",
-    #                    "Yu", "Zh", "Zs"
-    #                   ]
-
-    #if re.search(r'^\\?\"?[A-Z][uh]?[\.\-]', author):
-    #    author = re.sub(r'(\\?\"?[A-Z][uh]?[\.\-]\\?\"?[A-Zuh\s\.\-]*)
-    #                    (\w.*)', \
-    #                    r'\2, \1', author)
-    #elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Z][a-z]+$', author):
-    #    author =  re.sub(r'(^\\?\"?[A-Z]\w+) (\\?\"?[A-Z][a-z]+)', \
-    #                     r'\2, \1', author)
-    #elif re.search(r'^\\?\"?[A-Z]\w+ \\?\"?[A-Zuh\.\-]+', author):
-    #    author =  re.sub(r'(.* \\?\"?[A-Zu\.\-]+) (.*)', r'\2, \1', author)
-    #elif re.search(r' [a-z]', author):
-    #    match = re.search(r' ([a-z].*)', author)
-    #    compound_surname = match.group(1)
-    #    firstnames = author.replace(compound_surname, '')
-    #    author = compound_surname + ', ' + firstnames
     author = re.sub(r'\s+', ' ', author)
     author = re.sub(r'\s+$', '', author)
     author = re.sub(r'^\s+', '', author)
     author = re.sub(r'\.\s+', r'.', author)
-    author = re.sub(r'(.*) ([IVJr.]+), (.*)', r'\1, \3, \2', author)
+    author = re.sub(r'(.*) ([IVJr\.]+), (.*)', r'\1, \3, \2', author)
     #author = translate_latex2unicode(author)
 
     #print author

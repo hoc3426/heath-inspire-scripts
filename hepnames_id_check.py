@@ -109,11 +109,11 @@ def main(input_value):
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
+    print filename
     output = open(filename,'w')
     sys.stdout = output
     check_ids(input_value)
     output.close()
-    print filename
 
 
 if __name__ == '__main__':
