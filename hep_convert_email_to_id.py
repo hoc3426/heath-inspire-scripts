@@ -1,6 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""
+This module adds INSPIRE IDs and ORCIDs to names in HEP records
+based on email addresses.
+"""
+
+
 import re
 import sys
 
@@ -56,7 +62,7 @@ def get_hepnames_anyid_from_recid(record, id_type):
         print "WARNING: no %s ID found for %s: " % (id_type, record)
     return author_id
 
-def get_hepnames_affiliation_from_recid(record, id_type):
+def get_hepnames_aff_from_recid(record, id_type):
     """
     Returns the current affiliation
     """
@@ -108,7 +114,7 @@ def convert_email_to_inspire_id(email):
     return [inspire_id, orcid]
 
 
-def create_xml(recid, tags):
+def create_xml(recid, tags, author_dict):
     """
     Replaces an email with an INSPIRE ID and an ORCID where possible
     """
@@ -120,13 +126,17 @@ def create_xml(recid, tags):
     for tag in tags:
         field_instances = record_get_field_instances(record, \
                                                      tag[0:3], tag[3], tag[4])
-        correct_subfields = []        
+        correct_subfields = []
         seen_subfields = []
         for field_instance in field_instances:
             correct_subfields = []
             for code, value in field_instance[0]:
                 if code == 'm':
-                    new_value = convert_email_to_inspire_id(value)
+                    if value not in author_dict:
+                        author_dict[value] = \
+                           convert_email_to_inspire_id(value)
+                    new_value = author_dict[value]
+                    #new_value = convert_email_to_inspire_id(value)
                     if new_value[0]:
                         value = new_value[0]
                         code = 'i'
@@ -144,7 +154,7 @@ def create_xml(recid, tags):
                     if not flag:
                         if not (code, value) in seen_subfields:
                             correct_subfields.append((code, value))
-                            seen_subfields.append((code, value))                
+                            seen_subfields.append((code, value))
                 elif code == 'i' or code == 'j':
                     if not (code, value) in seen_subfields:
                         correct_subfields.append((code, value))
@@ -154,11 +164,15 @@ def create_xml(recid, tags):
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                              subfields=correct_subfields)
     if flag:
-        return print_rec(correct_record)
+        #return print_rec(correct_record)
+        return [print_rec(correct_record), author_dict]
     else:
-        return None
+        #return None
+        return [None, author_dict]
 
 def main(recordlist):
+    """Run the script."""
+
     if not recordlist:
         if VERBOSE:
             print "scanning all HEP records ..."
@@ -169,20 +183,24 @@ def main(recordlist):
     else:
         try:
             recordlist = [int(r) for r in recordlist]
-        except:
+        except TypeError:
             print "ERROR: bad recid given"
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
+    author_dict = {}
     for record in recordlist:
         if VERBOSE > 0:
             print "doing %d" % (record)
-        update = create_xml(record, ['100__', '700__'])
-        if update:
-            output.write(update)
+        #update = create_xml(record, ['100__', '700__'])
+        update = create_xml(record, ['100__', '700__'], author_dict)
+        if update[0]:
+            output.write(update[0])
+        author_dict = update[1]
     output.write('</collection>')
     output.close()
+    print "Number of email addresses:", len(author_dict)
 
 if __name__ == '__main__':
     RECIDS = sys.argv[1:]

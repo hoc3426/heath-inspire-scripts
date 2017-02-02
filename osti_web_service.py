@@ -124,6 +124,8 @@ def check_already_sent(recid):
 
 def get_url(recid):
     """Is there a valid url? Is it to an accepted PDF?"""
+    if VERBOSE:
+        print 'get_url', recid
     url = None
     url_fermilab = None
     url_arxiv = None
@@ -169,7 +171,7 @@ def get_url(recid):
         url = url_inspire
 
     if VERBOSE:
-        print url
+        print 'url =', url
 
     if url:
         try:
@@ -558,6 +560,8 @@ def main(recids):
     #recids = [1400805, 1373745, 1342808, 1400935]
     records = ET.Element('records')
     for recid in recids:
+        if VERBOSE:
+            print recid
         if counter > ENDING_COUNTER:
             break
         if check_already_sent(recid):

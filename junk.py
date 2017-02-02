@@ -21,6 +21,16 @@ from invenio.intbitset import intbitset
 #from numbers_beijing import IDS
 from experiments_list import EXPT_DICT
 
+
+for year in range (1974, 2018):
+    year_string = str(year)
+    if year_string.startswith('19'):
+        year_string = year_string.replace('19', '')
+    search = "find r CERN-thesis-" + year_string + "-*"
+    result = perform_request_search(p=search, cc='HEP')
+    print "%5d %4d" % (year, len(result))
+quit()
+
 EXPT_DICT_FLAT = {}
 def create_expt_flat(experiment_dictionary):
     for key in experiment_dictionary:

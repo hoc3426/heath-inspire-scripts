@@ -27,12 +27,14 @@ EXPERIMENT = 'BNL-RHIC-STAR'
 EXPERIMENT = 'DUNE'
 EXPERIMENT = 'GERDA'
 EXPERIMENT = 'EXO-200'
+EXPERIMENT = 'PEN'
 
 #INSPIRE = 537896
 #INSPIRE = 52682
 #INSPIRE =  52765
 #INSPIRE =  55286
-INSPIRE = 55401
+#INSPIRE = 55401
+INSPIRE = 55553
 
 #for email in EMAILS:
 if False:
@@ -112,15 +114,15 @@ for author in AUTHORS:
 #if False:
     #print author
     au = author[0] 
-    email = author[2]
+    email = author[1]
     email = email.lower()
-    af = author[1]
+    #af = author[1]
     af = ''
     #au = re.sub(r'(.*[A-Z][A-Z]) ([A-Z][a-z].*)',r'\1, \2',au)
     #au = re.sub(r'(.*[a-z]) ([A-Z][A-Z].*)',r'\2, \1',au)
     #au = string.capwords(au)    
     #au = re.sub(r'\s+', r' ', au)
-    #au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
+    au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
     search = "find a " + au
     x = perform_request_search(p=search,cc='HepNames')
     recid = get_hepnames_recid_from_email(email)

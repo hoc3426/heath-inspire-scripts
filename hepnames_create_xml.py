@@ -143,7 +143,7 @@ def main(experiment, collaboration):
         orcid      = get_hepnames_anyid_from_recid(r, 'ORCID')
         if VERBOSE:
             print r
-        affiliation = get_hepnames_affiliation_from_recid(r, 'Current')
+        affiliation = get_hepnames_aff_from_recid(r, 'Current')
         if not affiliation: print 'No aff - find recid', r
         d = {}
         d['foaf_givenName']  = foaf_givenName

@@ -43,6 +43,7 @@ def check_ids(letter=None):
     duplicates   = set()
     bad_id_set   = set()
     fields = ['035__a', '371__m']
+    print letter
     if letter:
         fields.append('100__a')
 
@@ -81,6 +82,7 @@ def check_ids(letter=None):
     for bad_id in sorted(bad_id_set):
         print bad_id
 
+    print "Finding new ORCIDs in HEP"
     new_orcids(already_seen)
 
 def new_orcids(already_seen):

@@ -14,17 +14,26 @@ from afftranslator2 import bestmatch
 
 
 VERBOSE = False
-VERBOSE = True
+#VERBOSE = True
 
 def find_records():
     """Find records that have raw string affilations."""
     atsearch = '100__u:/UNDEFINED/ or 700__u:/UNDEFINED/'
     atsearch = '100__v:Fermilab or 700__v:Fermilab'
     atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
+or 100__v:/CERN/ or 700__v:/CERN/ \
+date:2016->2018 \
+-100__u:/\w/ \
+-700__u:/\w/ \
 -100__u:fermilab \
 -700__u:fermilab \
 -100__u:"MUONS Inc., Batavia" \
 -700__u:"MUONS Inc., Batavia" \
+-100__u:CERN -700__u:CERN \
+-001:203645 -001:1275928 -001:1483092'
+    atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
+-100__u:/\w/ \
+-700__u:/\w/ \
 -001:203645 -001:1275928 -001:1483092'
     #atsearch = '001:1475323'
     print atsearch
@@ -56,16 +65,24 @@ def create_xml(recid, tags, force_flag=False):
         for field_instance in field_instances:
             correct_subfields = []
             for code, value in field_instance[0]:
-                if code == 'u' or code == 'v':
-                    if  re.search(r'UNDEFINED', value) or force_flag:
-                        new_values = get_aff(value)
-                        for new_value in new_values:
-                        #if new_value:
-                            correct_subfields.append(('v', value))
-                            value = new_value
-                            code = 'u'
-                            flag = True
                 correct_subfields.append((code, value))
+                if code == 'v':
+                    try:
+                        for new_value in get_aff(value):
+                            correct_subfields.append(('u', \
+                                                     new_value.lstrip(' ')))
+                        flag = True
+                    except NoneType:
+                        pass
+                    #if  re.search(r'UNDEFINED', value) or force_flag:
+                    #    new_values = get_aff(value)
+                    #    for new_value in new_values:
+                    #    #if new_value:
+                    #        correct_subfields.append(('v', value))
+                    #        value = new_value
+                    #        code = 'u'
+                    #        flag = True
+                #correct_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                              subfields=correct_subfields)
     #return print_rec(correct_record)
