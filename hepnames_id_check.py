@@ -9,17 +9,44 @@ import sys
 from invenio.search_engine import get_collection_reclist
 from invenio.search_engine import get_fieldvalues
 from invenio.search_engine import perform_request_search
+from invenio.bibauthorid_dbinterface \
+     import _select_from_aidpersoniddata_where
+from invenio.dbquery import run_sql
+
+
 
 from hep_convert_email_to_id import find_inspire_id_from_record
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 
 #EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@\.]+\w$")
-EMAIL_REGEX = re.compile(r"[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
-ORCID_REGEX = re.compile(r'0000-\d{4}-\d{4}-\d{3}[\dX]')
-INSPIRE_REGEX = re.compile(r'INSPIRE-\d{8}')
+EMAIL_REGEX = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
 LETTER = None
 RECIDS = get_collection_reclist('HepNames')
+BAI_URL = 'https://inspirehep.net/author/manage_profile/'
 
+def bad_orcid_bai():
+    """Check ORCIDs have correct form in BAI."""
+
+    #orcids = run_sql('select data from aidPERSONIDDATA where \
+    #                  tag="extid:ORCID"')
+    #for orcid in orcids:
+    #    if not ORCID_REGEX.match(orcid[0]):
+    #        print '"{0}"'.format(orcid[0])
+    badorcids = set()
+    pids = run_sql('select personid from aidPERSONIDDATA')
+    for pid in pids:
+        orcid = _select_from_aidpersoniddata_where(select=['data'], \
+                pid=pid[0], tag='extid:ORCID')
+        try:
+            orcid = orcid[0][0]
+        except IndexError:
+            orcid = None
+        if orcid and not ORCID_REGEX.match(orcid):
+            badorcids.add((pid[0], orcid))
+    for bad in badorcids:
+        print '{0}\t"{1}"'.format(BAI_URL + str(bad[0]), bad[1])
 
 def bad_id_check(id_num):
     """Check various IDs for correct format."""
@@ -82,6 +109,9 @@ def check_ids(letter=None):
     for bad_id in sorted(bad_id_set):
         print bad_id
 
+    print "Bad ORCIDS in BAI"
+    bad_orcid_bai()
+
     print "Finding new ORCIDs in HEP"
     new_orcids(already_seen)
 
@@ -89,7 +119,8 @@ def new_orcids(already_seen):
     """Search for new ORCIDs in HEP."""
 
     fields = ('100__j', '700__j')
-    search = "{0}:ORCID:* or {1}:ORCID:* 980:CORE".format(*fields)
+    search = "{0}:ORCID:* or {1}:ORCID:* 980:CORE".format(fields[0],
+                                                          fields[1])
     result = perform_request_search(p=search, cc='HEP')
     for recid, field in [(recid, field) for recid in result \
                                         for field in fields]:

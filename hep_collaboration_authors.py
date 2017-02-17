@@ -279,7 +279,7 @@ def preprocess_file(read_data):
     #    re.sub(r'(\w\.?)[ \,]*\\(inst|altaffilmark|Irefn)\{(.*)\}', \
     #           r'\1$^{\3}$', read_data)
     read_data = \
-        re.sub(r'[ \,]*\\(inst|altaffilmark|Irefn|thanksref)\{(.*)\}', \
+        re.sub(r'[ \,]*\\(inst|altaffilmark|Irefn|thanksref)\{([^\}]+)\}', \
                r'$^{\2}$', read_data)
     #\altaffiltext{2}{Fermilab, Batavia}
     read_data = \
@@ -397,6 +397,11 @@ def main(eprint):
     else:
         if not download_source(eprint):
             return
+
+    if os.path.exists(eprint_xml):
+        print eprint_xml
+        quit()
+
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_' + eprint + '_correct.out', filename)

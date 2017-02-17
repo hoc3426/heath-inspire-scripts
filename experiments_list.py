@@ -83,7 +83,8 @@ EXPT_DICT = {
 ("5", "Cosmic ray experiments"):[
     ("5.1", "Ground array"),
     ("5.2", "Cerenkov array"),
-    ("5.3", "Satellite")
+    ("5.3", "Satellite"),
+    ("5.4", "Balloon")
     ],
 ("6", "Other Rare-process/exotic experiments" ):[
     ("6.1", "Proton decay"),
@@ -101,7 +102,10 @@ EXPT_DICT = {
     ("8.2", "Survey"),
     ("8.3", "Supernovae"),
     ("8.4", "Gravitational waves")
-    ]
+    ],
+("9", "Theory collaborations"):[
+    ("9.1", "Lattice")
+   ]
 }
 
 ELEMENT = ElementMaker(makeelement=html_parser.makeelement)

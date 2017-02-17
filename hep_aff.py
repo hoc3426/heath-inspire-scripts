@@ -18,20 +18,8 @@ VERBOSE = False
 
 def find_records():
     """Find records that have raw string affilations."""
-    atsearch = '100__u:/UNDEFINED/ or 700__u:/UNDEFINED/'
-    atsearch = '100__v:Fermilab or 700__v:Fermilab'
-    atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
-or 100__v:/CERN/ or 700__v:/CERN/ \
-date:2016->2018 \
--100__u:/\w/ \
--700__u:/\w/ \
--100__u:fermilab \
--700__u:fermilab \
--100__u:"MUONS Inc., Batavia" \
--700__u:"MUONS Inc., Batavia" \
--100__u:CERN -700__u:CERN \
--001:203645 -001:1275928 -001:1483092'
-    atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
+
+    atsearch = '100__v:/batavia/ or 700__v:/batavia/ or 700__v:/gatchina/ \
 -100__u:/\w/ \
 -700__u:/\w/ \
 -001:203645 -001:1275928 -001:1483092'
@@ -87,7 +75,7 @@ def create_xml(recid, tags, force_flag=False):
                              subfields=correct_subfields)
     #return print_rec(correct_record)
     if flag:
-        print correct_record
+        #print correct_record
         return print_rec(correct_record)
 
 def main_old(recordlist):
