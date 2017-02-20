@@ -19,7 +19,7 @@ VERBOSE = False
 def find_records():
     """Find records that have raw string affilations."""
 
-    atsearch = '100__v:/batavia/ or 700__v:/batavia/ or 700__v:/gatchina/ \
+    atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
 -100__u:/\w/ \
 -700__u:/\w/ \
 -001:203645 -001:1275928 -001:1483092'
@@ -53,7 +53,7 @@ def create_xml(recid, tags, force_flag=False):
         for field_instance in field_instances:
             correct_subfields = []
             for code, value in field_instance[0]:
-                correct_subfields.append((code, value))
+                #correct_subfields.append((code, value))
                 if code == 'v':
                     try:
                         for new_value in get_aff(value):
@@ -70,7 +70,7 @@ def create_xml(recid, tags, force_flag=False):
                     #        value = new_value
                     #        code = 'u'
                     #        flag = True
-                #correct_subfields.append((code, value))
+                correct_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                              subfields=correct_subfields)
     #return print_rec(correct_record)

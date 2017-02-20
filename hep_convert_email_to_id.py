@@ -122,7 +122,7 @@ def create_xml(recid, tags, author_dict):
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
-    flag = None
+    flag = False
     for tag in tags:
         field_instances = record_get_field_instances(record, \
                                                      tag[0:3], tag[3], tag[4])
@@ -151,6 +151,9 @@ def create_xml(recid, tags, author_dict):
                         if not (code, value) in seen_subfields:
                             correct_subfields.append((code, value))
                             seen_subfields.append((code, value))
+                    if not new_value[0] and not new_value[1]:
+                        flag = False
+                    print 'flag =', flag
                     if not flag:
                         if not (code, value) in seen_subfields:
                             correct_subfields.append((code, value))
