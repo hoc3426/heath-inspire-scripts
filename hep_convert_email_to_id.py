@@ -113,6 +113,22 @@ def convert_email_to_inspire_id(email):
         orcid      = get_hepnames_anyid_from_recid(recid, 'ORCID')
     return [inspire_id, orcid]
 
+def get_orcid_from_inspire_id(inspire_id):
+    """
+    Returns the INSPIRE ID and the ORCID from an INSPIRE ID
+    """
+
+    orcid = None
+    recid = None
+    search = '035__a:' + inspire_id
+    result = perform_request_search(p=search, cc='HepNames')
+    if len(result) == 1:
+        recid = result[0]
+    if recid:
+        inspire_id = find_inspire_id_from_record(recid)
+        orcid      = get_hepnames_anyid_from_recid(recid, 'ORCID')
+    return [inspire_id, orcid]
+
 
 def create_xml(recid, tags, author_dict):
     """
@@ -123,50 +139,52 @@ def create_xml(recid, tags, author_dict):
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
     flag = False
+    flag_record = False
     for tag in tags:
         field_instances = record_get_field_instances(record, \
                                                      tag[0:3], tag[3], tag[4])
-        correct_subfields = []
-        seen_subfields = []
+        #correct_subfields = []
+        #seen_subfields = []
         for field_instance in field_instances:
             correct_subfields = []
+            seen_subfields = []
             for code, value in field_instance[0]:
-                if code == 'm':
-                    if value not in author_dict:
-                        author_dict[value] = \
-                           convert_email_to_inspire_id(value)
-                    new_value = author_dict[value]
-                    #new_value = convert_email_to_inspire_id(value)
-                    if new_value[0]:
-                        value = new_value[0]
-                        code = 'i'
+                if VERBOSE:
+                   print 'code, value =', code, value
+                new_value = [None, None]
+                if code == 'm' and value not in author_dict:
+                    author_dict[value] = convert_email_to_inspire_id(value)
+                    if author_dict[value][0] or author_dict[value][1]:
                         flag = True
-                        if not (code, value) in seen_subfields:
-                            correct_subfields.append((code, value))
-                            seen_subfields.append((code, value))
-                    if new_value[1]:
-                        value = 'ORCID:' + new_value[1]
-                        code = 'j'
+                elif code == 'i' and value not in author_dict:
+                    flag = False
+                    author_dict[value] = get_orcid_from_inspire_id(value)
+                    if author_dict[value][1]:
                         flag = True
-                        if not (code, value) in seen_subfields:
-                            correct_subfields.append((code, value))
-                            seen_subfields.append((code, value))
-                    if not new_value[0] and not new_value[1]:
+                if code == 'j':
                         flag = False
-                    print 'flag =', flag
-                    if not flag:
-                        if not (code, value) in seen_subfields:
-                            correct_subfields.append((code, value))
-                            seen_subfields.append((code, value))
-                elif code == 'i' or code == 'j':
+                if code == 'm' or code == 'i':
+                    new_value = author_dict[value]
+                if new_value[0]:
+                    value = new_value[0]
+                    code = 'i'
                     if not (code, value) in seen_subfields:
                         correct_subfields.append((code, value))
                         seen_subfields.append((code, value))
-                else:
+                if new_value[1]:
+                    value = 'ORCID:' + new_value[1]
+                    code = 'j'
+                    if not (code, value) in seen_subfields:
+                        correct_subfields.append((code, value))
+                        seen_subfields.append((code, value))
+                if not (code, value) in seen_subfields:
                     correct_subfields.append((code, value))
+                    seen_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
-                             subfields=correct_subfields)
-    if flag:
+                     subfields=correct_subfields)
+            if flag_record == False:
+                flag_record = flag
+    if flag_record:
         #return print_rec(correct_record)
         return [print_rec(correct_record), author_dict]
     else:

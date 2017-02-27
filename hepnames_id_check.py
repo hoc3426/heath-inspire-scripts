@@ -34,19 +34,22 @@ def bad_orcid_bai():
     #for orcid in orcids:
     #    if not ORCID_REGEX.match(orcid[0]):
     #        print '"{0}"'.format(orcid[0])
-    badorcids = set()
-    pids = run_sql('select personid from aidPERSONIDDATA')
-    for pid in pids:
-        orcid = _select_from_aidpersoniddata_where(select=['data'], \
-                pid=pid[0], tag='extid:ORCID')
-        try:
-            orcid = orcid[0][0]
-        except IndexError:
-            orcid = None
-        if orcid and not ORCID_REGEX.match(orcid):
-            badorcids.add((pid[0], orcid))
-    for bad in badorcids:
-        print '{0}\t"{1}"'.format(BAI_URL + str(bad[0]), bad[1])
+    #badorcids = set()
+    #pids = run_sql('select personid from aidPERSONIDDATA')
+    #for pid in pids:
+    #    orcid = _select_from_aidpersoniddata_where(select=['data'], \
+    #            pid=pid[0], tag='extid:ORCID')
+    #    try:
+    #        orcid = orcid[0][0]
+    #    except IndexError:
+    #        orcid = None
+    #    if orcid and not ORCID_REGEX.match(orcid):
+    #        badorcids.add((pid[0], orcid))
+    orcids = run_sql('select personid, data from aidPERSONIDDATA \
+                      where tag="extid:ORCID"')
+    for pid, orcid in orcids:
+        if not ORCID_REGEX.match(orcid):
+            print '{0}\t"{1}"'.format(BAI_URL + str(pid), orcid)
 
 def bad_id_check(id_num):
     """Check various IDs for correct format."""
