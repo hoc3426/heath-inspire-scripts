@@ -9,8 +9,8 @@ import sys
 from invenio.search_engine import get_collection_reclist
 from invenio.search_engine import get_fieldvalues
 from invenio.search_engine import perform_request_search
-from invenio.bibauthorid_dbinterface \
-     import _select_from_aidpersoniddata_where
+#from invenio.bibauthorid_dbinterface \
+#     import _select_from_aidpersoniddata_where
 from invenio.dbquery import run_sql
 
 
@@ -73,7 +73,7 @@ def check_ids(letter=None):
     duplicates   = set()
     bad_id_set   = set()
     fields = ['035__a', '371__m']
-    print letter
+    print 'letter =', letter
     if letter:
         fields.append('100__a')
 
@@ -140,22 +140,23 @@ def new_orcids(already_seen):
                   format(str(recid), orcid)
 
 
-def main(input_value):
+def main(input_value=None):
     """Runs the script, outputting to a file."""
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     print filename
+    print 'letter =', input_value
     output = open(filename,'w')
     sys.stdout = output
-    check_ids(input_value)
+    check_ids(letter=input_value)
     output.close()
 
 
 if __name__ == '__main__':
     try:
         LETTER = str(sys.argv[1:][0])
-        main(LETTER.upper())
+        main(input_value=LETTER.upper())
     except IndexError:
         main(None)
     except KeyboardInterrupt:

@@ -6,19 +6,23 @@ This module adds INSPIRE IDs and ORCIDs to names in HEP records
 based on email addresses.
 """
 
-
+from os.path import isfile
 import re
-import sys
+from sys import argv
 
-from invenio.search_engine import perform_request_search, get_record
+from invenio.search_engine import perform_request_search, get_record, \
+                                  search_unit
 from invenio.bibrecord import print_rec, record_get_field_instances, \
-     record_add_field
-#from invenio.intbitset import intbitset
+                              record_add_field
+from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
+from invenio.search_engine import get_collection_reclist
 
 
 VERBOSE = False
 #VERBOSE = True
+
+HN = get_collection_reclist('HepNames')
 
 def find_records_containing_email():
     """
@@ -33,9 +37,18 @@ def get_hepnames_recid_from_email(email):
     Find the HEPNames recid based on email
     """
 
-    emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
-    reclist = perform_request_search(p = \
-        emailsearch % (email, email, email, email), cc='HepNames', ap=-9)
+#    emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
+#    reclist = perform_request_search(p = \
+#        emailsearch % (email, email, email, email), cc='HepNames', ap=-9)
+
+    emailsearch = '371__m:%s or 371__o:%s'
+    reclist = perform_request_search(p=emailsearch % (email, email),
+                                     cc='HepNames')
+    hidden_m = search_unit(email, f='595__m', m='a')
+    hidden_o = search_unit(email, f='595__o', m='a')
+    reclist_hidden = hidden_m or hidden_o & HN
+    reclist = intbitset(reclist) or reclist_hidden
+
     if len(reclist) == 1:
         return reclist[0]
     elif len(reclist) > 1:
@@ -141,6 +154,7 @@ def create_xml(recid, tags, author_dict):
     flag = False
     flag_record = False
     for tag in tags:
+        #print '1 flag_record, flag', flag_record, flag
         field_instances = record_get_field_instances(record, \
                                                      tag[0:3], tag[3], tag[4])
         #correct_subfields = []
@@ -148,42 +162,72 @@ def create_xml(recid, tags, author_dict):
         for field_instance in field_instances:
             correct_subfields = []
             seen_subfields = []
+            orcid_flag = False
+
+            for code, value in field_instance[0]:
+                if code == 'j' and value.startswith('ORCID') or code == 'k':
+                    orcid_flag = True
+                    
+            if orcid_flag:
+                flag = False
+                for code, value in field_instance[0]:
+                    correct_subfields.append((code, value))
+                record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
+                                 subfields=correct_subfields)
+                continue
+
             for code, value in field_instance[0]:
                 if VERBOSE:
-                   print 'code, value =', code, value
+                    print 'code, value =', code, value
                 new_value = [None, None]
-                if code == 'm' and value not in author_dict:
+                if code == 'j' and value.startswith('ORCID') or code == 'k':
+                    flag = False
+                    continue
+                elif code == 'm' and value not in author_dict:
                     author_dict[value] = convert_email_to_inspire_id(value)
+                    new_value = author_dict[value]
                     if author_dict[value][0] or author_dict[value][1]:
                         flag = True
                 elif code == 'i' and value not in author_dict:
-                    flag = False
+                    #flag = False
                     author_dict[value] = get_orcid_from_inspire_id(value)
+                    new_value = author_dict[value]
                     if author_dict[value][1]:
                         flag = True
-                if code == 'j':
-                        flag = False
-                if code == 'm' or code == 'i':
+                    #print '1 flag', flag
+                elif code == 'm' or code == 'i' :
                     new_value = author_dict[value]
+                    if code == 'm' and new_value[0]:
+                        flag = True
+                    elif code == 'i' and new_value[1]:
+                        flag = True
+                    #print 'new_value, flag =', new_value, flag
+                #print 'new_value =', new_value
                 if new_value[0]:
                     value = new_value[0]
                     code = 'i'
                     if not (code, value) in seen_subfields:
                         correct_subfields.append((code, value))
                         seen_subfields.append((code, value))
+                        #flag = True
+                #print '2 flag', flag
                 if new_value[1]:
                     value = 'ORCID:' + new_value[1]
-                    code = 'j'
+                    code = 'k'
                     if not (code, value) in seen_subfields:
                         correct_subfields.append((code, value))
                         seen_subfields.append((code, value))
+                    #flag = True
+                #print '3 flag', flag
                 if not (code, value) in seen_subfields:
                     correct_subfields.append((code, value))
                     seen_subfields.append((code, value))
+                #print '4 flag', flag
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                      subfields=correct_subfields)
             if flag_record == False:
                 flag_record = flag
+    #print '2 flag_record, flag', flag_record, flag
     if flag_record:
         #return print_rec(correct_record)
         return [print_rec(correct_record), author_dict]
@@ -218,13 +262,19 @@ def main(recordlist):
         update = create_xml(record, ['100__', '700__'], author_dict)
         if update[0]:
             output.write(update[0])
+            output.write('\n')
         author_dict = update[1]
     output.write('</collection>')
     output.close()
     print "Number of email addresses:", len(author_dict)
 
 if __name__ == '__main__':
-    RECIDS = sys.argv[1:]
+
+    INPUT_FILE = re.sub('.py', '_input.py', __file__)
+    if isfile(INPUT_FILE):
+        from hep_convert_email_to_id_input import RECIDS
+    else:
+        RECIDS = argv[1:]
     try:
         main(RECIDS)
     except KeyboardInterrupt:

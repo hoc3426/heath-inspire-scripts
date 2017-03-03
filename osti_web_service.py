@@ -299,12 +299,13 @@ def get_author_details(recid, authors, tag):
             affiliation = item['u']
         if item.has_key('m'):
             email = item['m']
-        if item.has_key('j'):
-            orcid = item['j']
-            if not re.search(r'ORCID:', orcid):
-                orcid = None
-            else:
-                orcid = re.sub(r'ORCID:', '', orcid)
+        for item_jk in ['j', 'k']:
+            if item.has_key(item_jk):
+                orcid = item[item_jk]
+                if not re.search(r'ORCID:', orcid):
+                    orcid = None
+                else:
+                    orcid = re.sub(r'ORCID:', '', orcid)
         ET.SubElement(authors_detail, 'first_name').text = first_name
         ET.SubElement(authors_detail, 'middle_name').text = middle_name
         ET.SubElement(authors_detail, 'last_name').text = last_name

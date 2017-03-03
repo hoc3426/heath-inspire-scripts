@@ -12,14 +12,61 @@ from invenio.search_engine import get_record
 from invenio.search_engine import get_all_field_values
 from invenio.search_engine import print_record
 from invenio.bibformat_engine import BibFormatObject
-from hep_convert_email_to_id import find_inspire_id_from_record
+from hep_convert_email_to_id import *
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 from invenio.intbitset import intbitset
 
 #from hep_aff import get_aff
 #from numbers_beijing import IDS
-from experiments_list import EXPT_DICT
+#from experiments_list import EXPT_DICT
+
+EXPT = 'DES'
+search = '693__e:' + EXPT
+result = perform_request_search(p=search, cc='HepNames')
+
+for recid in result:
+    name = get_fieldvalues(recid, '100__a')[0]
+    inspire = find_inspire_id_from_record(recid)
+    orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+    try:
+        email = get_fieldvalues(recid, '371__m')[0]
+    except IndexError:
+        email = None
+    if not orcid:
+        print "{0}|{1}|{2}|{3}".format(name, email, inspire, orcid)
+quit()
+
+
+searches={'conf_theory':'037__a:/^fermilab\-conf\-16\-.*\-[A,T]\-/ or \
+037__a:/^fermilab\-conf\-16\-.*\-[A,T]$/',
+         'pub_theory':'037__a:/^fermilab\-pub\-16\-.*\-[A,T]\-/ or \
+037__a:/^fermilab\-pub\-16\-.*\-[A,T]$/',
+         'conf':'037__a:/^fermilab\-conf\-16/',
+         'pub':'037:/^fermilab\-pub\-16/',
+         'pub_cms':'037__z:/^fermilab\-pub\-16.*CMS/',
+         'accepted':'8564_z:postprint or 8564_z:openaccess or \
+8564_y:"Article from SCOAP3" or 8564_y:jacow'
+         }
+
+ACCEPTED = intbitset(perform_request_search(p=searches['accepted'], cc='HEP'))
+
+results = {}
+for search in ['pub_theory', 'pub_cms', 'pub', 'conf_theory', 'conf']:
+    results[search] = intbitset(perform_request_search(p=searches[search], 
+                                                       cc='HEP'))
+    print "{0:15s} {1:5d} {2:5d}".format(search, len(results[search]), 
+                                         len(results[search] & ACCEPTED)) 
+    #print "{0},{1},{2}".format(search, len(result),
+    #                                     len(result & ACCEPTED))
+
+boo = results['pub_theory'] | results['pub_cms']
+results['pub_other'] = results['pub'] - boo
+print "{0:15s} {1:5d} {2:5d}".format('pub_other', len(results['pub_other']),
+                                     len(results['pub_other'] & ACCEPTED))
+                                                          
+
+quit()
 
 
 for year in range (1974, 2018):
