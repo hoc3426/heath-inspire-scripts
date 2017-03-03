@@ -74,7 +74,7 @@ def create_xml(recid, tags, experiment, author_dict):
                     if author_dict[value][1]:
                         flag = True
                         orcid_value = 'ORCID:' + author_dict[value][1]
-                        correct_subfields.append(('j', orcid_value))
+                        correct_subfields.append(('k', orcid_value))
                 correct_subfields.append((code, value))
             record_add_field(correct_record, tag[0:3], tag[3], tag[4],
                              subfields=correct_subfields)
