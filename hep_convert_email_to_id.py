@@ -6,7 +6,6 @@ This module adds INSPIRE IDs and ORCIDs to names in HEP records
 based on email addresses.
 """
 
-from os.path import isfile
 import re
 from sys import argv
 
@@ -18,19 +17,61 @@ from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from invenio.search_engine import get_collection_reclist
 
-
-VERBOSE = False
-#VERBOSE = True
+from hep_convert_email_to_id_input import RECIDS, SEARCH, VERBOSE
 
 HN = get_collection_reclist('HepNames')
+
+COUNTER_MAX = 100
+
+def generate_check_digit(base_digits):
+    '''
+    Taken from https://github.com/tjwds/generate-orcid-checksum
+    '''
+    total = 0
+    for digit in str(base_digits):
+        total = (total + int(digit)) * 2
+    remainder = total % 11
+    result = (12 - remainder) % 11
+    if result == 10:
+        result = "X"
+    return result
+
+
+
+def bad_id_check(id_num):
+    """Check various IDs for correct format."""
+
+    email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+    bitnet_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-]+\.bitnet$")
+    orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+    inspire_regex = re.compile(r'^INSPIRE-\d{8}$')
+
+    if id_num.startswith('INSP') and not re.match(inspire_regex, id_num):
+        return True
+    elif re.search(r'000\-', id_num) and re.match(orcid_regex, id_num):
+        base_digits = id_num.replace('-', '')[0:15]
+        check_digit = id_num.replace('-', '')[15]
+        if check_digit != str(generate_check_digit(base_digits)):
+            return True
+    elif re.search(r'000\-', id_num) and not re.match(orcid_regex, id_num):
+        return True
+    elif re.search(r'\@', id_num) and not \
+         re.match(email_regex, id_num) and not \
+         re.match(bitnet_regex, id_num):
+        return True
+    else:
+        return False
 
 def find_records_containing_email():
     """
     Searches for HEP records with emails
     """
 
-    atsearch = r'100__m:/\@/ or 700__m:/\@/'
-    return perform_request_search(p=atsearch, cc='HEP')
+    search = r'100__m:/\@/ or 700__m:/\@/'
+    if SEARCH:
+        search = SEARCH
+    result = perform_request_search(p=search, cc='HEP')
+    return sorted(result, reverse=True)
 
 def get_hepnames_recid_from_email(email):
     """
@@ -167,11 +208,14 @@ def create_xml(recid, tags, author_dict):
             for code, value in field_instance[0]:
                 if code == 'j' and value.startswith('ORCID') or code == 'k':
                     orcid_flag = True
-                    
+
             if orcid_flag:
                 flag = False
                 for code, value in field_instance[0]:
-                    correct_subfields.append((code, value))
+                    if code == 'm' and get_hepnames_recid_from_email(value):
+                        pass
+                    else:
+                        correct_subfields.append((code, value))
                 record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                                  subfields=correct_subfields)
                 continue
@@ -180,23 +224,42 @@ def create_xml(recid, tags, author_dict):
                 if VERBOSE:
                     print 'code, value =', code, value
                 new_value = [None, None]
+                if code == 'm':
+                    value = value.lower()
                 if code == 'j' and value.startswith('ORCID') or code == 'k':
                     flag = False
                     continue
                 elif code == 'm' and value not in author_dict:
-                    author_dict[value] = convert_email_to_inspire_id(value)
+                    if bad_id_check(value):
+                        print 'Bad email:', recid, value
+                        #quit()
+                    try:
+                        author_dict[value] = \
+                            convert_email_to_inspire_id(value)
+                    except KeyError:
+                        print 'Problem with: ', value, \
+                                    convert_email_to_inspire_id(value)
+                        quit()
                     new_value = author_dict[value]
                     if author_dict[value][0] or author_dict[value][1]:
                         flag = True
                 elif code == 'i' and value not in author_dict:
                     #flag = False
+                    if bad_id_check(value):
+                        print 'Bad INSPIRE ID:', value
+                        #quit()
                     author_dict[value] = get_orcid_from_inspire_id(value)
                     new_value = author_dict[value]
                     if author_dict[value][1]:
                         flag = True
                     #print '1 flag', flag
                 elif code == 'm' or code == 'i' :
-                    new_value = author_dict[value]
+                    try:
+                        new_value = author_dict[value]
+                    except KeyError:
+                        print value
+                        print author_dict[value]
+                        quit()
                     if code == 'm' and new_value[0]:
                         flag = True
                     elif code == 'i' and new_value[1]:
@@ -255,25 +318,27 @@ def main(recordlist):
     output = open(filename,'w')
     output.write('<collection>')
     author_dict = {}
+    counter = 0
     for record in recordlist:
         if VERBOSE > 0:
             print "doing %d" % (record)
         #update = create_xml(record, ['100__', '700__'])
         update = create_xml(record, ['100__', '700__'], author_dict)
-        if update[0]:
+        if update[0] and counter < COUNTER_MAX:
             output.write(update[0])
             output.write('\n')
+            counter += 1
+        elif counter > COUNTER_MAX:
+            break
         author_dict = update[1]
     output.write('</collection>')
     output.close()
     print "Number of email addresses:", len(author_dict)
+    print filename
 
 if __name__ == '__main__':
 
-    INPUT_FILE = re.sub('.py', '_input.py', __file__)
-    if isfile(INPUT_FILE):
-        from hep_convert_email_to_id_input import RECIDS
-    else:
+    if not RECIDS:
         RECIDS = argv[1:]
     try:
         main(RECIDS)

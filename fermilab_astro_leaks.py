@@ -18,8 +18,12 @@ or a Mike Crisler \
 or a Eric Dahl \
 or a Tom Diehl \
 or a Scott Dodelson \
-or a Alex Drlica-Wagner \
-or a Juan Estrada \
+or a Alex Drlica-Wagner"
+search += SEARCH_A
+print search
+print '\n'
+
+search = "find a Juan Estrada \
 or a David Finley \
 or a Brenna Flaugher \
 or a Josh Frieman \

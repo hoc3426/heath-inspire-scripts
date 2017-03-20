@@ -28,13 +28,18 @@ EXPERIMENT = 'DUNE'
 EXPERIMENT = 'GERDA'
 EXPERIMENT = 'EXO-200'
 EXPERIMENT = 'PEN'
+EXPERIMENT = None
+
+SOURCE = 'Fermilab'
 
 #INSPIRE = 537896
 #INSPIRE = 52682
 #INSPIRE =  52765
 #INSPIRE =  55286
 #INSPIRE = 55401
-INSPIRE = 55553
+#INSPIRE = 55553
+INSPIRE = 71394
+
 
 #for email in EMAILS:
 if False:
@@ -60,8 +65,11 @@ def create_xml(author,email,af,experiment,inspire_id):
         common_tags['371__'] = [('m', email), ('a', aff), ('z', 'current')]
     else:
         common_tags['371__'] = [('m', email), ('z', 'current')]
-    common_tags['693__'] = [('e', experiment), ('z', 'current')]
+    if experiment:
+        common_tags['693__'] = [('e', experiment), ('z', 'current')]
     common_tags['035__'] = [('9', 'INSPIRE'), ('a', inspire_id)]
+    if SOURCE:
+        common_tags['670__'] = [('a', SOURCE)]
 
     for key in common_tags:
         tag = key
@@ -122,18 +130,23 @@ for author in AUTHORS:
     #au = re.sub(r'(.*[a-z]) ([A-Z][A-Z].*)',r'\2, \1',au)
     #au = string.capwords(au)    
     #au = re.sub(r'\s+', r' ', au)
-    au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
-    search = "find a " + au
-    x = perform_request_search(p=search,cc='HepNames')
+    if "," in au:
+        pass
+    else:
+        au = re.sub(r'(.*) (\S+)',r'\2, \1', au)
+    #search = "find a " + au
+    #x = perform_request_search(p=search,cc='HepNames')
     recid = get_hepnames_recid_from_email(email)
     #print search,' : ',len(x)
-    if recid:
+    if recid and EXPERIMENT:
         search = "001:" + str(recid) + " -693__e:" + EXPERIMENT
         x = perform_request_search(p=search,cc='HepNames')
         if len(x) == 1:
             #print search
             print 'or ', x[0]
             pass
+    elif recid:
+        print 'or ', recid
     #elif len(x) < 1 and not recid:
     else:
         if af:

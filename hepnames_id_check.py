@@ -15,13 +15,10 @@ from invenio.dbquery import run_sql
 
 
 
-from hep_convert_email_to_id import find_inspire_id_from_record
-from hep_convert_email_to_id import get_hepnames_anyid_from_recid
+from hep_convert_email_to_id import find_inspire_id_from_record, \
+                                    bad_id_check, \
+                                    get_hepnames_anyid_from_recid
 
-#EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@\.]+\w$")
-EMAIL_REGEX = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
-ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
-INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
 LETTER = None
 RECIDS = get_collection_reclist('HepNames')
 BAI_URL = 'https://inspirehep.net/author/manage_profile/'
@@ -48,23 +45,8 @@ def bad_orcid_bai():
     orcids = run_sql('select personid, data from aidPERSONIDDATA \
                       where tag="extid:ORCID"')
     for pid, orcid in orcids:
-        if not ORCID_REGEX.match(orcid):
+        if bad_id_check(orcid):
             print '{0}\t"{1}"'.format(BAI_URL + str(pid), orcid)
-
-def bad_id_check(id_num):
-    """Check various IDs for correct format."""
-
-    if id_num.startswith('INSP') and not \
-       re.match(INSPIRE_REGEX, id_num):
-        return True
-    elif re.search(r'000\-', id_num) and not \
-         re.match(ORCID_REGEX, id_num):
-        return True
-    elif re.search(r'\@', id_num) and not \
-         re.match(EMAIL_REGEX, id_num):
-        return True
-    else:
-        return False
 
 def check_ids(letter=None):
     """Go through HEPNames looking for bad IDs."""

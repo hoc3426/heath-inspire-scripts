@@ -32,7 +32,7 @@ def download_source(eprint, download_path = ""):
         tarfiles = {}
         file_count = 0
         for this_file in this_tarfile.getnames():
-            if re.search(r'(tex|xml)$', this_file):
+            if re.search(r'(tex|xml|txt)$', this_file):
                 file_count += 1
                 tarfiles[file_count] = this_file
                 print file_count, tarfiles[file_count]

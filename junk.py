@@ -21,6 +21,32 @@ from invenio.intbitset import intbitset
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
 
+
+search = '037:fermilab* 773__y:2016 980:published'
+result = intbitset(perform_request_search(p=search, cc='HEP'))
+print search
+print 'Number of papers =', len(result)
+universities = set()
+for recid in result:
+    insts = get_fieldvalues(recid, '100__u') + \
+            get_fieldvalues(recid, '700__u')
+    for inst in insts:
+        if inst == 'Fermilab':
+            pass
+        else:
+            universities.add(inst)
+print 'Number of collaborating institutions', len(universities)
+collaboration_papers = intbitset()
+for university in sorted(universities):
+    search = 'find aff ' + university
+    result_u = intbitset(perform_request_search(p=search, cc='HEP'))
+    print university, len(result_u & result)
+    collaboration_papers = (collaboration_papers | result_u) & result
+print 'Number of collaboration papers', len(collaboration_papers)
+quit()
+
+    
+
 EXPT = 'DES'
 search = '693__e:' + EXPT
 result = perform_request_search(p=search, cc='HepNames')
