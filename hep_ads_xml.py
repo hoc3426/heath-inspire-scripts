@@ -13,6 +13,7 @@ from hep_ads_xml_badrecs import BADRECS
 from hep_published import JOURNAL_PUBLISHED_DICT
 
 import xml.etree.ElementTree as ET
+import cPickle as pickle
 import re
 
 TEST = False
@@ -28,6 +29,8 @@ ENDING_COUNTER = 5000
 YEAR = '2016'
 
 DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
+EPRINTS_DONE = pickle.load(open("hep_ads_xml_eprints_done.p", "rb"))
+EPRINTS_NOTDONE = pickle.load(open("hep_ads_xml_eprints_notdone.p", "rb"))
 
 if TEST:
     VERBOSE = 1
@@ -106,7 +109,14 @@ def create_xml(input_dict):
         print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
+        if eprint in EPRINTS_DONE:
+            #print 'Already done', eprint
+            return None
+        if eprint not in EPRINTS_NOTDONE:
+            #print 'Do not have', eprint
+            return None
         search  =  'find eprint ' + eprint + ' not 035__9:ads'
+        #print search
         result = perform_request_search(p=search, cc='HEP')
         if DEBUG == 1:
             print search, result
@@ -173,7 +183,8 @@ def create_xml(input_dict):
         match_obj = re.match(r'^(\d{4})IJMP(\w)\.\.(\d{7})\w', bibcode)
         if match_obj:
             if TEST:
-                print 'IJMP = ', bibcode 
+                print 'IJMP = ', bibcode
+
             if not page:
                 return None
             journal        = 'Int.J.Mod.Phys.'
@@ -234,7 +245,8 @@ def create_xml(input_dict):
     if journal and volume and page and pubyear:
         volume  = volume_letter + volume
         page    = page_letter + page
-        #search = 'find j "' + journal + ',' + volume + ',' + page + '"'        
+        #search = 'find j "' + journal + ',' + volume + ',' + page + '"'
+
         #search = '773__p:"' + journal + '" 773__v:' + volume + ' 773__c:' + page
         #search += ' or (773__p:"' + journal + '" 773__v:' + volume + \
         #           ' 773__c:"' + page + '\-*")'
@@ -261,7 +273,8 @@ def create_xml(input_dict):
         if len(result) == 1:
             need_pubnote = False
         if recid_pubnote and not need_bibcode and not need_doi:
-            return None   
+            return None
+
     if need_pubnote and not need_doi and journal in TRICKY_JOURNALS:
         need_pubnote = False
     if need_doi or need_bibcode or need_pubnote:

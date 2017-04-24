@@ -21,7 +21,7 @@ from hep_convert_email_to_id_input import RECIDS, SEARCH, VERBOSE
 
 HN = get_collection_reclist('HepNames')
 
-COUNTER_MAX = 100
+COUNTER_MAX = 50
 
 def generate_check_digit(base_digits):
     '''

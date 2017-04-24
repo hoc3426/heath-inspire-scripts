@@ -83,7 +83,9 @@ def check_ids(letter=None):
                          get_hepnames_anyid_from_recid(recid, 'ORCID'))
         elif duplicate.startswith('035__a'):
             print duplicate
-            search = r'100__a:{0} or 700__a:{0}'.\
+            #search = r'100__a:{0} or 700__a:{0}'.\
+            #         format(duplicate.strip('035__a:'))
+            search = r'100:{0} or 700:{0}'.\
                      format(duplicate.strip('035__a:'))
             result = perform_request_search(p=duplicate, cc='HEP')
             if len(result) > 0:

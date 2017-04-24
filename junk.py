@@ -21,6 +21,19 @@ from invenio.intbitset import intbitset
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
 
+import cPickle as pickle
+search = '035__9:ads 980__a:arxiv earliestdate:2016'
+search = '-035__9:ads 980__a:arxiv'
+result = perform_request_search(p=search, cc='HEP')
+ads_eprints = set()
+for recid in result:
+    try:
+        eprint = re.sub('arXiv:', '', get_fieldvalues(recid, '037__a')[0])
+        ads_eprints.add(eprint)
+    except IndexError:
+        print "Hmm", recid,  get_fieldvalues(recid, '037__a')
+pickle.dump(ads_eprints, open("hep_ads_xml_eprints_notdone.p", "wb"))
+quit()
 
 search = '037:fermilab* 773__y:2016 980:published'
 result = intbitset(perform_request_search(p=search, cc='HEP'))
