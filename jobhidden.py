@@ -7,7 +7,7 @@ VERBOSE = False
 
 for i in open('tmp_jobhidden.in','r').readlines() :
     recid = 0
-    matchObj = re.search(r"Remove posting in HEPJobs (\d+)", i)
+    matchObj = re.search(r"Remove[ \+]posting[ \+]in[ \+]HEPJobs[ \+](\d+)", i)
     if matchObj:
         recid = matchObj.group()
         recid = re.sub(r'\D', r'', recid)

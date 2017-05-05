@@ -20,7 +20,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from hepnames_fermilab_aff_from_email import *
 #from tmp_email import EMAILS
 
-from hepnames_add_from_list_authors import AUTHORS
+from hepnames_add_from_list_authors import AUTHORS, EMAILS
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
 EXPERIMENT = 'BNL-RHIC-STAR'
@@ -28,7 +28,9 @@ EXPERIMENT = 'DUNE'
 EXPERIMENT = 'GERDA'
 EXPERIMENT = 'EXO-200'
 EXPERIMENT = 'PEN'
-EXPERIMENT = None
+EXPERIMENT = 'PADME'
+#EXPERIMENT = None
+
 
 SOURCE = 'Fermilab'
 
@@ -39,20 +41,23 @@ SOURCE = 'Fermilab'
 #INSPIRE = 55401
 #INSPIRE = 55553
 #INSPIRE = 71394
-INSPIRE = 71598
+#INSPIRE = 71598
+INSPIRE = 72053
 
-#for email in EMAILS:
-if False:
-    recid = get_hepnames_recid_from_email(email)
-    if recid:  
-        search = '001:' + str(recid)  + ' 693__e:DUNE'
-        result = perform_request_search(p=search, cc='HepNames')
-        if len(result) == 0:
-            print 'or', recid
-    else:
+if EMAILS:
+    emails_unknown = []
+    for email in EMAILS:
+        recid = get_hepnames_recid_from_email(email)
+        if recid:  
+            search = '001:' + str(recid)  + ' 693__e:' + EXPERIMENT
+            result = perform_request_search(p=search, cc='HepNames')
+            if len(result) == 0:
+                print 'or', recid
+        else:
+            emails_unknown.append(email)
+    for email in emails_unknown:
         print email
-    print 'FINISHED'
-
+    quit()
 
 def create_xml(author,email,af,experiment,inspire_id):
     common_fields = {}

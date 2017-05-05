@@ -24,13 +24,16 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 1
-ENDING_COUNTER = 5000
-YEAR = '2016'
+STARTING_COUNTER = 74616
+ENDING_COUNTER = 500
+YEAR = '2017'
 
-DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches.xml'
-EPRINTS_DONE = pickle.load(open("hep_ads_xml_eprints_done.p", "rb"))
-EPRINTS_NOTDONE = pickle.load(open("hep_ads_xml_eprints_notdone.p", "rb"))
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+DOCUMENT = DIRECTORY + 'ADSmatches.xml'
+EPRINTS_DONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_done.p'
+EPRINTS_NOTDONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_notdone.p'
+EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
+EPRINTS_NOTDONE = pickle.load(open(EPRINTS_NOTDONE_FILE, "rb"))
 
 if TEST:
     VERBOSE = 1
@@ -81,7 +84,8 @@ def create_xml(input_dict):
     recid_pubnote  = 0
 
     if not YEAR == input_dict['journal_bibcode'][:4]:
-        return None
+        #return None
+        pass
 
     if input_dict['journal_bibcode'] in ADS_SEEN:
         return None
@@ -338,7 +342,7 @@ def main():
                         print 'CANNOT print record', child.attrib
     output.write('</collection>')
     output.close()
-
+    print filename
 
 if __name__ == '__main__':
     try:
