@@ -55,7 +55,7 @@ def check_ids(letter=None):
     duplicates   = set()
     bad_id_set   = set()
     fields = ['035__a', '371__m']
-    print 'letter =', letter
+    print '2 letter =', letter
     if letter:
         fields.append('100__a')
 

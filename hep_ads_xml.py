@@ -24,8 +24,8 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 74616
-ENDING_COUNTER = 500
+STARTING_COUNTER = 410559
+ENDING_COUNTER = 100
 YEAR = '2017'
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
@@ -113,6 +113,8 @@ def create_xml(input_dict):
         print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
+        if '-' in eprint and 'astro' not in eprint:
+            return None
         if eprint in EPRINTS_DONE:
             #print 'Already done', eprint
             return None
