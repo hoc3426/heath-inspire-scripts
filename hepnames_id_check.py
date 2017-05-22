@@ -91,6 +91,9 @@ def check_ids(letter=None):
             if len(result) > 0:
                 print "Duplicate ID in HEP records"
                 print "  ", search
+        else:
+            print duplicate
+
 
     print "Bad metadata"
     for bad_id in sorted(bad_id_set):
