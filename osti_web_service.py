@@ -630,7 +630,7 @@ if __name__ == '__main__':
         if sys.argv[1:][0] == 'i':
             RECIDS = find_records(ACCEPTED_SEARCH)
         elif sys.argv[1:][0] == 'a':
-            RECIDS = find_records('     ')
+            RECIDS = find_records('dadd:2015 or dadd:2016 or dadd:2017')
     except IndexError:
         pass
     if not RECIDS:

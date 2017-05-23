@@ -21,6 +21,8 @@ def find_records():
 
     atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
 or 100__v:/60510/ or 700__v:/60510/ \
+or 100__v:/jlab/ or 700__v:/JLAB/ \
+or 100__v:/slac/ or 700__v:/slac/ \
 -100__u:/\w/ \
 -700__u:/\w/ \
 -001:203645 -001:1275928 -001:1483092'

@@ -29,10 +29,11 @@ EXPERIMENT = 'GERDA'
 EXPERIMENT = 'EXO-200'
 EXPERIMENT = 'PEN'
 EXPERIMENT = 'PADME'
+EXPERIMENT = 'XENON1T'
 #EXPERIMENT = None
 
 
-SOURCE = 'Fermilab'
+SOURCE = 'XENON'
 
 #INSPIRE = 537896
 #INSPIRE = 52682
@@ -42,7 +43,10 @@ SOURCE = 'Fermilab'
 #INSPIRE = 55553
 #INSPIRE = 71394
 #INSPIRE = 71598
-INSPIRE = 72053
+#INSPIRE = 72053
+INSPIRE = 72399
+
+
 
 if EMAILS:
     emails_unknown = []
@@ -148,10 +152,10 @@ for author in AUTHORS:
         x = perform_request_search(p=search,cc='HepNames')
         if len(x) == 1:
             #print search
-            print 'or ', x[0]
+            print 'or', x[0]
             pass
     elif recid:
-        print 'or ', recid
+        print 'or', recid
     #elif len(x) < 1 and not recid:
     else:
         if af:

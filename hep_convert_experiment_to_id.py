@@ -91,7 +91,8 @@ def find_records_with_no_id(experiment):
     print experiment
     search = "693__e:" + experiment + " date:2010->2017"
     search += " -100__i:INSPIRE* -700__i:INSPIRE* \
-                -100__j:ORCID* -700__j:ORCID*"
+                -100__j:ORCID* -700__j:ORCID* \
+                -100__k:ORCID* -700__k:ORCID*" 
     result = perform_request_search(p=search, cc='HEP')
     if VERBOSE:
         print len(result)
