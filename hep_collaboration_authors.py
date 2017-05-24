@@ -129,6 +129,9 @@ def create_xml(eprint, author_dict):
         for affiliation in author_dict[key][1]:
             affiliation = translate_latex2unicode(affiliation)
             affiliation = re.sub(r'(\w)\W*$', r'\1', affiliation)
+            if r"@" in affiliation:
+                subfields.append(('m', affiliation))
+                continue
             try:
                 for inst in affiliation_dict[affiliation]:
                     inst = re.sub(r'^\s+', '', inst)
