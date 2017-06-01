@@ -17,9 +17,15 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 from invenio.intbitset import intbitset
 
-#from hep_aff import get_aff
+from hep_aff import get_aff
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
+
+aff = 'Inter-University Centre for Astronomy and Astrophysics, Pune 411007,India'
+print aff
+print get_aff(aff)
+quit()
+
 
 import cPickle as pickle
 search = '035__9:ads 980__a:arxiv earliestdate:2016'

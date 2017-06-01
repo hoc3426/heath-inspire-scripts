@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 #
-# Version 2.4: 14.02.17 (by Florian Schwennsen)
+# Version 2.4: 30.03.17 (by Florian Schwennsen)
 #
 # This program translates an affiliation given as a plain string into the standardized ICN (or DLU)
 # of the SPIRES/ INSPIRE database.
@@ -24,10 +24,11 @@ import copy
 import codecs
 from itertools import imap
 from operator import mul
+import traceback
 #from sets import Set
 
-from invenio.search_engine import search_pattern
-from invenio.search_engine import get_most_popular_field_values
+#from invenio.search_engine import search_pattern
+#from invenio.search_engine import get_most_popular_field_values
 
 
 
@@ -51,10 +52,9 @@ numberbonus = 2;
 #penalty to take ICN which has no DLU #opt 140412
 icnpenalty = -3.8
 #keep at least $reduceselection in selection when trying to reduce it
-reduceselection = 10
+reduceselection = 10*10
 #to get more output, increase verbatim
-#verbatim = 2
-verbatim = 0 
+verbatim = 0
 #maximal number of affiliations to check in a detailed way
 maxaff = 20
 #maximal number of affiliations to check for substrings
@@ -396,6 +396,16 @@ for combo in commoncombos:
 regexpgrepmatch = re.compile('(\*|\(|\)|\$|\^|\-)')
 
 
+#printing comments
+def printcomment(string):
+    if verbatim > 1:
+        tracestack = traceback.extract_stack()
+        #trace = '->'.join([tracestack[i][2] for i in range(1, len(tracestack)-1)])
+        trace = tracestack[-2][2]
+        intro = ' -{verbose}'+''.join('---' for i in range(len(tracestack)-3))
+        comment = '-{%s}-{%s}-' % (trace, string)
+        print intro + comment
+    return
 
 
 # loads list of cityambiguities and applies it to 'icncity'
@@ -731,7 +741,8 @@ def loadknowledgebase(file):
     inf.close()
     allinstitutes = set(icndictionary.keys())
     unlisted[u'NONE'] = set([u'Unlisted'])
-
+    icndictionary['Fermilab'].unitypes = []
+    return
 
  
 #how often is a word
@@ -1261,6 +1272,7 @@ def bestmatchsimple(string, identifier,run,onlycore=False):
     #try exact match
     if icnsaff.institutes.has_key(list(inst.saffs)[0]):
         if verbatim > 1: FILREPORT.write(' exact match\n')
+        printcomment(' exact match')
         kandidatenmenge = icnsaff.institutes[list(inst.saffs)[0]]
         run = 3
     else:
@@ -1268,6 +1280,7 @@ def bestmatchsimple(string, identifier,run,onlycore=False):
         #try city match
         if len(inst.cities) > 0:
             if verbatim > 1: FILREPORT.write(' city match\n')
+            printcomment(' city match')
             for city in inst.cities:
                 if icncity.institutes.has_key(city):
                     if not ((city == 'Normal') and (len(inst.countries & set(['US'])) == 0)):
@@ -1276,6 +1289,7 @@ def bestmatchsimple(string, identifier,run,onlycore=False):
         #try country match
         elif len(inst.countries) > 0:
             if verbatim > 1: FILREPORT.write(' country match\n')
+            printcomment(' country match')
             for country in inst.countries:
                 if icncountry.institutes.has_key(country):
                     kandidatenmenge = kandidatenmenge.union(icncountry.institutes[country])
@@ -1285,6 +1299,7 @@ def bestmatchsimple(string, identifier,run,onlycore=False):
         #try acronym match
         if len(inst.acronyms) > 0:
             if verbatim > 1: FILREPORT.write(' acronym match\n')
+            printcomment(' acronym match')
             for acronym in inst.acronyms:
                 if icnacronym.institutes.has_key(acronym):
                     kandidatenmenge = enrichcandidates(kandidatenmenge,icnacronym.institutes[acronym])
@@ -2114,4 +2129,5 @@ def promote(file):
 #generateknowledgebase('aff-translator.pickle',True)
 #loadknowledgebase('aff-translator.pickle')
 #icndictionary['Frascati'].display()
+#icndictionary['Fermilab'].display()
 

@@ -24,9 +24,9 @@ DEBUG = False
 UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 519637
-ENDING_COUNTER = 100
-YEAR = '2017'
+STARTING_COUNTER = 1
+ENDING_COUNTER = 201
+YEAR = '2016'
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 DOCUMENT = DIRECTORY + 'ADSmatches.xml'
@@ -84,8 +84,8 @@ def create_xml(input_dict):
     recid_pubnote  = 0
 
     if not YEAR == input_dict['journal_bibcode'][:4]:
-        return None
-        #pass
+        #return None
+        pass
 
     if input_dict['journal_bibcode'] in ADS_SEEN:
         return None

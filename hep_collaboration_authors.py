@@ -329,7 +329,7 @@ def process_file(eprint, file_type='tex'):
        {position:[author name, [list of affiliations]]
     """
 
-    with open(eprint + '.' + file_type, 'r') as input_file:
+    with open(eprint.replace('/', '-') + '.' + file_type, 'r') as input_file:
         read_data = input_file.read()
     read_data = preprocess_file(read_data)
     author_position = 0
@@ -393,8 +393,8 @@ def process_file(eprint, file_type='tex'):
 def main(eprint):
     """Get the author list."""
 
-    eprint_tex = eprint + ".tex"
-    eprint_xml = eprint + ".xml"
+    eprint_tex = eprint.replace('/', '-') + ".tex"
+    eprint_xml = eprint.replace('/', '-') + ".xml"
     if os.path.exists(eprint_tex) or os.path.exists(eprint_xml):
         pass
     else:
@@ -407,7 +407,8 @@ def main(eprint):
 
 
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_' + eprint + '_correct.out', filename)
+    filename = re.sub('.py', '_' + eprint.replace('/', '-') + \
+                      '_correct.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
     update = process_file(eprint)
