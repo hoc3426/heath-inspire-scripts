@@ -15,6 +15,9 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
+VERBOSE = True
+VERBOSE = False
+
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
 
@@ -128,7 +131,9 @@ def create_xml(eprint, author_dict):
         subfields.append(('a', author_dict[key][0]))
         for affiliation in author_dict[key][1]:
             affiliation = translate_latex2unicode(affiliation)
-            affiliation = re.sub(r'(\w)\W*$', r'\1', affiliation)
+            #affiliation = re.sub(r'(\w)\W*$', r'\1', affiliation)
+            affiliation = re.sub(r'([\.\,]+)', r'\1 ', affiliation)
+            affiliation = re.sub(r'\s+', ' ', affiliation)
             if r"@" in affiliation:
                 subfields.append(('m', affiliation))
                 continue
@@ -137,7 +142,14 @@ def create_xml(eprint, author_dict):
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
             except KeyError:
+                if VERBOSE:
+                    print "AFF in: ", affiliation
+                    time1 = time.time()
                 inspire_affiliation = get_aff(unidecode(affiliation))
+                if VERBOSE:
+                    time2 = time.time()
+                    time_taken = time2 - time1
+                    print "AFF out:", inspire_affiliation, "Time taken", time_taken
                 for inst in inspire_affiliation:
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))

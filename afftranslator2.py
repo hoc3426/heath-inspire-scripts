@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 #
-# Version 2.4: 30.03.17 (by Florian Schwennsen)
+# Version 2.4: 03.06.17 (by Florian Schwennsen)
 #
 # This program translates an affiliation given as a plain string into the standardized ICN (or DLU)
 # of the SPIRES/ INSPIRE database.
@@ -56,7 +56,7 @@ reduceselection = 10*10
 #to get more output, increase verbatim
 verbatim = 0
 #maximal number of affiliations to check in a detailed way
-maxaff = 20
+#maxaff = 20
 #maximal number of affiliations to check for substrings
 maxaffsubstring = 4
 
@@ -359,6 +359,7 @@ regexpsnorm3 = [(re.compile('Amirkabir'), 'Amir Kabir'),
                 (re.compile('(\d) (\d)'), r'\1-\2'),
                 (re.compile('[\,;\:]+'), ' , '),
                 (re.compile(' \- '), ' , '),
+                (re.compile('~'), ' '),
                 (re.compile(' (and|und|et|e|\&) '), ' and '),
                 (re.compile(r'[\(\)\[\]"\/\?\\\^\$]'), '  '),
                 (re.compile(r'[\(\)\[\]"\/\?\\\^\$]'), '  '),
@@ -1414,6 +1415,9 @@ def bestmatchu(string, identifier,run,onlycore=False):
     else:
         inst = plaininstitute(string)
         plaindictionary[string] = inst
+    #return ICN if aff-string _is_ an ICN
+    if identifier == 'ICN' and icndictionary.has_key(string):
+        return [(0, string, 0)]
     string = regexpand3.sub(' and ', string)
     if re.search(' and ',list(inst.naffs)[0]):
         result = []
