@@ -213,9 +213,10 @@ def create_xml(recid, tags, author_dict):
                 flag = False
                 for code, value in field_instance[0]:
                     if code == 'm' and get_hepnames_recid_from_email(value):
-                        pass
-                    else:
-                        correct_subfields.append((code, value))
+                        #pass
+                        correct_subfields.append(('9', 'email_known'))
+                    #else:
+                    correct_subfields.append((code, value))
                 record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
                                  subfields=correct_subfields)
                 continue
