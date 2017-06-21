@@ -135,6 +135,7 @@ def create_xml(eprint, author_dict):
             affiliation = re.sub(r'([\.\,]+)', r'\1 ', affiliation)
             affiliation = re.sub(r'\s+', ' ', affiliation)
             if r"@" in affiliation:
+                affiliation = affiliation.replace(r'. ', r'.')
                 subfields.append(('m', affiliation))
                 continue
             try:
@@ -277,12 +278,12 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\\llap\{(\$\S+\$)\}', r'\1 ', read_data)
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\b', r'\\affiliation', read_data)
+    read_data = re.sub(r'\\email\{', r'\\affiliation{', read_data)
     read_data = re.sub(r'}\s*\\affiliation', '}\n\\\\affiliation', read_data)
     read_data = re.sub(r'}\s*\\author', '}\n\\\\author', read_data)
     read_data = re.sub(r'[ ]*\\scriptsize[ ]+', '', read_data)
     read_data = re.sub(r'\\and[ ]+', '', read_data)
     read_data = re.sub(r'\$\s*\^', '$^', read_data)
-
 
     #I.J.~Arnquist\inst{10}
     read_data = re.sub(r'Irefn{(\w+)}\\Aref{(\w+)}\\Aref{(\w+)}', \

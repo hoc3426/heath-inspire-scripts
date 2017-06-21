@@ -19,13 +19,14 @@ import re
 TEST = False
 #TEST = True
 VERBOSE = False
+#VERBOSE = True
 DEBUG = False
 #DEBUG = True
-UPDATE = True
+#UPDATE = True
 UPDATE = False
 
-STARTING_COUNTER = 23701
-ENDING_COUNTER = 101
+STARTING_COUNTER = 3454
+ENDING_COUNTER = 201
 YEAR = '2016'
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
@@ -83,9 +84,9 @@ def create_xml(input_dict):
     recid_doi      = 0
     recid_pubnote  = 0
 
-    if not YEAR == input_dict['journal_bibcode'][:4]:
-        #return None
-        pass
+    #if not YEAR == input_dict['journal_bibcode'][:4]:
+    #    #return None
+    #    pass
 
     if input_dict['journal_bibcode'] in ADS_SEEN:
         return None
@@ -116,11 +117,13 @@ def create_xml(input_dict):
         if '-' in eprint and 'astro' not in eprint:
             return None
         if eprint in EPRINTS_DONE:
-            #print 'Already done', eprint
+            if DEBUG:
+                print 'Already done', eprint
             return None
-        if eprint not in EPRINTS_NOTDONE:
-            #print 'Do not have', eprint
-            return None
+        #if eprint not in EPRINTS_NOTDONE:
+        #    if DEBUG:
+        #        print 'Do not have', eprint
+        #    return None
         search  =  'find eprint ' + eprint + ' not 035__9:ads'
         #print search
         result = perform_request_search(p=search, cc='HEP')

@@ -31,7 +31,7 @@ or 100__v:/cern/ or 700__v:/cern/ \
     print atsearch
     result = perform_request_search(p=atsearch, cc='HEP')
     result.reverse()
-    result = result[:20]
+    result = result[:50]
     return result
 
 def get_aff(aff):

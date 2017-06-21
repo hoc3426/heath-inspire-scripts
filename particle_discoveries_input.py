@@ -14,6 +14,57 @@ DISCOVERY_LIST = [
  'laureates_wolf':''
 },
 
+
+
+{'discovery':'Quantum field theory',
+ 'year':'1940s-1970s',
+ 'papers':'',
+ 'lab':'Princeton, Inst. Advanced Study',
+ 'exp':'',
+ 'nobel':'',
+ 'laureates':'',
+ 'wolf':'1981',
+ 'laureates_wolf':"Dyson, 't Hooft, Weisskopf"
+},
+
+
+
+{'discovery':'Wilson cloud chamber method',
+ 'year':'1933',
+ 'papers':'1605695',
+ 'lab':'Cambridge U.',
+ 'exp':'',
+ 'nobel':'1948',
+ 'laureates':'Blackett',
+ 'wolf':'',
+ 'laureates_wolf':''
+},
+
+
+{'discovery':'$\pi^+$',
+ 'year':'1947',
+ 'papers':'21948',
+ 'lab':'Bristol U.',
+ 'exp':'',
+ 'nobel':'',
+ 'laureates':'',
+ 'wolf':'1979',
+ 'laureates_wolf':'Occhialini'
+},
+
+
+{'discovery':'Electron spin',
+ 'year':'1926',
+ 'papers':'44523',
+ 'lab':'Leiden',
+ 'exp':'',
+ 'nobel':'',
+ 'laureates':'',
+ 'wolf':'1979',
+ 'laureates_wolf':'Uhlenbeck'
+},
+
+
 {'discovery':'Berry phase',
  'year':'1984',
  'papers':'211858',

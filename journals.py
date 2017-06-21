@@ -15,6 +15,7 @@ for eprint in eprints :
     search = "100__j:ORCID* or 700__j:ORCID*"
     search = "037:fermilab* 773__p:IEEE* (773__y:2011 or 773__y:2012 or 773__y:2013 or 773__y:2014 or 773__y:2015 or 773__y:2016)"
     search = "037:fermilab* 773__y:2016 980:published"
+    #search = "037:fermilab* 980:published 773__y:2016 authorcount:50+"
     x = perform_request_search(p=search,cc='HEP')
     journals = []
     for r in x :    
@@ -28,12 +29,14 @@ for eprint in eprints :
     journals.sort()
     counted_all_refs=Counter(journals)
     sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1))
+    total = 0
     for recid_count, count in sorted_count:
         url = "http://inspirehep.net/search?p=773__p:\"" + recid_count 
         url = url + "\" (" + search + ")"
         url = re.sub(' ', '+', url)
-        print count, recid_count, url
-
+        total += count
+        #print '%-25s %3d' % (recid_count, count)
+        print '%s\t\t\t%3d' % (recid_count, count)
 
 #c = Counter(journals)
 #l = list(set(journals))
