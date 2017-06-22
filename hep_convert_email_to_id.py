@@ -208,13 +208,17 @@ def create_xml(recid, tags, author_dict):
             for code, value in field_instance[0]:
                 if code == 'j' and value.startswith('ORCID') or code == 'k':
                     orcid_flag = True
+                if code == 'm' and get_hepnames_recid_from_email(value):
+                    correct_subfields.append(('9', 'email_known'))
+                    correct_subfields.append((code, value))
+                    seen_subfields.append((code, value))
 
             if orcid_flag:
                 flag = False
                 for code, value in field_instance[0]:
-                    if code == 'm' and get_hepnames_recid_from_email(value):
+                    #if code == 'm' and get_hepnames_recid_from_email(value):
                         #pass
-                        correct_subfields.append(('9', 'email_known'))
+                        #correct_subfields.append(('9', 'email_known'))
                     #else:
                     correct_subfields.append((code, value))
                 record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
