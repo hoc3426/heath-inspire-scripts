@@ -189,45 +189,43 @@ def create_xml(recid, tags, author_dict):
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
     flag = False
-    for tag in tags:
-        for field_instance in record_get_field_instances(record, \
-                                  tag[0:3], tag[3], tag[4]):
-            correct_subfields = []
-            derived_orcid = None
-            derived_inspire_id = None
-            inspire_id = None
-            orcid_flag = False
-            for code, value in field_instance[0]:
-                if code == 'm' and value.startswith('email:'):
-                    author_dict[value] = (None, None)
-                elif code == 'm' and not value in author_dict:
-                    value = value.lower()
-                    (derived_inspire_id, derived_orcid) = \
-                        convert_email_to_inspire_id(value)
-                    author_dict[value] = (derived_inspire_id, derived_orcid)
-                if code == 'm':
-                    (derived_inspire_id, derived_orcid) = author_dict[value]
-                    print value, author_dict[value], derived_inspire_id
-                    if derived_inspire_id or derived_orcid:
-                        value = 'email:' + value
-                correct_subfields.append((code, value))
-                if code == 'j' and value.startswith('ORCID') or code == 'k':
-                    orcid_flag = True
-                elif code == 'i':
-                    inspire_id = value
-            print inspire_id, derived_inspire_id
-            if inspire_id and not orcid_flag and not derived_orcid:
-                derived_orcid = get_orcid_from_inspire_id(inspire_id)[1]
-            if derived_orcid and not orcid_flag:
-                derived_orcid = 'ORCID:' + derived_orcid
-                correct_subfields.append(('k', derived_orcid))
-                flag = True
-            elif derived_inspire_id and not inspire_id:
-                correct_subfields.append(('i', derived_inspire_id))
-                print 'i', derived_inspire_id
-                flag = True
-            record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
-                subfields=correct_subfields)
+    for (tag, field_instance) in \
+            [(tag, field_instance) for tag in tags \
+             for field_instance in record_get_field_instances(record, \
+             tag[0:3], tag[3], tag[4])]:
+        correct_subfields = []
+        derived_orcid = None
+        derived_inspire_id = None
+        inspire_id = None
+        orcid_flag = False
+        for code, value in field_instance[0]:
+            if code == 'm' and value.startswith('email:'):
+                author_dict[value] = (None, None)
+            elif code == 'm' and not value in author_dict:
+                value = value.lower()
+                (derived_inspire_id, derived_orcid) = \
+                    convert_email_to_inspire_id(value)
+                author_dict[value] = (derived_inspire_id, derived_orcid)
+            if code == 'm':
+                (derived_inspire_id, derived_orcid) = author_dict[value]
+                if derived_inspire_id or derived_orcid:
+                    value = 'email:' + value
+            correct_subfields.append((code, value))
+            if code == 'j' and value.startswith('ORCID') or code == 'k':
+                orcid_flag = True
+            elif code == 'i':
+                inspire_id = value
+        if inspire_id and not orcid_flag and not derived_orcid:
+            derived_orcid = get_orcid_from_inspire_id(inspire_id)[1]
+        if derived_orcid and not orcid_flag:
+            derived_orcid = 'ORCID:' + derived_orcid
+            correct_subfields.append(('k', derived_orcid))
+            flag = True
+        elif derived_inspire_id and not inspire_id:
+            correct_subfields.append(('i', derived_inspire_id))
+            flag = True
+        record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
+            subfields=correct_subfields)
 
     if flag:
         return [print_rec(correct_record), author_dict]
@@ -258,7 +256,6 @@ def main(recordlist):
     for record in recordlist:
         if VERBOSE > 0:
             print "doing %d" % (record)
-        #update = create_xml(record, ['100__', '700__'])
         update = create_xml(record, ['100__', '700__'], author_dict)
         if update[0] and counter < COUNTER_MAX:
             output.write(update[0])
