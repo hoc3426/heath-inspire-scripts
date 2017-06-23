@@ -25,8 +25,13 @@ DEBUG = False
 #UPDATE = True
 UPDATE = False
 
+<<<<<<< HEAD
 STARTING_COUNTER = 3454
 ENDING_COUNTER = 201
+=======
+STARTING_COUNTER = 25066
+ENDING_COUNTER = 101
+>>>>>>> test_email
 YEAR = '2016'
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
