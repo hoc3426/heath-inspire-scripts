@@ -21,6 +21,32 @@ from hep_aff import get_aff
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
 
+search = '773__p:physics - 0274_2:doi'
+result = perform_request_search(p=search, cc='HEP')
+for recid in result:
+    common_fields = {}
+    common_tags = {}
+    (year, page, vol, doi) = (0, 0, 0, 0)
+    year =  get_fieldvalues(recid, '773__y')[0]
+    if int(year) < 2008:
+        continue
+    page =  get_fieldvalues(recid, '773__c')[0]
+    if '-' in page:
+        page = re.sub('\-.*', '', page)
+    vol  =  get_fieldvalues(recid, '773__v')[0]
+    doi = '10.1103/Physics.' + str(vol) + '.' + str(page)
+    #print recid, vol, page, year, doi
+    record_add_field(common_fields, '001', controlfield_value=str(recid))
+    common_tags['0247_'] = [('a', doi), ('2', 'DOI')]
+    for key in common_tags:
+        tag = key
+        record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+            subfields=common_tags[key])
+    #return common_fields
+    print print_rec(common_fields)
+quit()
+
+
 aff = 'Inter-University Centre for Astronomy and Astrophysics, Pune 411007,India'
 print aff
 print get_aff(aff)

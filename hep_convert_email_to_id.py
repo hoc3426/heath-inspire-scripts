@@ -78,10 +78,6 @@ def get_hepnames_recid_from_email(email):
     Find the HEPNames recid based on email
     """
 
-#    emailsearch = '371__m:%s or 371__o:%s or 595__o:%s or 595__m:%s'
-#    reclist = perform_request_search(p = \
-#        emailsearch % (email, email, email, email), cc='HepNames', ap=-9)
-
     emailsearch = '371__m:%s or 371__o:%s'
     reclist = perform_request_search(p=emailsearch % (email, email),
                                      cc='HepNames')
@@ -193,114 +189,49 @@ def create_xml(recid, tags, author_dict):
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
     flag = False
-    flag_record = False
     for tag in tags:
-        #print '1 flag_record, flag', flag_record, flag
-        field_instances = record_get_field_instances(record, \
-                                                     tag[0:3], tag[3], tag[4])
-        #correct_subfields = []
-        #seen_subfields = []
-        for field_instance in field_instances:
+        for field_instance in record_get_field_instances(record, \
+                                  tag[0:3], tag[3], tag[4]):
             correct_subfields = []
-            seen_subfields = []
+            derived_orcid = None
+            derived_inspire_id = None
+            inspire_id = None
             orcid_flag = False
-
             for code, value in field_instance[0]:
+                if code == 'm' and value.startswith('email:'):
+                    author_dict[value] = (None, None)
+                elif code == 'm' and not value in author_dict:
+                    value = value.lower()
+                    (derived_inspire_id, derived_orcid) = \
+                        convert_email_to_inspire_id(value)
+                    author_dict[value] = (derived_inspire_id, derived_orcid)
+                if code == 'm':
+                    (derived_inspire_id, derived_orcid) = author_dict[value]
+                    print value, author_dict[value], derived_inspire_id
+                    if derived_inspire_id or derived_orcid:
+                        value = 'email:' + value
+                correct_subfields.append((code, value))
                 if code == 'j' and value.startswith('ORCID') or code == 'k':
                     orcid_flag = True
-                if code == 'm' and get_hepnames_recid_from_email(value):
-                    correct_subfields.append(('9', 'email_known'))
-                    correct_subfields.append((code, value))
-                    seen_subfields.append((code, value))
-
-            if orcid_flag:
-                flag = False
-                for code, value in field_instance[0]:
-                    #if code == 'm' and get_hepnames_recid_from_email(value):
-                        #pass
-                        #correct_subfields.append(('9', 'email_known'))
-                    #else:
-                    correct_subfields.append((code, value))
-                record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
-                                 subfields=correct_subfields)
-                continue
-
-            for code, value in field_instance[0]:
-                if VERBOSE:
-                    print 'code, value =', code, value
-                new_value = [None, None]
-                if code == 'm':
-                    value = value.lower()
-                if code == 'j' and value.startswith('ORCID') or code == 'k':
-                    flag = False
-                    continue
-                elif code == 'm' and value not in author_dict:
-                    if bad_id_check(value):
-                        print 'Bad email:', recid, value
-                        #quit()
-                    try:
-                        author_dict[value] = \
-                            convert_email_to_inspire_id(value)
-                    except KeyError:
-                        print 'Problem with: ', value, \
-                                    convert_email_to_inspire_id(value)
-                        quit()
-                    new_value = author_dict[value]
-                    if author_dict[value][0] or author_dict[value][1]:
-                        flag = True
-                elif code == 'i' and value not in author_dict:
-                    #flag = False
-                    if bad_id_check(value):
-                        print 'Bad INSPIRE ID:', value
-                        #quit()
-                    author_dict[value] = get_orcid_from_inspire_id(value)
-                    new_value = author_dict[value]
-                    if author_dict[value][1]:
-                        flag = True
-                    #print '1 flag', flag
-                elif code == 'm' or code == 'i' :
-                    try:
-                        new_value = author_dict[value]
-                    except KeyError:
-                        print value
-                        print author_dict[value]
-                        quit()
-                    if code == 'm' and new_value[0]:
-                        flag = True
-                    elif code == 'i' and new_value[1]:
-                        flag = True
-                    #print 'new_value, flag =', new_value, flag
-                #print 'new_value =', new_value
-                if new_value[0]:
-                    value = new_value[0]
-                    code = 'i'
-                    if not (code, value) in seen_subfields:
-                        correct_subfields.append((code, value))
-                        seen_subfields.append((code, value))
-                        #flag = True
-                #print '2 flag', flag
-                if new_value[1]:
-                    value = 'ORCID:' + new_value[1]
-                    code = 'k'
-                    if not (code, value) in seen_subfields:
-                        correct_subfields.append((code, value))
-                        seen_subfields.append((code, value))
-                    #flag = True
-                #print '3 flag', flag
-                if not (code, value) in seen_subfields:
-                    correct_subfields.append((code, value))
-                    seen_subfields.append((code, value))
-                #print '4 flag', flag
+                elif code == 'i':
+                    inspire_id = value
+            print inspire_id, derived_inspire_id
+            if inspire_id and not orcid_flag and not derived_orcid:
+                derived_orcid = get_orcid_from_inspire_id(inspire_id)[1]
+            if derived_orcid and not orcid_flag:
+                derived_orcid = 'ORCID:' + derived_orcid
+                correct_subfields.append(('k', derived_orcid))
+                flag = True
+            elif derived_inspire_id and not inspire_id:
+                correct_subfields.append(('i', derived_inspire_id))
+                print 'i', derived_inspire_id
+                flag = True
             record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
-                     subfields=correct_subfields)
-            if flag_record == False:
-                flag_record = flag
-    #print '2 flag_record, flag', flag_record, flag
-    if flag_record:
-        #return print_rec(correct_record)
+                subfields=correct_subfields)
+
+    if flag:
         return [print_rec(correct_record), author_dict]
     else:
-        #return None
         return [None, author_dict]
 
 def main(recordlist):
