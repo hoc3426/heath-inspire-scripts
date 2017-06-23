@@ -68,6 +68,8 @@ def find_records_containing_email():
     """
 
     search = r'100__m:/\@/ or 700__m:/\@/'
+               # - \
+               #100__m:email* - 700__m:email*'
     if SEARCH:
         search = SEARCH
     result = perform_request_search(p=search, cc='HEP')
@@ -221,12 +223,11 @@ def create_xml(recid, tags, author_dict):
             derived_orcid = 'ORCID:' + derived_orcid
             correct_subfields.append(('k', derived_orcid))
             flag = True
-        elif derived_inspire_id and not inspire_id:
+        elif derived_inspire_id and not inspire_id and not orcid_flag:
             correct_subfields.append(('i', derived_inspire_id))
             flag = True
         record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
             subfields=correct_subfields)
-
     if flag:
         return [print_rec(correct_record), author_dict]
     else:
