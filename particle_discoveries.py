@@ -22,7 +22,11 @@ TITLE = 'WebDoc-Page-Title:Particle Physics Discoveries'
 TITLE = 'WebDoc-Page-Title:Nobel Prizes in Particle Physics'
 TITLE = 'WebDoc-Page-Title:Prize Winning Discoveries in Particle Physics'
 PARAGRAPH = """The following list of Nobel and Wolf Prizes in particle physics.
-This is very much a work in progress and we value your feedback.
+We have attempted to match the prizes to papers in INSPIRE. Sometimes one
+or two representative papers have been chosen when the prize-winning work 
+spans decades.
+Column headings are sortable.
+This is very much a work in progress and we value your feedback. 
 If you have any questions or comments please feel free to contact us about it
 at
 """

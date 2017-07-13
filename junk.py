@@ -16,10 +16,35 @@ from hep_convert_email_to_id import *
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 from invenio.intbitset import intbitset
+from invenio.textutils import translate_latex2unicode
 
 from hep_aff import get_aff
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
+
+fileName = 'tmp.out'
+for line in open(fileName, 'r').readlines():
+    print translate_latex2unicode(line)
+quit()
+
+
+
+EXPT = 'DES'
+search = '693__e:' + EXPT
+result = perform_request_search(p=search, cc='HepNames')
+
+for recid in result:
+    name = get_fieldvalues(recid, '100__a')[0]
+    inspire = find_inspire_id_from_record(recid)
+    orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+    try:
+        email = get_fieldvalues(recid, '371__m')[0]
+    except IndexError:
+        email = None
+    #if not orcid:
+    print "{0}|{1}|{2}|{3}".format(name, email, inspire, orcid)
+quit()
+
 
 search = '773__p:physics - 0274_2:doi'
 result = perform_request_search(p=search, cc='HEP')

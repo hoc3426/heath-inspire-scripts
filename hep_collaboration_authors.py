@@ -2,13 +2,11 @@
 A system to extract collaboration author lists from tex files.
 """
 
-import getopt, gzip
+import getopt
 import os
 import re
 import sys
-import tarfile
 import time
-import urllib
 from unidecode import unidecode
 
 from invenio.search_engine import perform_request_search
@@ -20,6 +18,10 @@ VERBOSE = False
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
+
+    import gzip
+    import tarfile
+    import urllib
 
     download_path = os.path.expanduser(download_path)
     filename = download_path + eprint.replace('/', '-')
@@ -134,6 +136,7 @@ def create_xml(eprint, author_dict):
             #affiliation = re.sub(r'(\w)\W*$', r'\1', affiliation)
             affiliation = re.sub(r'([\.\,]+)', r'\1 ', affiliation)
             affiliation = re.sub(r'\s+', ' ', affiliation)
+            affiliation = re.sub(r'\s$', r'', affiliation)
             if r"@" in affiliation:
                 affiliation = affiliation.replace(r'. ', r'.')
                 subfields.append(('m', affiliation))
@@ -144,13 +147,14 @@ def create_xml(eprint, author_dict):
                     subfields.append(('u', inst))
             except KeyError:
                 if VERBOSE:
-                    print "AFF in: ", affiliation
+                    print "AFF in: ", affiliation, "*"
                     time1 = time.time()
                 inspire_affiliation = get_aff(unidecode(affiliation))
                 if VERBOSE:
                     time2 = time.time()
                     time_taken = time2 - time1
-                    print "AFF out:", inspire_affiliation, "Time taken", time_taken
+                    print "AFF out:", inspire_affiliation, \
+                          "Time taken", time_taken
                 for inst in inspire_affiliation:
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))

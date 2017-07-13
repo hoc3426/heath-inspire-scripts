@@ -67,9 +67,10 @@ def find_records_containing_email():
     Searches for HEP records with emails
     """
 
+    search = r'100__m:/\@/ or 700__m:/\@/ \
+                - \
+               100__m:email* - 700__m:email*'
     search = r'100__m:/\@/ or 700__m:/\@/'
-               # - \
-               #100__m:email* - 700__m:email*'
     if SEARCH:
         search = SEARCH
     result = perform_request_search(p=search, cc='HEP')

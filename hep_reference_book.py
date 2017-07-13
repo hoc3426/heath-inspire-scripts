@@ -45,7 +45,7 @@ DATAS = [
 ['asqtad', '2064f21b676m010m050', '10.15484/milc.asqtad.en06a/1178158', '1399459'],
 ['asqtad', '2064f21b676m007m050b', '10.15484/milc.asqtad.en05b/1178157', '1399460']]
 
-books = [
+BOOKS = [
 #['Itzykson', 'quantum field theory', '0486445682', '159194'],
 ['Baxter', 'exactly solved models in statistical mechanics', '0486462714' , '1120339'],
 ['Carroll', 'spacetime and geometry', '0805387323', '650093'],
@@ -66,18 +66,17 @@ books = [
 ['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512'],
 ['W5013','w5013','CERN-W5013','863473']]
 
-books = [['Streater','pct.*spin and statistics.*and all that','0691070628','290343']]
-#books = [['Chandrasekhar','mathematical theory of black holes','9780198503705','224457']]
-books = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
+BOOKS = [['Streater','pct.*spin and statistics.*and all that','0691070628','290343']]
+#BOOKS = [['Chandrasekhar','mathematical theory of black holes','9780198503705','224457']]
+BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 ['W5013','w5013','CERN-W5013','863473']]
-#books = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
+#BOOKS = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
 #['W5013','w5013','CERN-W5013','863473']]
-#books = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
+#BOOKS = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
 
 
 
-#for book in books:
-if False:
+for book in BOOKS:
     referenceFlag = False
     date = False
     author = book[0]
@@ -150,7 +149,7 @@ for i in open(fileName,'r'):
     i = re.sub(r'</?pre>','',i)
     i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
 
-    for book in DATAS:  
+    for book in BOOKS:  
         referenceFlag = False
         date = False
         author = book[0]

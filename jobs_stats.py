@@ -8,21 +8,21 @@ regions = ('Africa', 'Asia', 'Australasia', 'Europe', 'Middle East', \
 fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
 
-search = 'dadd:2017-01-01->2017-03-31'
+search = 'dadd:2017-04-01->2017-06-30'
 print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 
-if False:
+#if False:
 #for field in fields:
-#if True:
+if True:
   #search = '65017:' + field
   x = perform_request_search(p=search, cc='Jobs')
   y = perform_request_search(p=search, cc='Jobs Hidden')
   total = len(x+y)
   print "{0:20s} {1:5d} {2:5d} {3:5d}".format(search, len(x), len(y), total)
-
+  
 
 total = 0
-for yymm in ['1701', '1702', '1703']:
+for yymm in ['1704', '1705', '1706']:
   search = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   x = perform_request_search(p=search, cc='HEP')
   print search

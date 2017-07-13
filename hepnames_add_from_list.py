@@ -31,23 +31,16 @@ EXPERIMENT = 'PEN'
 EXPERIMENT = 'PADME'
 EXPERIMENT = 'XENON1T'
 EXPERIMENT = 'Baby-MIND'
-#EXPERIMENT = None
+EXPERIMENT = 'HARPO'
 
 
-SOURCE = 'Baby-MIND'
+SOURCE = 'Fermilab'
+SOURCE = 'HARPO'
 
-#INSPIRE = 537896
-#INSPIRE = 52682
-#INSPIRE =  52765
-#INSPIRE =  55286
-#INSPIRE = 55401
-#INSPIRE = 55553
-#INSPIRE = 71394
-#INSPIRE = 71598
 #INSPIRE = 72053
-INSPIRE = 72499
-
-
+#INSPIRE = 72499
+#INSPIRE = 72524
+INSPIRE = 73359
 
 
 if EMAILS:
@@ -156,8 +149,8 @@ for author in AUTHORS:
             #print search
             print 'or', x[0]
             pass
-    elif recid:
-        print 'or', recid
+    #elif recid:
+    #    print 'or', recid
     #elif len(x) < 1 and not recid:
     else:
         if af:
