@@ -14,7 +14,11 @@ from hep_published import JOURNAL_PUBLISHED_DICT
 
 import xml.etree.ElementTree as ET
 import cPickle as pickle
+import os
+from os.path import exists
 import re
+
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 
 TEST = False
 #TEST = True
@@ -30,12 +34,9 @@ STARTING_COUNTER = 1
 ENDING_COUNTER = 201
 YEAR = '2016'
 
-DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 DOCUMENT = DIRECTORY + 'ADSmatches.xml'
 EPRINTS_DONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_done.p'
-EPRINTS_NOTDONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_notdone.p'
 EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
-EPRINTS_NOTDONE = pickle.load(open(EPRINTS_NOTDONE_FILE, "rb"))
 
 if TEST:
     VERBOSE = 1
@@ -121,10 +122,8 @@ def create_xml(input_dict):
             if DEBUG:
                 print 'Already done', eprint
             return None
-        #if eprint not in EPRINTS_NOTDONE:
-        #    if DEBUG:
-        #        print 'Do not have', eprint
-        #    return None
+        else:
+            EPRINTS_DONE.add(eprint)
         search  =  'find eprint ' + eprint + ' not 035__9:ads'
         #print search
         result = perform_request_search(p=search, cc='HEP')
@@ -255,11 +254,6 @@ def create_xml(input_dict):
     if journal and volume and page and pubyear:
         volume  = volume_letter + volume
         page    = page_letter + page
-        #search = 'find j "' + journal + ',' + volume + ',' + page + '"'
-
-        #search = '773__p:"' + journal + '" 773__v:' + volume + ' 773__c:' + page
-        #search += ' or (773__p:"' + journal + '" 773__v:' + volume + \
-        #           ' 773__c:"' + page + '\-*")'
         search = 'journal:"' + journal + ',' + volume + ',' + page + '"'
         result = perform_request_search(p=search, cc='HEP')
         if DEBUG:
@@ -318,6 +312,8 @@ def create_xml(input_dict):
         return None
 
 def main():
+    """Looks through the ADS xml file for new information."""
+
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_append.out', filename)
     output = open(filename,'w')
@@ -352,7 +348,17 @@ def main():
 
 if __name__ == '__main__':
     try:
+        EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
+        print 'Number of eprints 1:', len(EPRINTS_DONE)
         main()
+        if exists(EPRINTS_DONE_FILE):
+            BACKUP = EPRINTS_DONE_FILE + '.bak'
+            if exists(BACKUP):
+                os.remove(BACKUP)
+            os.rename(EPRINTS_DONE_FILE, BACKUP)
+        with open(EPRINTS_DONE_FILE, "wb") as fname:
+            pickle.dump(EPRINTS_DONE, fname)
+        print 'Number of eprints 2:', len(EPRINTS_DONE)
     except KeyboardInterrupt:
         print 'Exiting'
 
