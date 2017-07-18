@@ -130,7 +130,7 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
 </html>
 """% {"link":link, "link_blog":LINK_BLOG, "name":name}
 
-    text = BeautifulSoup(html).text
+    text = BeautifulSoup(html, "lxml").text
     text = re.sub('click the appropriate link below to ', '', text)
     #print html
     #print text
