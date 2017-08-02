@@ -22,6 +22,31 @@ from hep_aff import get_aff
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
 
+def send_hoc_email(input):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    RECIPIENT = 'hoc@fnal.gov'
+    SENDER = 'authors@inspirehep.net'
+    stmp_email = smtplib.SMTP('localhost')
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Problem from ' + __file__
+    msg['To'] = RECIPIENT
+    body = 'Have a look at ' + input
+    msg.attach(MIMEText(body, 'plain'))    
+    try:
+        stmp_email.sendmail(SENDER, RECIPIENT, msg.as_string())
+        stmp_email.quit()
+    except:
+        print "problem"
+
+send_hoc_email('TEST')
+quit()
+
+    
+
+
 fileName = 'tmp.out'
 for line in open(fileName, 'r').readlines():
     print translate_latex2unicode(line)

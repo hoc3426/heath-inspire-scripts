@@ -37,7 +37,7 @@ def download_source(eprint, download_path = ""):
         tarfiles = {}
         file_count = 0
         for this_file in this_tarfile.getnames():
-            if re.search(r'(tex|xml|txt)$', this_file):
+            if re.search(r'(tex|xml|txt|aut)$', this_file, re.IGNORECASE):
                 file_count += 1
                 tarfiles[file_count] = this_file
                 print file_count, tarfiles[file_count]
@@ -57,13 +57,22 @@ def download_source(eprint, download_path = ""):
         output.close()
     except IOError, err:
         print '%20s  %s' % (filename_dum, err)
-    gzip_file =  gzip.GzipFile(filename + ".dum")
+    #gzip_file =  gzip.GzipFile(filename + ".dum")
+
+    #new
+    gzip_file =  gzip.GzipFile(filename_dum)
+    os.remove(filename_dum)
+
     source_file = open(filename, "w")
     source_file.write(gzip_file.read())
     source_file.close()
-    gzip_file.close()
-    os.remove(filename + ".dum")
+
+    #new
     os.remove(filename)
+
+    gzip_file.close()
+    #os.remove(filename + ".dum")
+    #os.remove(filename)
     return file_type
 
 def author_first_last(author):
