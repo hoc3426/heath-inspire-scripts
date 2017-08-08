@@ -16,11 +16,10 @@ from hep_convert_email_to_id import get_hepnames_recid_from_email
 from hep_convert_email_to_id import find_inspire_id_from_record
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
-#from afftranslator2 import bestmatch
-from hepnames_fermilab_aff_from_email import *
-#from tmp_email import EMAILS
 
+from hepnames_fermilab_aff_from_email import aff_from_email
 from hepnames_add_from_list_authors import AUTHORS, EMAILS
+
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
 EXPERIMENT = 'BNL-RHIC-STAR'
@@ -32,16 +31,16 @@ EXPERIMENT = 'PADME'
 EXPERIMENT = 'XENON1T'
 EXPERIMENT = 'Baby-MIND'
 EXPERIMENT = 'HARPO'
-
+EXPERIMENT = None
 
 SOURCE = 'Fermilab'
-SOURCE = 'HARPO'
+#SOURCE = 'HARPO'
 
 #INSPIRE = 72053
 #INSPIRE = 72499
 #INSPIRE = 72524
-INSPIRE = 73359
-
+#INSPIRE = 73359
+INSPIRE = 73383
 
 if EMAILS:
     emails_unknown = []
@@ -123,8 +122,6 @@ x = perform_request_search(p=search,cc='HepNames')
 fileName = 'tmp_hepnames_add_from_list.out'
 output = open(fileName,'w')
 for author in AUTHORS:
-#if False:
-    #print author
     au = author[0] 
     email = author[1]
     email = email.lower()
@@ -142,6 +139,8 @@ for author in AUTHORS:
     #x = perform_request_search(p=search,cc='HepNames')
     recid = get_hepnames_recid_from_email(email)
     #print search,' : ',len(x)
+    if recid and EXPERIMENT == None:
+        continue
     if recid and EXPERIMENT:
         search = "001:" + str(recid) + " -693__e:" + EXPERIMENT
         x = perform_request_search(p=search,cc='HepNames')

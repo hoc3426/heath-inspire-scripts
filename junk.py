@@ -21,6 +21,15 @@ from invenio.textutils import translate_latex2unicode
 from hep_aff import get_aff
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
+from tmp_star import AFFILIATIONS
+
+import json
+aff_dict = {}
+for aff in AFFILIATIONS:
+    aff_dict[aff] = get_aff(aff)[0]
+print json.dumps(aff_dict, indent=4, sort_keys=True)
+quit()
+
 
 def send_hoc_email(input):
     import smtplib
