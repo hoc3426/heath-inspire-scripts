@@ -2,11 +2,14 @@
 A system to extract collaboration author lists from tex files.
 """
 
+import cPickle as pickle
 import getopt
 import os
+from os.path import exists
 import re
 import sys
 import time
+
 from unidecode import unidecode
 
 from invenio.search_engine import perform_request_search
@@ -15,6 +18,13 @@ from invenio.textutils import translate_latex2unicode
 
 VERBOSE = True
 VERBOSE = False
+
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
+AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
+AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
+
+
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
@@ -124,7 +134,6 @@ def create_xml(eprint, author_dict):
     except IndexError:
         print 'Do not have eprint', eprint
         return None
-    affiliation_dict = {}
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
     tag = '100__'
@@ -142,7 +151,7 @@ def create_xml(eprint, author_dict):
                 subfields.append(('m', affiliation))
                 continue
             try:
-                for inst in affiliation_dict[affiliation]:
+                for inst in AFFILIATIONS_DONE[affiliation]:
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
             except KeyError:
@@ -158,12 +167,12 @@ def create_xml(eprint, author_dict):
                 for inst in inspire_affiliation:
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
-                affiliation_dict[affiliation] = inspire_affiliation
+                if not TEST:
+                    AFFILIATIONS_DONE[affiliation] = inspire_affiliation
             subfields.append(('v', affiliation))
         record_add_field(record, tag[0:3], tag[3], tag[4], \
                          subfields=subfields)
         tag = '700__'
-
     return print_rec(record)
 
 def preprocess_file_braces(read_data):
@@ -456,7 +465,7 @@ if __name__ == '__main__':
         print 'error: you tried to use an unknown option'
         sys.exit(0)
 
-    for option, aargument in OPTIONS:
+    for option, argument in OPTIONS:
         if option == '-t':
             TEST = True
 
@@ -470,22 +479,37 @@ if __name__ == '__main__':
     if len(ARGUMENTS) != 1:
         print 'you didn\'t specify an eprint number'
         sys.exit(0)
-    else:
+    try:
+        AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
+        print 'Number of affiliations 1:', len(AFFILIATIONS_DONE)
+
         try:
             EPRINT = ARGUMENTS[0]
             main(EPRINT)
         except IndexError:
             print "Bad input", EPRINT
-        except KeyboardInterrupt:
-            print 'Exiting'
+            quit()
 
-    #EPRINT = sys.argv[1:]
-    #try:
-    #    #EPRINT = EPRINT[0]
-    #    #main(EPRINT)
-    #    main(eprint)
-    #except IndexError:
-    #    print "Bad input", eprint
-    #except KeyboardInterrupt:
-    #    print 'Exiting'
+
+        if exists(AFFILIATIONS_DONE_FILE):
+            BACKUP = AFFILIATIONS_DONE_FILE + '.bak'
+            if exists(BACKUP):
+                os.remove(BACKUP)
+            os.rename(AFFILIATIONS_DONE_FILE, BACKUP)
+        with open(AFFILIATIONS_DONE_FILE, "wb") as fname:
+            pickle.dump(AFFILIATIONS_DONE, fname)
+        print 'Number of affiliations 2:', len(AFFILIATIONS_DONE)
+    except KeyboardInterrupt:
+        print 'Exiting'
+
+
+
+    #else:
+    #    try:
+    #        EPRINT = ARGUMENTS[0]
+    #        main(EPRINT)
+    #    except IndexError:
+    #        print "Bad input", EPRINT
+    #    except KeyboardInterrupt:
+    #        print 'Exiting'
 
