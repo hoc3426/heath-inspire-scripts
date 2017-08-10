@@ -78,7 +78,10 @@ def download_source(eprint, download_path = ""):
 
 def author_first_last(author):
     """Determines the components of the author's name.."""
-
+   
+    if re.search(r',', author):
+        author = re.sub(r'\,\s*', ', ', author)
+        return author
     #Anything ending in a period is the firstname block
     if re.search(ur'\. [^\.]+$', author, re.U):
         return re.sub(ur'(.*\.) ([^\.]+)', r'\2, \1', author, re.U)
