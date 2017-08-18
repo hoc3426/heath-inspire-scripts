@@ -23,11 +23,14 @@ from hep_aff import get_aff
 #from experiments_list import EXPT_DICT
 from tmp_star import AFFILIATIONS
 
-author = 'c.d.roberts.1'
+author = 'e.witten.1'
+#author = 'r.j.crewther.1'
+#author = 'r.p.feynman.1'
+author = 'a.w.thomas.1'
 search = 'find ea ' + author
 result = perform_request_search(p=search, cc='HEP')
 big_total = 0
-for year in range(1982,2018):
+for year in range(1990,1993):
     total = 0
     for recid in result:
         search = 'refersto:recid:' + str(recid) + ' earliestdate:' + str(year)
