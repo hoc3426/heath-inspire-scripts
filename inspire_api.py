@@ -29,7 +29,7 @@ def get_result(search, number_only=False):
     soup = search_inspire(url)
     print soup
     if number_only:
-        comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+        for comments in soup.findAll(text=lambda text:isinstance(text, Comment)):
         print comments
         return int(re.sub(r'\D', '', comments[0]))
     recids = [int(recid.string) for recid in soup.findAll('controlfield')]
