@@ -41,10 +41,11 @@ def get_result(search, number_only=False):
 def main(author):
     """Find the number of citations of an author per year."""
 
-    print 'Citations per year of', author
-    print "{0:4} {1:6} {2:6}".format('Year', ' Cites', ' Total')
     search = 'find ea ' + author
     result = get_result(search)
+    print 'Citations per year of the', len(result), 'papers of', author
+
+    print "{0:4} {1:6} {2:6}".format('Year', ' Cites', ' Total')
     sleep_time = 1
     if len(result) > 100:
         sleep_time = 5
@@ -55,11 +56,7 @@ def main(author):
             time.sleep(sleep_time)
             search = 'refersto:recid:' + str(recid) + ' earliestdate:' + \
                      str(year)
-            number = get_result(search, number_only=True)
-            if number > 0:
-                print search, number
-            total += number
-            #total += len(get_result(search))
+            total += get_result(search, number_only=True)
         big_total += total
         print "{0:4} {1:6} {2:6}".format(year, total, big_total)
     print "{0:11} {2:6}".format('Total', '', big_total)
