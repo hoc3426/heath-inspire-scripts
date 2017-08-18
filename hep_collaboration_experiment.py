@@ -6,6 +6,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 
 experiments = {'ALICE':'CERN-LHC-ALICE',
+'ANTARES':'ANTARES',
 'ATLAS':'CERN-LHC-ATLAS',
 'CMS':'CERN-LHC-CMS',
 'LHCb':'CERN-LHC-LHCB',

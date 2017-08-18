@@ -23,6 +23,77 @@ from hep_aff import get_aff
 #from experiments_list import EXPT_DICT
 from tmp_star import AFFILIATIONS
 
+author = 'c.d.roberts.1'
+search = 'find ea ' + author
+result = perform_request_search(p=search, cc='HEP')
+big_total = 0
+for year in range(1982,2018):
+    total = 0
+    for recid in result:
+        search = 'refersto:recid:' + str(recid) + ' earliestdate:' + str(year)
+        total += len(perform_request_search(p=search, cc='HEP'))
+    big_total += total
+    print "{0:6d} {1:6d} {2:6d}".format(year, total, big_total)
+print "{0:6s} {1:6d}".format('Total', big_total)
+quit()
+
+journals = ['Mon.Not.Roy.Astron.Soc.', 'Astrophys.J.', 'Astron.J.',
+            'Astropart.Phys.']
+result = {}
+for journal in sorted(journals):
+    search1 = '773__p:' + journal + ' 980:arXiv'
+    search2 = '773__p:' + journal + ' -980:arXiv'
+
+    res = perform_request_search(p=search2, cc='HEP')
+    for recid in res:
+        try:
+            doi = get_fieldvalues(recid, '0247_a')[0]
+            doi = "'" + doi + "',"
+            print doi
+        except IndexError:
+            pass
+            #print "No DOI on:", recid
+quit() 
+
+if False:
+    result[journal] = ''
+    for year in range(2010,2018):
+        result[journal] += '('
+        for search in (search1, search2):
+            search_y = search + ' 773__y:' + str(year)
+            res = perform_request_search(p=search_y, cc='HEP')
+            value = ' ' + str(len(res))
+            result[journal] += value
+        result[journal] += ')'
+        result[journal] = result[journal].replace('( ', '(')
+    print "{0:20s} {1:50s}".format(journal, result[journal])
+quit()
+            
+
+search = '693:FNAL-E-0741 or 693:FNAL-E-0775 or 693:FNAL-E-0830 and 037:fermilab-thesis-* and 100__a:/\, \w\.$/ and 100__i:INSPIRE*'
+result = perform_request_search(p=search, cc='HEP')
+print search, len(result)
+for recid in result:
+    print print_record(recid, ot=['100__'], format='hm')
+
+name_dict = {}
+for recid in result:
+    inspire_id = get_fieldvalues(recid, '100__i')[0]
+    search2 = '035__a:' + inspire_id
+    result2 = perform_request_search(p=search2, cc='HepNames')
+    full_name = get_fieldvalues(result2[0], '100__a')
+    url = 'http://inspirehep.net/record/' + str(recid)
+    #print get_fieldvalues(recid, '100__a'), full_name, url
+    name_dict[get_fieldvalues(recid, '100__a')[0]] = \
+        full_name[0]
+    #print "{0:20s} {1:30s} {2:20s}".format(get_fieldvalues(recid, '100__a'), 
+    #                                 full_name, url)
+    #print name_dict
+    print "perl -i -pe 's/" + get_fieldvalues(recid, '100__a')[0] + "/" + \
+           full_name[0] + "/' tmp_names.txt"
+quit()
+
+
 import json
 aff_dict = {}
 for aff in AFFILIATIONS:

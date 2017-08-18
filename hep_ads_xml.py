@@ -18,6 +18,8 @@ import os
 from os.path import exists
 import re
 
+from hep_ads_xml_dois import DOIS
+
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 
 TEST = False
@@ -115,6 +117,16 @@ def create_xml(input_dict):
         print element_dict
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
+
+        if doi in DOIS:
+            search  =  'find eprint ' + eprint
+            result = perform_request_search(p=search, cc='HEP')
+            if len(result) == 0:
+                print "Eprint missing:", eprint, doi
+            else:
+                print "Check eprint:", eprint, doi
+            return None
+
         if '-' in eprint and 'astro' not in eprint:
             return None
         if eprint in EPRINTS_DONE:
