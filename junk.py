@@ -23,15 +23,17 @@ from hep_aff import get_aff
 #from experiments_list import EXPT_DICT
 from tmp_star import AFFILIATIONS
 
-author = 'e.witten.1'
-author = 'r.j.crewther.1'
+#author = 'e.witten.1'
+#author = 'r.j.crewther.1'
+#author = 'r.r.volkas.1'
 #author = 'r.p.feynman.1'
 #author = 'a.w.thomas.1'
+author = 'j.r.ellis.1'
 search = 'find ea ' + author
 result = perform_request_search(p=search, cc='HEP')
 print 'The', len(result), 'papers of', author
 big_total = 0
-for year in range(1990,1993):
+for year in range(1990,1992):
     total = 0
     for recid in result:
         search = 'refersto:recid:' + str(recid) + ' earliestdate:' + str(year)

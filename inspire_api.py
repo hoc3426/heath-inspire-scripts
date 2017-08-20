@@ -6,6 +6,9 @@ import re
 import sys
 import time
 
+START_YEAR = 1990
+END_YEAR   = 1992
+
 def search_inspire(url):
     """Do an API search at INSPIRE."""
     request = Request(url)
@@ -43,20 +46,26 @@ def main(author):
 
     search = 'find ea ' + author
     result = get_result(search)
-    print 'Citations per year of the', len(result), 'papers of', author
+
+    print """
+    Citations per year of the %d papers of %s
+    Time period: %d-%d
+    """ % (len(result), author, START_YEAR, END_YEAR)
 
     print "{0:4} {1:6} {2:6}".format('Year', ' Cites', ' Total')
     sleep_time = 1
-    if len(result) > 100:
-        sleep_time = 5
     big_total = 0
-    for year in range(1990, 1993):
+    for year in range(START_YEAR, END_YEAR):
         total = 0
-        for recid in result:
+        year_next = year + 2
+        search = 'exactauthor:' + author + ' date:1900->' + str(year_next)
+        #print search
+        for recid in get_result(search):
             time.sleep(sleep_time)
             search = 'refersto:recid:' + str(recid) + ' earliestdate:' + \
                      str(year)
             total += get_result(search, number_only=True)
+            #print search, total
         big_total += total
         print "{0:4} {1:6} {2:6}".format(year, total, big_total)
     print "{0:11} {2:6}".format('Total', '', big_total)
@@ -65,6 +74,9 @@ if __name__ == '__main__':
     try:
         main(str(sys.argv[1:][0]))
     except IndexError:
+        print "No author selected using R.P. Feynman"
+        print "To choose an author, run the command, e.g.,"
+        print "python inspire_api.py j.j.schwinger.1"
         main('R.P.Feynman.1')
     except KeyboardInterrupt:
         print 'Exiting'
