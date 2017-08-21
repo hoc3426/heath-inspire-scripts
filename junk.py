@@ -23,7 +23,7 @@ from hep_aff import get_aff
 #from experiments_list import EXPT_DICT
 from tmp_star import AFFILIATIONS
 
-#author = 'e.witten.1'
+author = 'e.witten.1'
 #author = 'r.j.crewther.1'
 #author = 'r.r.volkas.1'
 #author = 'r.p.feynman.1'
