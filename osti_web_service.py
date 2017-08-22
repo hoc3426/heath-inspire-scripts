@@ -25,14 +25,7 @@ from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from check_url import checkURL
 
-from osti_web_service_constants import ACCEPTED_SEARCH, \
-                                       DIRECTORY, \
-                                       DOE_AFF_DICT, \
-                                       DOE_FERMILAB_DICT, \
-                                       DOE_SUBJECT_CATEGORIES_DICT, \
-                                       INSPIRE_AFF_DICT, \
-                                       SEARCH, \
-                                       TYPE_DICT
+from osti_web_service_constants import *
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
@@ -630,7 +623,9 @@ if __name__ == '__main__':
         if sys.argv[1:][0] == 'i':
             RECIDS = find_records(ACCEPTED_SEARCH)
         elif sys.argv[1:][0] == 'a':
-            RECIDS = find_records('dadd:2015 or dadd:2016 or dadd:2017')
+            RECIDS = find_records(DADD_SEARCH)
+        elif sys.argv[1:][0] == 't':
+            RECIDS = find_records(THESIS_SEARCH)
     except IndexError:
         pass
     if not RECIDS:
