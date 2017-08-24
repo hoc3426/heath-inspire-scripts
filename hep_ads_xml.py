@@ -124,7 +124,9 @@ def create_xml(input_dict):
             if len(result) == 0:
                 print "Eprint missing:", eprint, doi
             else:
-                print "Check eprint:", eprint, doi
+                search += ' and doi ' + doi
+                if len(result) != 1:
+                    print "Check eprint:", eprint, doi
             return None
 
         if '-' in eprint and 'astro' not in eprint:
