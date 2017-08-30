@@ -92,7 +92,7 @@ def main(author):
 
 if __name__ == '__main__':
     try:
-        main(str(sys.argv[1:][0]))
+        main(str(sys.argv[1]))
     except IndexError:
         print "No author selected using", DEFAULT_AUTHOR
         print "To choose an author, run the command, e.g.,"

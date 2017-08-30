@@ -5,6 +5,7 @@ import re
 import os
 import string
 from datetime import date
+import sys
 
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
@@ -24,11 +25,17 @@ from hep_aff import get_aff
 from tmp_star import AFFILIATIONS
 
 
+if __name__ == '__main__':
 
-fileName = 'tmp.out'
-for line in open(fileName, 'r').readlines():
-    print translate_latex2unicode(line)
-quit()
+    print 'hi'
+    print str(sys.argv[1])
+    print str(sys.argv[1:][0])
+    quit()
+
+#fileName = 'tmp.out'
+#for line in open(fileName, 'r').readlines():
+#    print translate_latex2unicode(line)
+#quit()
 
 
 author = 'e.witten.1'
@@ -38,19 +45,21 @@ author = 'r.p.feynman.1'
 #author = 'a.w.thomas.1'
 #author = 'j.r.ellis.1'
 author = 'p.j.fox.1'
+author = 'j.n.simone.1'
 search = 'find ea ' + author
 result = perform_request_search(p=search, cc='HEP')
 print 'The', len(result), 'papers of', author
 big_total = 0
-for year in range(2010,2012):
+#for year in range(2010,2012):
+if False:
     total = 0
     for recid in result:
-        search = 'refersto:recid:' + str(recid) + ' earliestdate:' + str(year)
+        search = 'referstox:recid:' + str(recid) + ' earliestdate:' + str(year)
         total += len(perform_request_search(p=search, cc='HEP'))
     big_total += total
     print "{0:6d} {1:6d} {2:6d}".format(year, total, big_total)
-print "{0:6s} {1:6d}".format('Total', big_total)
-quit()
+#print "{0:6s} {1:6d}".format('Total', big_total)
+#quit()
 
 journals = ['Mon.Not.Roy.Astron.Soc.', 'Astrophys.J.', 'Astron.J.',
             'Astropart.Phys.']
@@ -58,19 +67,19 @@ result = {}
 for journal in sorted(journals):
     search1 = '773__p:' + journal + ' 980:arXiv'
     search2 = '773__p:' + journal + ' -980:arXiv'
+#
+#    res = perform_request_search(p=search2, cc='HEP')
+#    for recid in res:
+#        try:
+#            doi = get_fieldvalues(recid, '0247_a')[0]
+#            doi = "'" + doi + "',"
+#            print doi
+#        except IndexError:
+#            pass
+#            #print "No DOI on:", recid
+#quit() 
 
-    res = perform_request_search(p=search2, cc='HEP')
-    for recid in res:
-        try:
-            doi = get_fieldvalues(recid, '0247_a')[0]
-            doi = "'" + doi + "',"
-            print doi
-        except IndexError:
-            pass
-            #print "No DOI on:", recid
-quit() 
-
-if False:
+#if False:
     result[journal] = ''
     for year in range(2010,2018):
         result[journal] += '('
@@ -79,6 +88,14 @@ if False:
             res = perform_request_search(p=search_y, cc='HEP')
             value = ' ' + str(len(res))
             result[journal] += value
+            if search == search2:
+                total = 0
+                for recid in res:
+                    search_c = '980:CORE refersto:recid:' + str(recid)
+                    res_c = perform_request_search(p=search_c, cc='HEP')
+                    if len(res_c) > 4:
+                        total += 1
+                result[journal] += '[' + str(total) + ']'
         result[journal] += ')'
         result[journal] = result[journal].replace('( ', '(')
     print "{0:20s} {1:50s}".format(journal, result[journal])
