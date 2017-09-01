@@ -153,6 +153,10 @@ def create_xml(eprint, author_dict):
                 affiliation = affiliation.replace(r'. ', r'.')
                 subfields.append(('m', affiliation))
                 continue
+            elif re.match(r"^0000-0", affiliation):
+                affiliation = 'ORCID:' + affiliation
+                subfields.append(('j', affiliation))
+                continue
             try:
                 for inst in AFFILIATIONS_DONE[affiliation]:
                     inst = re.sub(r'^\s+', '', inst)
