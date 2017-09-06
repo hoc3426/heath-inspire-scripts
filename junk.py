@@ -25,17 +25,10 @@ from hep_aff import get_aff
 from tmp_star import AFFILIATIONS
 
 
-if __name__ == '__main__':
-
-    print 'hi'
-    print str(sys.argv[1])
-    print str(sys.argv[1:][0])
-    quit()
-
-#fileName = 'tmp.out'
-#for line in open(fileName, 'r').readlines():
-#    print translate_latex2unicode(line)
-#quit()
+fileName = 'tmp.out'
+for line in open(fileName, 'r').readlines():
+    print translate_latex2unicode(line)
+quit()
 
 
 author = 'e.witten.1'

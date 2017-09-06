@@ -26,6 +26,7 @@ experiments = {
 'Double Chooz':'DOUBLECHOOZ',
 'IceCube':'ICECUBE',
 'LHCb':'CERN-LHC-LHCB',
+'LUX':'LUX',
 'MicroBooNE':'FNAL-E-0974',
 'MINERvA':'FNAL-E-0938',
 'MiniBooNE':'FNAL-E-0898',

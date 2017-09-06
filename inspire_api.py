@@ -10,6 +10,7 @@ import time
 START_YEAR = 1990
 END_YEAR   = 1992
 DEFAULT_AUTHOR = 'R.P.Feynman.1'
+FUZZY_DATE_FACTOR = 2
 
 def search_inspire(url):
     """Do an API search at INSPIRE."""
@@ -33,7 +34,6 @@ def get_result(search, number_only=False):
         number = '1'
     url = 'http://inspirehep.net/search?of=xm&rg=' + number + '&ot=001&p=' + \
           search.replace(' ', '+')
-    #print url
     soup = search_inspire(url)
     try:
         comments = soup.findAll(text=lambda text:isinstance(text, Comment))
@@ -77,15 +77,14 @@ def main(author):
     big_total = 0
     for year in range(START_YEAR, END_YEAR):
         total = 0
-        year_next = year + 2
+        #FUZZY_DATE_FACTOR accounts for fuzziness in dates in INSPIRE
+        year_next = year + FUZZY_DATE_FACTOR
         search = 'exactauthor:' + author + ' date:1900->' + str(year_next)
-        #print search
         for recid in get_result(search):
             time.sleep(sleep_time)
             search = 'refersto:recid:' + str(recid) + ' earliestdate:' + \
                      str(year)
             total += get_result(search, number_only=True)
-            #print search, total
         big_total += total
         print "{0:4} {1:6} {2:6}".format(year, total, big_total)
     print "{0:11} {2:6}".format('Total', '', big_total)
