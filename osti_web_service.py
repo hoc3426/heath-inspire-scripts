@@ -292,6 +292,7 @@ def get_author_details(recid, authors, tag):
             affiliation = item['u']
         if item.has_key('m'):
             email = item['m']
+            email = email.replace('email:', '')
         for item_jk in ['j', 'k']:
             if item.has_key(item_jk):
                 orcid = item[item_jk]
