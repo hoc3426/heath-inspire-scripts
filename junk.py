@@ -25,10 +25,10 @@ from hep_aff import get_aff
 from tmp_star import AFFILIATIONS
 
 
-fileName = 'tmp.out'
-for line in open(fileName, 'r').readlines():
-    print translate_latex2unicode(line)
-quit()
+#fileName = 'tmp.out'
+#for line in open(fileName, 'r').readlines():
+#    print translate_latex2unicode(line)
+#quit()
 
 
 author = 'e.witten.1'
@@ -37,22 +37,22 @@ author = 'e.witten.1'
 author = 'r.p.feynman.1'
 #author = 'a.w.thomas.1'
 #author = 'j.r.ellis.1'
-author = 'p.j.fox.1'
-author = 'j.n.simone.1'
+#author = 'p.j.fox.1'
+#author = 'j.n.simone.1'
 search = 'find ea ' + author
 result = perform_request_search(p=search, cc='HEP')
 print 'The', len(result), 'papers of', author
 big_total = 0
-#for year in range(2010,2012):
-if False:
+for year in range(1990,1992):
+#if False:
     total = 0
     for recid in result:
         search = 'referstox:recid:' + str(recid) + ' earliestdate:' + str(year)
         total += len(perform_request_search(p=search, cc='HEP'))
     big_total += total
     print "{0:6d} {1:6d} {2:6d}".format(year, total, big_total)
-#print "{0:6s} {1:6d}".format('Total', big_total)
-#quit()
+print "{0:6s} {1:6d}".format('Total', big_total)
+quit()
 
 journals = ['Mon.Not.Roy.Astron.Soc.', 'Astrophys.J.', 'Astron.J.',
             'Astropart.Phys.']

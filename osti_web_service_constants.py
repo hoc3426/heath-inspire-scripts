@@ -14,6 +14,7 @@ TYPE_DICT = {
 'INDUSTRIAL':'PD',
 'MASTERS':'TD',
 'MISC':'TR',
+'MONTHLY':'PD',
 'MUCOOL':'TR',
 'PLAN':'PD',
 'PROPOSAL':'TR',
