@@ -47,14 +47,20 @@ def check_doi(doi):
                          + get_fieldvalues(recid, "700__u")
             if "Fermilab" not in affiliations:
                 print '** Fermilab affiliation needed on:'
-            else:
+                print 'http://inspirehep.net/record/' + str(recid) + '\n'
+                return False
+
+            eprint = None
+            report_numbers = get_fieldvalues(recid, "037__a")
+            for report_number in report_numbers:
+                if report_number.startswith('arXiv'):
+                    eprint = report_number
+                    break
+            if eprint or QUIET == False:
                 print '* Fermilab report number needed on:'
-                report_numbers = get_fieldvalues(recid, "037__a")
-                for report_number in report_numbers:
-                    if report_number.startswith('arXiv'):
-                        print report_number
-            print 'http://inspirehep.net/record/' + str(recid)
-            #return recid
+                if eprint:
+                    print eprint
+                print 'http://inspirehep.net/record/' + str(recid) + '\n'
             return False
         else:
             print "** Don't have DOI " + doi
