@@ -132,10 +132,10 @@ def create_xml(eprint, author_dict):
     """Take in the author dictionary and write it out as xml."""
 
     try:
-        search = 'find eprint ' + eprint
+        search = 'find eprint ' + eprint + ' or recid ' + eprint
         recid = perform_request_search(p=search, cc='HEP')[0]
     except IndexError:
-        print 'Do not have eprint', eprint
+        print 'Do not have eprint or recid', eprint
         return None
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
