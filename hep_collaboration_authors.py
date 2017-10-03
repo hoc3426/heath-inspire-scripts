@@ -369,6 +369,7 @@ def process_file(eprint, file_type='tex'):
     author_dict = {}
     affiliation_dict = {}
     babar_flag = False
+    reverse_babar_flag = False
     author_previous = False
     for line in read_data:
         #Find author/affiliations for $^{1}$
@@ -391,6 +392,10 @@ def process_file(eprint, file_type='tex'):
                 author = re.sub(r'\$\^\{?[abc]+\}\$', '', author)
             author = process_author_name(match.group(1))
             author_dict[author_position] = [author, []]
+            if reverse_babar_flag:
+                for key in author_dict:
+                    if not author_dict[key][1]:
+                        author_dict[key][1].append(author_affiliation)
             author_position += 1
             author_previous = True
         else:
@@ -409,7 +414,9 @@ def process_file(eprint, file_type='tex'):
                 author_dict[author_position - 1][1].append(match.group(1))
             except KeyError:
                 #print 'BaBar-style', author_position,  match.group(1)
-                pass
+                #pass
+                reverse_babar_flag = True
+                author_affiliation = match.group(1)
 
     print 'Number of authors:', author_position
     if affiliation_dict:
