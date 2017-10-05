@@ -308,7 +308,7 @@ def preprocess_file(read_data):
     #I.J.~Arnquist\inst{10}
     read_data = re.sub(r'Irefn{(\w+)}\\Aref{(\w+)}\\Aref{(\w+)}', \
                        r'Irefn{\1,\2,\3}', read_data)
-    read_data = re.sub(r'Irefnn?\{(.*)\}\\?A?r?e?f?s?\{(.*)\}', \
+    read_data = re.sub(r'Irefn+\{(.*)\}\\?A?r?e?f?s?\{(.*)\}', \
                        r'Irefn{\1,\2}', read_data)
     read_data = re.sub(r'Arefs?{(\w+)}', r'Irefn{\1}', read_data)
     #read_data = \
