@@ -117,7 +117,8 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
       "subject_remove":subject_remove, "subject_retain":subject_retain,
       "name":name}
 
-    text = BeautifulSoup(html).text
+    #text = BeautifulSoup(html).text
+    text = BeautifulSoup(html, "lxml").text
     text = re.sub('click the appropriate link below to ', '', text)
     #print html
     #print text

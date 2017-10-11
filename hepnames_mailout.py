@@ -7,9 +7,9 @@ asking them to send us their ORCID ID.
 TEST = True
 TEST = False
 VERBOSE = True
-RECIDS = False
+RECIDS = None
 
-#from fermi_theory_inspire_ids import RECIDS
+from fermi_theory_inspire_ids import RECIDS
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 from hepnames_mailout_bad_recids import BAD_RECIDS
 

@@ -30,6 +30,8 @@ or 100__v:/cern/ or 700__v:/cern/ \
 -700__u:/\\w/'
     atsearch = '100__v:/batavia/ or 700__v:/batavia/ \
 or 100__v:/60510/ or 700__v:/60510/ \
+or 100__v:/Fermilab/ or 700__v:/Fermilab/ \
+or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
 -100__u:/\\w/ \
 -700__u:/\\w/'
     print atsearch

@@ -18,8 +18,23 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 from invenio.intbitset import intbitset
 from invenio.textutils import translate_latex2unicode
+from invenio.search_engine import search_unit
+
+import itertools
+#for x, db in itertools.product(('p', 'q'), ('Jobs', 'Jobs Hidden')):
+for x, db in itertools.product(('p', 'q'), ('HepNames', 'DELETED')):
+    search = '909CO' + x + ':"INSPIRE:hepnames"'
+    y = perform_request_search(p=search, cc=db)
+    print search, db, len(y)
+quit()
+
+result = search_unit(p = 'INSPIRE:Jobs', m = 'q', f = '909*')
+print result
+quit()
 
 from hep_aff import get_aff
+
+
 #from numbers_beijing import IDS
 #from experiments_list import EXPT_DICT
 from tmp_star import AFFILIATIONS
