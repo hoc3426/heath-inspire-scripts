@@ -157,8 +157,9 @@ def create_xml(eprint, author_dict):
                 affiliation = 'ORCID:' + affiliation
                 subfields.append(('j', affiliation))
                 continue
+            affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
             try:
-                for inst in AFFILIATIONS_DONE[affiliation]:
+                for inst in AFFILIATIONS_DONE[affiliation_key]:
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
             except KeyError:
@@ -175,7 +176,7 @@ def create_xml(eprint, author_dict):
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
                 if not TEST:
-                    AFFILIATIONS_DONE[affiliation] = inspire_affiliation
+                    AFFILIATIONS_DONE[affiliation_key] = inspire_affiliation
             subfields.append(('v', affiliation))
         record_add_field(record, tag[0:3], tag[3], tag[4], \
                          subfields=subfields)
