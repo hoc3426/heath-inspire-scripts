@@ -9,7 +9,7 @@ TEST = False
 VERBOSE = True
 RECIDS = None
 
-from fermi_theory_inspire_ids import RECIDS
+from hepnames_mailout_input import RECIDS
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 from hepnames_mailout_bad_recids import BAD_RECIDS
 

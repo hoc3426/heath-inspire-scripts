@@ -20,6 +20,20 @@ from invenio.intbitset import intbitset
 from invenio.textutils import translate_latex2unicode
 from invenio.search_engine import search_unit
 
+experiments = set()
+search = 'find exp fnal* and af chicago u.'
+result = perform_request_search(p=search, cc='HEP')
+for recid in result:
+    experiments.add(get_fieldvalues(recid, '693__e')[0])
+for experiment in sorted(experiments):
+    search = '119__a:' + experiment
+    result = perform_request_search(p=search, cc='Experiments')
+    for recid in result:
+        title = get_fieldvalues(recid, '245__a')[0]
+        print "{0:12s} {1:50s}".format(experiment, title)
+quit()
+
+
 import itertools
 #for x, db in itertools.product(('p', 'q'), ('Jobs', 'Jobs Hidden')):
 for x, db in itertools.product(('p', 'q'), ('HepNames', 'DELETED')):
