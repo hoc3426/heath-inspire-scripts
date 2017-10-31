@@ -33,10 +33,12 @@ def download_source(eprint, download_path = ""):
     import tarfile
     import urllib
 
+    download_path = DIRECTORY + "collaboration/"
     download_path = os.path.expanduser(download_path)
-    filename = download_path + eprint.replace('/', '-')
-    urllib.urlretrieve('http://arxiv.org/e-print/' + eprint, filename + ".dum")
-    filename_dum = filename + ".dum"
+    filename = eprint.replace('/', '-')
+    filename_dum = download_path + filename + ".dum"
+    if not os.path.exists(filename_dum):
+        urllib.urlretrieve('http://arxiv.org/e-print/' + eprint, filename_dum)
     try:
         #print '%20s  %s' % (filename_dum, tarfile.is_tarfile(filename_dum))
         try:
@@ -67,13 +69,13 @@ def download_source(eprint, download_path = ""):
         output.close()
     except IOError, err:
         print '%20s  %s' % (filename_dum, err)
-    gzip_file =  gzip.GzipFile(filename + ".dum")
-    source_file = open(filename, "w")
-    source_file.write(gzip_file.read())
-    source_file.close()
-    gzip_file.close()
-    os.remove(filename + ".dum")
-    os.remove(filename)
+    #gzip_file =  gzip.GzipFile(filename_dum)
+    #source_file = open(filename, "w")
+    #source_file.write(gzip_file.read())
+    #source_file.close()
+    #gzip_file.close()
+    os.remove(filename_dum)
+    #os.remove(filename)
     return file_type
 
 def author_first_last(author):

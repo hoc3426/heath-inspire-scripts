@@ -4,7 +4,7 @@ import time
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
 serieses = ['thesis','misc','tm','fn','proposal','workbook','bachelors','masters','design','loi','pbar','nal','annual','upc','ap','en','exp','lu','habil','vlhcpub','mura']
-#serieses = ['thesis']
+serieses = ['thesis']
 serieses.sort()
 print 'cd /afs/fnal.gov/files/expwww/bss/html/techpubs'
 
@@ -80,11 +80,15 @@ for series in serieses :
   for report in reports :
     if VERBOSE: print "report =", report
     if report[4]: 
+      #print report
       search2 = '035__a:' + report[4] 
       if VERBOSE: print "search2 =", search2
       result = perform_request_search(p=search2,cc='HepNames')
       if VERBOSE: print report[4], result
-      report[2] = '<a href="http://inspirehep.net/record/' + str(result[0]) + '">'+report[2]+'</a>'
+      try:
+          report[2] = '<a href="http://inspirehep.net/record/' + str(result[0]) + '">'+report[2]+'</a>'
+      except IndexError:
+          print "Problem with", result, report
     line = '<tr><td><a href="http://inspirehep.net/record/'+report[1]+'">'+report[0]+'</a></td>\
                 <td>'+report[2]+'</td><td>'+report[3]+'</td></tr>\n'
     if re.search(r'THESIS', report[0]):
