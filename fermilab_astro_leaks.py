@@ -94,6 +94,7 @@ or a Patrick Fox \
 or a Walter Giele \
 or a Roni Harnik \
 or a Christopher Hill \
+or a Joshua Isaacson \
 or a Andreas Kronfeld \
 or a Joseph Lykken \
 or a Paul Mackenzie \
@@ -106,7 +107,10 @@ or a Seyda Ipek \
 or a Jack Kearney \
 or a Ye Li \
 or a Zhen Liu \
+or a Tobias Neumann \
+or a Jessica Turner \
 or a Aarti Veernala \
+or a Yue Zhang \
 or a Ran Zhou \
 or a Nilanjan Banik \
 or a Peter Denton "

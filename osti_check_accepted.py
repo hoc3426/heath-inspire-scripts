@@ -19,6 +19,8 @@ def check_record_status(recid):
 
     if check_already_sent(recid):
         return True
+    if not PDF_CHECK:
+        return False
     accepted_status = get_url(recid)
     if True in accepted_status:
         return True
@@ -112,18 +114,19 @@ def main():
 
 if __name__ == '__main__':
 
-
+    PDF_CHECK = False
     QUIET = False
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'q')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'p', 'q')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
 
     for option, argument in OPTIONS:
-        if option == '-q':
+        if option == '-P':
+            PDF_CHECK = True
+        elif option == '-q':
             QUIET = True
-
     try:
         RECID = ARGUMENTS[0]
         check_accepted([RECID], 1)

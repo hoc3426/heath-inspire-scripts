@@ -20,6 +20,15 @@ from invenio.intbitset import intbitset
 from invenio.textutils import translate_latex2unicode
 from invenio.search_engine import search_unit
 
+#                             10.1103/PhysRevD.47.R357
+search = '773__c:/^R/ 0247_a:/^10\.1103\/PhysRev\w\.\d+\.\d/'
+result = perform_request_search(p=search, cc='HEP')
+for recid in result:
+    print print_record(recid, ot=['0247_', '773__'], format='hm')
+quit()
+
+    
+
 experiments = set()
 search = 'find exp fnal* and af chicago u.'
 result = perform_request_search(p=search, cc='HEP')

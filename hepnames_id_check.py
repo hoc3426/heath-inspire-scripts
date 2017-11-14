@@ -108,9 +108,10 @@ def check_ids(letter=None):
 def new_orcids(already_seen):
     """Search for new ORCIDs in HEP."""
 
-    fields = ('100__j', '700__j')
-    search = "{0}:ORCID:* or {1}:ORCID:* 980:CORE".format(fields[0],
-                                                          fields[1])
+    fields = ('100__j', '700__j', '100__k', '700__k')
+    search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
+              or {3}:ORCID:* ".format(fields[0],
+                  fields[1], fields[2], fields[3])
     result = perform_request_search(p=search, cc='HEP')
     for recid, field in [(recid, field) for recid in result \
                                         for field in fields]:
@@ -123,7 +124,9 @@ def new_orcids(already_seen):
             if bad_id_check(orcid):
                 print "Bad ORCID in HEP:", orcid
             already_seen[orcid] = recid
-            print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
+            search = '001:' + str(recid) + ' 980:CORE'
+            if perform_request_search(p=search, cc='HEP'):
+                print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
                   format(str(recid), orcid)
 
 
