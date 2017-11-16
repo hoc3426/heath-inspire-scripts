@@ -40,6 +40,9 @@ ENDING_COUNTER = 20
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='HEP'))
 
+CMS = intbitset(perform_request_search(p="037__z:fermilab*", cc='HEP'))
+
+
 def create_osti_id_pdf(recid, osti_id):
     """
     Places a PDF named after the OSTI id in a location that

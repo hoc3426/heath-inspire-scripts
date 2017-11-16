@@ -21,6 +21,7 @@ def check_record_status(recid):
         return True
     if not PDF_CHECK:
         return False
+    print "Checking accepted status", recid
     accepted_status = get_url(recid)
     if True in accepted_status:
         return True
@@ -83,7 +84,7 @@ def check_accepted(input_list, input_total):
     counter_osti = 0
     total = len(input_list)
     open_access = input_total - total
-    print total
+    #print total
     for element in input_list:
         if re.match(r'^10\..*', element):
             element = check_doi(element)
@@ -117,13 +118,13 @@ if __name__ == '__main__':
     PDF_CHECK = False
     QUIET = False
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'p', 'q')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'p:q')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
 
     for option, argument in OPTIONS:
-        if option == '-P':
+        if option == '-p':
             PDF_CHECK = True
         elif option == '-q':
             QUIET = True
