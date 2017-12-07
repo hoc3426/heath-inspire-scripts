@@ -135,9 +135,11 @@ def create_xml(eprint, author_dict):
 
     try:
         search = 'find eprint ' + eprint + ' or recid ' + eprint
+        if '/' in eprint or '.' in eprint:
+            search = 'find eprint ' + eprint
         recid = perform_request_search(p=search, cc='HEP')[0]
     except IndexError:
-        print 'Do not have eprint or recid', eprint
+        print 'Do not have eprint or recid', search
         return None
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))

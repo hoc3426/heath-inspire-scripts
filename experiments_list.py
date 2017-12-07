@@ -45,7 +45,8 @@ EXPT_DICT = {
     ("1.2", "e+ e-"),
     ("1.3", "e p"),
     ("1.4", "Heavy Flavor Factory"),
-    ("1.5", "Heavy ion")
+    ("1.5", "Heavy ion"),
+    ("1.6", "Detector development")
     ],
 ("2", "Fixed Target Experiments"):[
     ("2.1", "High-momentum transfer"),
@@ -101,7 +102,8 @@ EXPT_DICT = {
     ("8.1", "CMB"),
     ("8.2", "Survey"),
     ("8.3", "Supernovae"),
-    ("8.4", "Gravitational waves")
+    ("8.4", "Gravitational waves"),
+    ("8.5", "Gravitational lensing/Dark matter")
     ],
 ("9", "Theory collaborations"):[
     ("9.1", "Lattice")

@@ -14,6 +14,17 @@ DISCOVERY_LIST = [
  'laureates_wolf':''
 },
 
+{'discovery':'Gravitational waves',
+ 'year':'2016',
+ 'papers':'1421100',
+ 'lab':('Caltech and MIT', ('Caltech', 'MIT')),
+ 'exp':'LIGO',
+ 'nobel':'2017',
+ 'laureates':'Weiss, Barish, Thorne',
+ 'wolf':'',
+ 'laureates_wolf':''
+},
+
 
 
 {'discovery':'Quantum field theory',
