@@ -3,7 +3,7 @@
 
 """Converts the raw affiliation strings into proper INSPIRE format."""
 
-
+import cPickle as pickle
 import re
 import sys
 
@@ -16,7 +16,11 @@ from afftranslator2 import bestmatch
 VERBOSE = False
 #VERBOSE = True
 
-ALREADY_SEEN = {}
+AFFILIATIONS_DONE = {}
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
+AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
+AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 
 def find_records():
     """Find records that have raw string affilations."""
@@ -62,11 +66,12 @@ def create_xml(recid, tags):
                 if code == 'v':
                     try:
                         if VERBOSE:
-                            print len(ALREADY_SEEN)
-                        if not value in ALREADY_SEEN:
-                            new_values = get_aff(value)
-                            ALREADY_SEEN[value] = new_values
-                        for new_value in ALREADY_SEEN[value]:
+                            print len(AFFILIATIONS_DONE)
+                        affiliation_key = re.sub(r'\W+', ' ', value).upper()
+                        if not affiliation_key in AFFILIATIONS_DONE:
+                            new_values = get_aff(affiliation_key)
+                            AFFILIATIONS_DONE[affiliation_key] = new_values
+                        for new_value in AFFILIATIONS_DONE[affiliation_key]:
                             correct_subfields.append(('u', \
                                                      new_value.lstrip(' ')))
                         flag = True
@@ -102,7 +107,7 @@ def main(recordlist):
             output.write(update)
     output.write('</collection>')
     output.close()
-    print 'Number of affiliations:', len(ALREADY_SEEN)
+    print 'Number of affiliations:', len(AFFILIATIONS_DONE)
     print filename
 
 
