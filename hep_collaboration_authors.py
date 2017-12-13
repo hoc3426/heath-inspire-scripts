@@ -109,6 +109,7 @@ def author_first_last(author):
 def process_author_name(author):
     """Convert author to INSPIRE form."""
 
+    #print 'INPUT = ', author
     author = author.replace(r'\.', r'xxxx')
     author = author.replace(r'.', '. ')
     author = author.replace(r'xxxx', r'\.')
@@ -118,16 +119,36 @@ def process_author_name(author):
     author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
     author = author.replace(r'xxxx', r'\~')
+    #print 'MIDWAY1 =', author
     author = translate_latex2unicode(author)
-    author = author_first_last(author)
+    author = author.replace(',', ', ')
+    author = author.replace('.', '. ')
     author = re.sub(r'\s+', ' ', author)
     author = re.sub(r'\s+$', '', author)
     author = re.sub(r'^\s+', '', author)
-    author = re.sub(r'\.\s+', r'.', author)
-    author = re.sub(r'(.*) ([IVJr\.]+), (.*)', r'\1, \3, \2', author)
+    #print 'MIDWAY2 =', author
+    match_object_1 = re.match(r'^(.*\w) ([IVJr\.]{2,}$)', author)
+    match_object_2 = re.match(u'(.*) (\(.*\))', author)
+    if match_object_1 or match_object_2:
+        if match_object_1:
+            author = match_object_1
+        elif match_object_2:
+            author = match_object_2
+        author = author_first_last(author.group(1)) + ', ' + \
+                 author.group(2)
+    else:
+        author = author_first_last(author)
+    author = author.replace(',', ', ')
+    author = re.sub(r'\.\s+', '.', author)
+    author = re.sub(r'\s+', ' ', author)
+    author = re.sub(r'\s+$', '', author)
+    author = re.sub(r'^\s+', '', author)
+
+
+
     #author = translate_latex2unicode(author)
 
-    #print author
+    #print 'OUTPUT =', author
     return author
 
 def create_xml(eprint, author_dict):

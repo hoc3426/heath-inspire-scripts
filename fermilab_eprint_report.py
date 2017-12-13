@@ -17,6 +17,7 @@ def get_eprint(recid):
     """Get the eprintt number from a record."""
     report_fermilab = None
     eprint = None
+    url = None
     reports = get_fieldvalues(recid, '037__a')
     reports = reports + get_fieldvalues(recid, '037__z')
     if VERBOSE:
@@ -40,9 +41,12 @@ def get_eprint(recid):
         if item.has_key('y') and item.has_key('u'):
             if re.search('fermilab', item['y'].lower()):
                 return None
+            if item['u'].endswith('pdf'):
+                url = item['u']
             if item['y'].lower() == 'fulltext':
-                print report_fermilab, item['u']
-
+                url = item['u']
+    if url:
+        print report_fermilab, url
 
 def main():
     """Look for eprints or other full text associated with report numbers."""
