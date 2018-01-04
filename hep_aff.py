@@ -36,6 +36,9 @@ or 100__v:/cern/ or 700__v:/cern/ \
 or 100__v:/60510/ or 700__v:/60510/ \
 or 100__v:/Fermilab/ or 700__v:/Fermilab/ \
 or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
+or 100__v:/Brookhaven/ or 700__v:/Brookhaven/ \
+or 100__v:/jlab/ or 700__v:/JLAB/ \
+or 100__v:/cern/ or 700__v:/cern/ \
 -100__u:/\\w/ \
 -700__u:/\\w/'
     print atsearch
@@ -69,7 +72,7 @@ def create_xml(recid, tags):
                             print len(AFFILIATIONS_DONE)
                         affiliation_key = re.sub(r'\W+', ' ', value).upper()
                         if not affiliation_key in AFFILIATIONS_DONE:
-                            new_values = get_aff(affiliation_key)
+                            new_values = get_aff(value)
                             AFFILIATIONS_DONE[affiliation_key] = new_values
                         for new_value in AFFILIATIONS_DONE[affiliation_key]:
                             correct_subfields.append(('u', \

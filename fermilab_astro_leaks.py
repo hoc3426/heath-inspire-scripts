@@ -5,77 +5,78 @@ or astro-ph.EP or astro-ph.IM \
 or astro-ph.sr)"
 
 
-search = "find a Adam Anderson \
-or a Jim Annis \
-or a Dan Bauer \
-or a Bradford Benson \
-or a Steve Brice \
-or a E Buckley-Geer \
-or a Ilias Cholis \
-or a Aaron Chou \
-or a Amy Cottle \
-or a Mike Crisler \
-or a Eric Dahl \
-or a Tom Diehl \
-or a Scott Dodelson \
-or a Alex Drlica-Wagner"
+search = "find a Anderson, A \
+or Annis, J \
+or Bauer, D \
+or Benson, B \
+or Brice, S \
+or Buckley-Geer, E \
+or Cholis, I \
+or Chou, A \
+or Cottle, A \
+or Crisler, M \
+or Dahl, E \
+or Diehl, T \
+or Dodelson, S \
+or Drlica-Wagner, A"
 search += SEARCH_A
 print search
 print '\n'
 
-search = "find a Juan Estrada \
-or a David Finley \
-or a Brenna Flaugher \
-or a Josh Frieman \
-or a Hank Glass \
-or a Nick Gnedin \
-or a Erik Gottschalk \
-or a Gaston Gutierrez \
-or a Yann Guardincerri \
-or a Seton Handville \
-or a Craig Hogan \
-or a Carlos Hojvat \
-or a Dan Hooper \
-or a Lauren Hsu \
-or a Steve Kent \
-or a Rich Kron \
-or a Donna Kubik \
-or a Krnjaic, Gordan \
-or a Nikolay Kuropatkin \
-or a Connie Lang \
-or a Cathryn Laue \
-or a Paul Lebrun \
-or a Huan Lin \
-or a Hugh Lippincott \
-or a Ben Loer \
-or a Pat Lukens"
+search = "find a Estrada, J \
+or Finley, D \
+or Flaugher, B \
+or Frieman, J \
+or Glass, H \
+or Gnedin, N \
+or Gottschalk, E \
+or Gutierrez, G \
+or Guardincerri, Y \
+or Handville, S \
+or Hogan, C \
+or Hojvat, C \
+or Hooper, D \
+or Hsu, L \
+or Kent, S \
+or Kron, R \
+or Kubik, D \
+or Krnjaic, G \
+or Kuropatkin, N \
+or Lang, C \
+or Laue, C \
+or Lebrun, P \
+or Lin, H \
+or Lippincott, H \
+or Loer, B \
+or Lukens, P "
 search += SEARCH_A
 print search
 print '\n'
 
 
-search = "find a Paul Mantsch \
-or a John Marriner \
-or a Peter Mazur \
-or a Wyatt Merritt \
-or a Eric H. Neilsen \
-or a Hogan Nguyen \
-or a Brian Nord \
-or a John Peoples \
-or a Stephen Pordes \
-or a Rahlin \
-or a Erik Ramberg \
-or a Alan Robinson \
-or a Marcelle Soares-Santos \
-or a Vic Scarpine \
-or a Andrew Sonnenschein \
-or a Albert Stebbins \
-or a Chris Stoughton \
-or a Javier Tiffenberg \
-or a Douglas Tucker \
-or a William Wester \
-or a Brian Yanny \
-or a JongHee Yoo"
+search = "find a Mantsch, P \
+or Marriner, J \
+or Mazur, P \
+or Merritt, W \
+or Neilsen, E \
+or Nguyen, H \
+or Nord, B \
+or Peoples, J \
+or Pordes, S \
+or Rahlin \
+or Ramberg, E \
+or S Reitzner \
+or Robinson, A \
+or Soares-Santos, M \
+or Scarpine, V \
+or Sonnenschein, A \
+or Stebbins, A \
+or Stoughton, C \
+or Tiffenberg, J \
+or Tucker, D \
+or Wester, W \
+or Yanny, B \
+or Yoo, J"
 search += SEARCH_A
 print search
 
@@ -84,59 +85,105 @@ print '\n'
 SEARCH_T = " not r fermilab not af fermilab"
 SEARCH_T += " and (primarch hep-ph or primarch hep-th or primarch hep-lat)"
 
-
-
-search = "find a John Campbell \
-or a Marcela Carena \
-or a Bogdan Dobrescu \
-or a Estia Eichten \
-or a Patrick Fox \
-or a Walter Giele \
-or a Roni Harnik \
-or a Christopher Hill \
-or a Joshua Isaacson \
-or a Andreas Kronfeld \
-or a Joseph Lykken \
-or a Paul Mackenzie \
-or a Stephen Parke \
-or a Chris Quigg \
-or a Ruth Van de Water \
-or a Pilar Coloma \
-or a Kiel Howe \
-or a Seyda Ipek \
-or a Jack Kearney \
-or a Ye Li \
-or a Zhen Liu \
-or a Tobias Neumann \
-or a Jessica Turner \
-or a Aarti Veernala \
-or a Yue Zhang \
-or a Ran Zhou \
-or a Nilanjan Banik \
-or a Peter Denton "
+search = "find a Campbell, J \
+or Carena, M \
+or Dobrescu, B \
+or Eichten, E \
+or Fox, P \
+or Giele, W \
+or Harnik, R \
+or Hill, C \
+or Isaacson, J \
+or Kronfeld, A \
+or Lykken, J \
+or Mackenzie, P \
+or Parke, S \
+or Quigg, C \
+or Van de Water, R \
+or Coloma, P \
+or Howe, K \
+or Ipek, S \
+or Kearney, J \
+or Liu, Zhen \
+or Neumann, T \
+or Turner, J \
+or Veernala, A \
+or Banik, N \
+or Denton, P "
 
 search += SEARCH_T
 print search
 print "\n"
 
-search = "find a Felix Kling \
-or a Aaron Meyer \
-or a Gopolang Mohlabeng \
-or a Ananth Tenneti \
-or a Carl Albright \
-or a Bill Bardeen \
-or a Jon Bailey \
-or a Andre de Gouvea \
-or a Elizabeth Freeland \
-or a Richard Hill \
-or a Boris Kayser \
-or a Wai-Yee Keung \
-or a Stephen Martin \
-or a Stephen Mrenna \
-or a Jim Simone"
+search = "find a Meyer, A \
+or Mohlabeng, G \
+or Tenneti, A \
+or Albright, C \
+or Bardeen, w \
+or Bailey, J \
+or de Gouvea, A \
+or Freeland, E \
+or Hill, R \
+or Kayser, B \
+or Keung, W \
+or Martin, S \
+or Mrenna, S \
+or Simone, J "
 
 search += SEARCH_T
 print search
 print "\n"
 
+SEARCH_ACC = " not r fermilab not af fermilab"
+SEARCH_ACC += " and (fc b or fc i)"
+
+search = "find a Adey, D \
+or Alexahin, Y \
+or Balbekov, V \
+or Barletta, W \
+or Bowring, D \
+or Broemmelsiek, D \
+or Bross, A \
+or Bruce, M \
+or Carlson, K \
+or Chou, W \
+or Crawford, D \
+or Edstrom, D \
+or Gallo, P \
+or Gianfelice-Wendt, E \
+or Johnson, W \
+or Johnstone, J \
+or Kriss, M \
+or Leonova, M \
+or Mokhov, N \
+or Moretti, A \
+or Neuffer, D \
+or Ng, K \
+or Novitski, I \
+or Palmer, M \
+or Piekarz, H \
+or Piot, P \
+or Popovic, M \
+or Prebys, E \
+or Pronskikh, V \
+or Rakhno, I \
+or Ruan, J \
+or Santucci, J \
+or Sen, T \
+or Shin, Y Min \
+or Shiltsev, V \
+or Snopok, P \
+or Stancari, G \
+or Striganov, S \
+or Thangaraj, C \
+or Tropin, I \
+or Valishev, A \
+or Warner, A \
+or Winchester, S \
+or Yonehara, K \
+or Zwaska, R "
+
+search += SEARCH_ACC
+print search
+print "\n"
 

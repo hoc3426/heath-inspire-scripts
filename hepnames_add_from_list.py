@@ -41,7 +41,8 @@ SOURCE = 'Fermilab'
 #INSPIRE = 72524
 #INSPIRE = 73359
 #INSPIRE = 73383
-INSPIRE = 73787
+#INSPIRE = 73787
+INSPIRE = 74388
 
 if EMAILS:
     emails_unknown = []
@@ -159,6 +160,7 @@ for author in AUTHORS:
             af = aflist[1]
         inspire_id = 'INSPIRE-00' + str(INSPIRE) + str(random.randint(1, 9))
         output.write(create_xml(au, email, af, EXPERIMENT, inspire_id))
+        output.write('\n')
         INSPIRE += 1          
         #print INSPIRE
     #output.write(print_record(r,ot=['001','371'],format='xm'))

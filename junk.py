@@ -20,6 +20,73 @@ from invenio.intbitset import intbitset
 from invenio.textutils import translate_latex2unicode
 from invenio.search_engine import search_unit
 
+from hep_convert_email_to_id import get_hepnames_anyid_from_recid
+
+search = 'find topcite 300+'
+topcites = {}
+for recid in perform_request_search(p=search, cc='HEP'):
+    search = 'refersto:recid:' + str(recid) + ' 980:CORE year:2017'
+    citations = len(perform_request_search(p=search, cc='HEP'))
+    title = get_fieldvalues(recid, '245__a')[0]
+    author = get_fieldvalues(recid, '100__a')[0]
+    if citations > 300:
+        topcites[citations] = author + ' : ' + title[:30]
+for key in reversed(sorted(topcites)):
+    print "%4s %s" % (key, topcites[key])
+quit()
+
+
+search_a = 'find t axion and de '
+search_b = 'find t dark matter and de '
+for date in range(2016, 2018):
+    search1 = search_a + str(date)
+    search2 = search_b + str(date)
+    print date, len(perform_request_search(p=search1, cc='HEP')), \
+                len(perform_request_search(p=search2, cc='HEP'))
+quit()
+
+
+search = 'refersto:recid:1343079 980:CORE year:2017'
+for recid in perform_request_search(p=search, cc='HEP'):
+    title = get_fieldvalues(recid, '245__a')[0].lower()
+    title = title.replace('dark ', 'dark')
+    title = re.sub(r'(\w+)s\b', r'\1', title)
+    for word in title.split():
+        print word
+quit()
+
+
+search = '035__9:orcid 371__m:/fnal.gov$/'
+for recid in perform_request_search(p=search, cc='HepNames'):
+    orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+    for email in get_fieldvalues(recid, '371__m'):
+        if re.search(r'fnal.gov', email):
+            email_fnal = email
+            break
+    try:
+        output = email_fnal + ',' + orcid
+        print output
+    except NameError:
+        print recid
+quit()
+ 
+
+search_d = {'osti':'035__9:osti', 'doi':'0247_2:doi',
+          'arXiv':'980__a:arXiv'}
+already = set()
+list = [(x, y, z) for x in search_d for y in search_d for z in search_d]
+for (search1, search2, search3) in list:
+    for x in (' + ', ' - '):
+        for y in (' + ', ' - '):
+            search = search_d[search1] + x + search_d[search2] + y + \
+                     search_d[search3] 
+            result = perform_request_search(p=search, cc='HEP')
+            #print %ssearch, len(result)
+            print "{0:20} {1:<20}".format(search, len(result))
+quit()
+
+
+
 #                             10.1103/PhysRevD.47.R357
 search = '773__c:/^R/ 0247_a:/^10\.1103\/PhysRev\w\.\d+\.\d/'
 result = perform_request_search(p=search, cc='HEP')
