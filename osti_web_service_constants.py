@@ -36,7 +36,7 @@ ACCEPTED_SEARCH = '8564_z:openaccess or 8564_z:postprint or \
 8564_y:"article from scoap3" ignore'
 
 DADD_SEARCH = 'dadd:2013 or dadd:2014 or \
-dadd:2015 or dadd:2016 or dadd:2017'
+dadd:2015 or dadd:2016 or dadd:2017 or dadd:2018'
 
 THESIS_SEARCH = '8564_y:fermilabthesisf'
 

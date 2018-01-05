@@ -27,12 +27,18 @@ topcites = {}
 for recid in perform_request_search(p=search, cc='HEP'):
     search = 'refersto:recid:' + str(recid) + ' 980:CORE year:2017'
     citations = len(perform_request_search(p=search, cc='HEP'))
+    if citations < 300:
+        next
     title = get_fieldvalues(recid, '245__a')[0]
-    author = get_fieldvalues(recid, '100__a')[0]
-    if citations > 300:
-        topcites[citations] = author + ' : ' + title[:30]
+    try:
+        author = get_fieldvalues(recid, '100__a')[0].split(',')[0]
+    except IndexError:
+        author = None
+    topcites[citations] = [author, title]
 for key in reversed(sorted(topcites)):
-    print "%4s %s" % (key, topcites[key])
+    #print key, topcites[key]
+    #print key, topcites[key][0], topcites[key][1]
+    print "%4d %-12s %-50s" % (key, topcites[key][0], topcites[key][1][:40])
 quit()
 
 

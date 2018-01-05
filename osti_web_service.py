@@ -31,7 +31,7 @@ CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
-VERBOSE = False
+#VERBOSE = False
 TEST = False
 #TEST = True
 RECIDS = False
@@ -146,13 +146,14 @@ def get_url(recid):
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
+            url_i = url_i.lower()
             if re.search(r'lss.*fermilab\-.*pdf', url_i):
                 url_fermilab = url_i
-            elif re.search(r'record/\d+/files/arXiv', url_i):
+            elif re.search(r'record/\d+/files/arxiv', url_i):
                 url_arxiv = url_i
             if re.search(r'inspirehep.*fermilab\-.*pdf', url_i):
                 url_inspire = url_i
-            elif re.search(r'inspirehep.*MUCOOL\-.*pdf', url_i):
+            elif re.search(r'inspirehep.*mucool\-.*pdf', url_i):
                 url_inspire = url_i
 
     if url_openaccess:
