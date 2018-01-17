@@ -32,7 +32,10 @@ def main():
         print "Currently gives", affiliations_done[aff_input]
     except KeyError:
         print "No current value for", aff_input
-    affiliations_done[aff_input] = aff_output
+    if isinstance(aff_output, str):
+        affiliations_done[aff_input] = [aff_output]
+    elif isinstance(aff_output, list):
+        affiliations_done[aff_input] = aff_output
     if exists(AFFILIATIONS_DONE_FILE):
         backup = AFFILIATIONS_DONE_FILE + '.bak'
         if exists(backup):
@@ -46,6 +49,10 @@ def main():
             print "Problem adding:"
             print aff_input
             print aff_output
+    try:
+        print "Now gives", affiliations_done[aff_input]
+    except KeyError:
+        print "No current value for", aff_input
     print 'Number of affiliations 2:', len(affiliations_done)
 
 
