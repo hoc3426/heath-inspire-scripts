@@ -74,6 +74,7 @@ def find_records_containing_email():
     if SEARCH:
         search = SEARCH
     result = perform_request_search(p=search, cc='HEP')
+    print "Checking", len(result), "records"
     return sorted(result, reverse=True)
 
 def get_hepnames_recid_from_email(email):

@@ -66,8 +66,10 @@ def create_xml(recid, tags, experiment, author_dict):
                 if code == 'a':
                     if value not in author_dict:
                         search = 'find a ' + value + ' and exp ' + experiment
+                        if VERBOSE: print
                         author_dict[value] = \
                            convert_search_to_inspire_id(search)
+                        if VERBOSE: print author_dict[value]
                     if author_dict[value][0]:
                         flag = True
                         correct_subfields.append(('i', author_dict[value][0]))
@@ -89,7 +91,7 @@ def find_records_with_no_id(experiment):
     """Find records in HEP that have no INSPIRE IDs or ORCIDs."""
 
     print experiment
-    search = "693__e:" + experiment + " date:2010->2017"
+    search = "693__e:" + experiment + " date:2010->2020"
     search += " -100__i:INSPIRE* -700__i:INSPIRE* \
                 -100__j:ORCID* -700__j:ORCID* \
                 -100__k:ORCID* -700__k:ORCID*" 

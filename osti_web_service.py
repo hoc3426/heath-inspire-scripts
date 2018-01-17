@@ -25,15 +25,19 @@ from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from check_url import checkURL
 
-from osti_web_service_constants import *
+from osti_web_service_constants import TYPE_DICT, DIRECTORY, \
+        ACCEPTED_SEARCH, DADD_SEARCH, THESIS_SEARCH, \
+        DOE_SUBJECT_CATEGORIES_DICT, \
+        DOE_FERMILAB_DICT, DOE_AFF_DICT, \
+        INSPIRE_AFF_DICT, SEARCH
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
 LOGFILE = 'osti_web_service.log'
 VERBOSE = True
-#VERBOSE = False
+VERBOSE = False
+TEST = True
 TEST = False
-#TEST = True
 RECIDS = False
 ENDING_COUNTER = 20
 
@@ -146,14 +150,13 @@ def get_url(recid):
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
-            url_i = url_i.lower()
-            if re.search(r'lss.*fermilab\-.*pdf', url_i):
+            if re.search(r'lss.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_fermilab = url_i
-            elif re.search(r'record/\d+/files/arxiv', url_i):
+            elif re.search(r'record/\d+/files/arXiv', url_i, re.IGNORECASE):
                 url_arxiv = url_i
-            if re.search(r'inspirehep.*fermilab\-.*pdf', url_i):
+            if re.search(r'inspirehep.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
-            elif re.search(r'inspirehep.*mucool\-.*pdf', url_i):
+            elif re.search(r'inspirehep.*MUCOOL\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
 
     if url_openaccess:
