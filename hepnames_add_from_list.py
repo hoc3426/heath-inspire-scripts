@@ -18,7 +18,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 
 from hepnames_fermilab_aff_from_email import aff_from_email
-from hepnames_add_from_list_authors import AUTHORS, EMAILS
+from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS
 
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
@@ -46,6 +46,15 @@ SOURCE = 'WiggleZ'
 #INSPIRE = 73787
 INSPIRE = 74388
 
+if ORCIDS:
+    for (name, orcid) in ORCIDS:
+        if perform_request_search(p='035:' + orcid, cc='HepNames'):
+            pass
+        else:
+            print name, '\t', orcid
+    quit()
+
+
 if EMAILS:
     emails_unknown = []
     for email in EMAILS:
@@ -60,6 +69,7 @@ if EMAILS:
     for email in emails_unknown:
         print email
     quit()
+
 
 def create_xml(author,email,af,experiment,inspire_id):
     common_fields = {}
