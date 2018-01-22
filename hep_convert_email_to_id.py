@@ -161,6 +161,9 @@ def convert_email_to_inspire_id(email):
 
     inspire_id = None
     orcid      = None
+    if bad_id_check(email):
+        print email
+        return None
     recid = get_hepnames_recid_from_email(email)
     if recid:
         inspire_id = find_inspire_id_from_record(recid)

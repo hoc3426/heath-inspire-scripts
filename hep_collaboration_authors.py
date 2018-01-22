@@ -16,7 +16,6 @@ from invenio.search_engine import perform_request_search
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
-VERBOSE = True
 VERBOSE = False
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
@@ -188,11 +187,11 @@ def create_xml(eprint, author_dict):
                     inst = re.sub(r'^\s+', '', inst)
                     subfields.append(('u', inst))
             except KeyError:
-                if VERBOSE:
+                if False:
                     print "AFF in: ", affiliation, "*"
                     time1 = time.time()
                 inspire_affiliation = get_aff(unidecode(affiliation))
-                if VERBOSE:
+                if False:
                     time2 = time.time()
                     time_taken = time2 - time1
                     print "AFF out:", inspire_affiliation, \
@@ -279,6 +278,9 @@ def preprocess_file(read_data):
                        str(astro_aff_counter) + r'}$ \1', \
                        line)
             read_data = read_data.replace(line, line_new)
+            if VERBOSE:
+                #print astro_aff_counter, line
+                print line_new
             astro_aff_counter += 1
         elif astro_aff_counter and re.search(r'.\\and[ ]*$', line):
             line_new = \
@@ -408,7 +410,8 @@ def process_file(eprint, file_type='tex'):
         match = re.search(r'^\$\^\{?([\w\-\s\,]+)\}?\$\s*(.*)', line)
         if match:
             affiliation_dict[match.group(1)] = match.group(2)
-
+            if VERBOSE:
+                print match.group(1), affiliation_dict[match.group(1)]
         #Find author/affiliations for \\author, \\affiliation
         match = re.search(r'\\author\{(.*)\}', line)
         if match:
@@ -500,7 +503,7 @@ if __name__ == '__main__':
     TEST = False
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 't')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 't,v')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
@@ -508,6 +511,8 @@ if __name__ == '__main__':
     for option, argument in OPTIONS:
         if option == '-t':
             TEST = True
+        if option == '-v':
+            VERBOSE = True
 
     if TEST:
         def get_aff(aff):
