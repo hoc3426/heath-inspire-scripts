@@ -70,7 +70,7 @@ def find_records_containing_email():
     search = r'100__m:/\@/ or 700__m:/\@/ \
                 - \
                100__m:email* - 700__m:email*'
-    search = r'100__m:/\@/ or 700__m:/\@/'
+    search = r'100__m:/\w/ or 700__m:/\w/'
     if SEARCH:
         search = SEARCH
     result = perform_request_search(p=search, cc='HEP')
@@ -161,9 +161,6 @@ def convert_email_to_inspire_id(email):
 
     inspire_id = None
     orcid      = None
-    if bad_id_check(email):
-        print email
-        return None
     recid = get_hepnames_recid_from_email(email)
     if recid:
         inspire_id = find_inspire_id_from_record(recid)
@@ -210,8 +207,13 @@ def create_xml(recid, tags, author_dict):
                 author_dict[value] = (None, None)
             elif code == 'm' and not value in author_dict:
                 value = value.lower()
-                (derived_inspire_id, derived_orcid) = \
-                    convert_email_to_inspire_id(value)
+                if bad_id_check(value):
+                    print recid, value
+                    (derived_inspire_id, derived_orcid) = \
+                    (None, None)
+                else:
+                    (derived_inspire_id, derived_orcid) = \
+                     convert_email_to_inspire_id(value)
                 author_dict[value] = (derived_inspire_id, derived_orcid)
             if code == 'm':
                 (derived_inspire_id, derived_orcid) = author_dict[value]
