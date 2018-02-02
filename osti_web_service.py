@@ -8,6 +8,7 @@ from xml.dom import minidom
 
 import re
 import cgi
+import getopt
 import sys
 import datetime
 import pytz
@@ -626,25 +627,35 @@ def find_records(search_input=None):
         print "No results found."
         return None
 
+
+
+
 if __name__ == '__main__':
+
     try:
-        if sys.argv[1:][0] == 'i':
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'air:tv')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        sys.exit(0)
+
+    for option, argument in OPTIONS:
+        if option == '-i':
             RECIDS = find_records(ACCEPTED_SEARCH)
-        elif sys.argv[1:][0] == 'a':
+        elif option == '-a':
             RECIDS = find_records(DADD_SEARCH)
-        elif sys.argv[1:][0] == 't':
+        elif option == '-t':
             RECIDS = find_records(THESIS_SEARCH)
-    except IndexError:
-        pass
+        elif option == '-r':
+            SEARCH = '001:' + argument + ' ignore'
+            RECIDS = find_records(SEARCH)
+        if option == '-v':
+            VERBOSE = True
     if not RECIDS:
-        RECIDS = []
-        try:
-            RECID = int(sys.argv[1:][0])
-            RECIDS.append(RECID)
-        except StandardError:
-            RECIDS = find_records()
+        RECIDS = find_records()
     try:
         main(RECIDS)
     except KeyboardInterrupt:
         print 'Exiting'
+
+
 
