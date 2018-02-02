@@ -207,8 +207,8 @@ def create_xml(recid, tags, author_dict):
                 author_dict[value] = (None, None)
             elif code == 'm' and not value in author_dict:
                 value = value.lower()
-                value2 = re.sub('[\,\.\;]$', '', value)
-                if value != value2
+                value2 = re.sub(r'[\,\.\;]$', '', value)
+                if value != value2:
                     value = value2
                     flag = True
                 if bad_id_check(value):

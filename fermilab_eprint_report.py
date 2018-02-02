@@ -37,14 +37,28 @@ def get_eprint(recid):
         eprint = eprint[0]
         print report_fermilab, eprint
         return None
+    for url_i in get_fieldvalues(recid, '8564_u'):
+        if re.match(r'https?://inspirehep.net.*pdf', url_i):
+            url = url_i
     for item in BibFormatObject(int(recid)).fields('8564_'):
-        if item.has_key('y') and item.has_key('u'):
-            if re.search('fermilab', item['y'].lower()):
-                return None
+        if item.has_key('y') or item.has_key('z') and item.has_key('u'):
+            try:
+                if re.search('fermilab', item['y'].lower()):
+                    return None
+            except KeyError:
+                pass
             if item['u'].endswith('pdf'):
                 url = item['u']
-            if item['y'].lower() == 'fulltext':
-                url = item['u']
+            try:
+                if item['y'].lower() == 'fulltext':
+                    url = item['u']
+            except KeyError:
+                pass
+            try:
+                if item['z'].lower() == 'openaccess':
+                    url = item['u']
+            except KeyError:
+                pass
     if url:
         print report_fermilab, url
 

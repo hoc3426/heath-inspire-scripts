@@ -82,8 +82,8 @@ def main():
             search = search + ' -980__a:D0-PRELIMINARY-NOTE'
         x = perform_request_search(p=search,cc='HEP')
         for r in x:
-            if r in done_records:
-                break
+            #if r in done_records:
+            #    break
             output.write(create_xml(r, experiments[key]))
             done_records.append(r)
     output.write('</collection>')

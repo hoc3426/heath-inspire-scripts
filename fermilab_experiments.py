@@ -100,7 +100,7 @@ for series in serieses :
   dateTimeStamp = '<i>Updated '+time.strftime('%Y-%m-%d %H:%M:%S')+'</i>\n'
   output.write(dateTimeStamp)
   output.write('<br />\n<table>\n')
-  output.write('<tr><td>Number</td><td>Collaboration</td><td>Spokesperson</td><td>Title</td><td>Proposal</td><td>Finished</td></tr>')
+  output.write('<tr><td>Number</td><td>Collaboration</td><td>Spokesperson</td><td>Title (test beam in green)</td><td>Proposal</td><td>Finished</td></tr>')
   for report in reports :
     report.pop(0)
     if VERBOSE: print "report =", report
