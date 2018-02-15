@@ -23,6 +23,7 @@ JOURNAL_PUBLISHED_DICT = {"Ann.Rev.Astron.Astrophys.":"10.1146/annurev-astro",
 "Phys.Rev.":"10.1103/PhysRevD.",
 "Phys.Rev.Lett.":"10.1103/PhysRevLett.",
 "Rev.Mod.Phys.":"10.1103/RevModPhys.",
+"Sci.Rep.":"10.1038/srep",
 "Science":"10.1126/science"}
 
 CONFERENCE_DICT = {"AIP Conf.Proc.":None,

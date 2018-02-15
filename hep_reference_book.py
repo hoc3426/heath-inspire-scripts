@@ -47,7 +47,8 @@ DATAS = [
 
 BOOKS = [
 #['Itzykson', 'quantum field theory', '0486445682', '159194'],
-['Baxter', 'exactly solved models in statistical mechanics', '0486462714' , '1120339'],
+['Baxter', 'exactly solved models in statistical mechanics', '0486462714' , 
+'1120339'],
 ['Carroll', 'spacetime and geometry', '0805387323', '650093'],
 ['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 ['Peskin', 'introduction to quantum field theory', '0201503972', '407703'],
@@ -69,7 +70,9 @@ BOOKS = [
 BOOKS = [['Streater','pct.*spin and statistics.*and all that','0691070628','290343']]
 #BOOKS = [['Chandrasekhar','mathematical theory of black holes','9780198503705','224457']]
 BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
-['W5013','w5013','CERN-W5013','863473']]
+['W5013','w5013','CERN-W5013','863473'],
+['Baxter', 'exactly solved models in statistical mechanics', '0486462714' ,
+'1120339']]
 #BOOKS = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
 #['W5013','w5013','CERN-W5013','863473']]
 #BOOKS = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
