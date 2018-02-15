@@ -24,7 +24,6 @@ AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
 AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 
 
-
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
 
@@ -321,6 +320,8 @@ def preprocess_file(read_data):
     read_data = re.sub(r'%.*\n', '\n', read_data)
     read_data = re.sub(r'}\$,\s*', '}$\n', read_data)
     read_data = re.sub(r'\$\^(\w)\$,\s*', r'$^\1$\n', read_data)
+    read_data = re.sub(r'\\thanks\{[^\}]+(0000-0[\d\-]+[\dX])[^\}]*\}',
+                r'\\affiliation{\1}', read_data)
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
     read_data = re.sub(r'\\item\[(\$\^\{?\w+\}?\$)\]', r'\1', read_data)
     read_data = re.sub(r'\\llap\{(\$\S+\$)\}', r'\1 ', read_data)
