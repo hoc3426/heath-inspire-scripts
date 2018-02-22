@@ -17,6 +17,7 @@ TYPE_DICT = {
 'FN':'TR',
 'HABILITATION':'TD',
 'INDUSTRIAL':'PD',
+'LU':'TR',
 'MASTERS':'TD',
 'MISC':'TR',
 'MONTHLY':'PD',
