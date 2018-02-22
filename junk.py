@@ -21,6 +21,48 @@ from invenio.textutils import translate_latex2unicode
 from invenio.search_engine import search_unit
 
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
+from osti_web_service import get_osti_id
+
+from check_url import checkURL
+counter = 1
+search = '037:fermilab-* 035__9:osti -0247:doi -980:arXiv -du:2018-02-15'
+result = reversed(perform_request_search(p=search, cc='HEP'))
+result = [1649931, 1303719, 1649931]
+dois = set()
+for recid in result:
+    print recid
+    if counter > 500:
+        quit()
+    common_fields = {}
+    common_tags = {}
+    doi = get_osti_id(recid)
+    if doi in dois:
+        print "Duplicate"
+        quit()
+    dois.add(doi)
+    print 'doi = ', doi
+    if not doi:
+        print "No DOI"
+        continue
+    doi = '10.2172/' + doi
+    url = 'https://doi.org/api/handles/' + doi
+    print url
+    try:
+        checkURL(url)
+        counter += 1
+    except ValueError:
+        continue
+    record_add_field(common_fields, '001', controlfield_value=str(recid))
+    common_tags['0247_'] = [('a', doi), ('2', 'DOI'), ('9', 'OSTI')]
+    for key in common_tags:
+        tag = key
+        record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+            subfields=common_tags[key])
+    #return common_fields
+    print print_rec(common_fields)
+quit()
+
+
 
 search = 'find topcite 300+'
 topcites = {}
