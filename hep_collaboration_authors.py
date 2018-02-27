@@ -262,6 +262,8 @@ def preprocess_file(read_data):
     #Special treatment for DES and Fermi-LAT and Planck
     astro_aff_counter = 0
     for line in read_data.split('\n'):
+        if VERBOSE:
+            print "LINE =", line
         if re.search(r'\\section\*\{Affiliations\}', line) or \
            re.search(r'\\institute\{\\small', line):
             astro_aff_counter = 1
@@ -269,16 +271,16 @@ def preprocess_file(read_data):
             line_new = \
                 re.sub(r'^\\item', r'$^{' + str(astro_aff_counter) + r'}$', \
                 line)
-            read_data = read_data.replace(line, line_new)
+            read_data = read_data.replace(line, line_new, 1)
             astro_aff_counter += 1
         elif astro_aff_counter and re.search(r'\\goodbreak[ ]*$', line):
             line_new = \
                 re.sub(r'(.*)[ ]*\\goodbreak[ ]*$', r'$^{' + \
                        str(astro_aff_counter) + r'}$ \1', \
                        line)
-            read_data = read_data.replace(line, line_new)
+            read_data = read_data.replace(line, line_new, 1)
             if VERBOSE:
-                #print astro_aff_counter, line
+                print astro_aff_counter, line
                 print line_new
             astro_aff_counter += 1
         elif astro_aff_counter and re.search(r'.\\and[ ]*$', line):
@@ -286,7 +288,7 @@ def preprocess_file(read_data):
                 re.sub(r'(.*)[ ]*\\and[ ]*$', r'$^{' + \
                        str(astro_aff_counter) + r'}$ \1', \
                        line)
-            read_data = read_data.replace(line, line_new)
+            read_data = read_data.replace(line, line_new, 1)
             astro_aff_counter += 1
     #print read_data
 
@@ -413,6 +415,8 @@ def process_file(eprint, file_type='tex'):
             affiliation_dict[match.group(1)] = match.group(2)
             if VERBOSE:
                 print match.group(1), affiliation_dict[match.group(1)]
+        elif VERBOSE and re.search(r'\$\^', line):
+            print "NO MATCH:", line
         #Find author/affiliations for \\author, \\affiliation
         match = re.search(r'\\author\{(.*)\}', line)
         if match:

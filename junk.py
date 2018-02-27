@@ -23,6 +23,49 @@ from invenio.search_engine import search_unit
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 from osti_web_service import get_osti_id
 
+
+tags = ['702__']
+search = '702__d:/\w/ or 702__e:/\w/ or 702__z:/\w/ 046__t:9999 119:fnal*'
+result = perform_request_search(p=search, cc='Experiments')
+#result = [1108441]
+for recid in result:
+    record = get_record(recid)
+    correct_record = {}
+    record_add_field(correct_record, '001', controlfield_value=str(recid))
+    flag = False
+    for (tag, field_instance) in \
+            [(tag, field_instance) for tag in tags \
+             for field_instance in record_get_field_instances(record, \
+             tag[0:3], tag[3], tag[4])]:
+        correct_subfields = []
+        #print field_instance[0]
+        counter = 1
+        for code, value in field_instance[0]:
+            if code == 'a':
+                author = value
+                start = '??'
+                end = '??'
+            elif code == 'd':
+                start = value
+            elif code == 'e':
+                end = value 
+            elif code == 'z':
+                end = value
+            if counter == len(field_instance[0]):
+                if re.search(r'\(', author):
+                    correct_subfields.append(('a', author))
+                else:
+                    author_new = '{0} ({1} - {2})'.format(author, start, end) 
+                    author_new = author_new.replace(' (?? - ??)', '')
+                    correct_subfields.append(('a', author_new))
+            if code != 'a':
+                correct_subfields.append((code, value))
+            counter += 1
+        record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
+            subfields=correct_subfields)
+    print print_rec(correct_record)        
+quit()
+
 from check_url import checkURL
 counter = 1
 search = '037:fermilab-* 035__9:osti -0247:doi -980:arXiv -du:2018-02-15'

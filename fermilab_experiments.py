@@ -9,7 +9,7 @@ serieses.sort()
 print 'cd /web/sites/ccd.fnal.gov/htdocs/techpubs'
 
 VERBOSE = False
-#VERBOSE = True
+VERBOSE = True
 
 for series in serieses :
   reports = []

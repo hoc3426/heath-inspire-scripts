@@ -8,8 +8,9 @@ from invenio.search_engine import perform_request_search
 from osti_web_service import get_osti_id
 from check_url import checkURL
 
-COUNTER_END = 50
-SEARCH = '037:fermilab-* 035__9:osti -0247:doi -980:arXiv -du:2018-02-15'
+COUNTER = 1
+COUNTER_END = 500
+SEARCH = r'037:fermilab-* 035__9:osti -0247:doi -980:arXiv -773__p:/\w/'
 RESULT = reversed(perform_request_search(p=SEARCH, cc='HEP'))
 DOIS = set()
 
@@ -18,7 +19,7 @@ FILENAME = re.sub('.py', '_append.out', FILENAME)
 OUTPUT = open(FILENAME,'w')
 
 for recid in RESULT:
-    if len(DOIS) > COUNTER_END:
+    if COUNTER > COUNTER_END:
         break
     common_fields = {}
     common_tags = {}
@@ -36,6 +37,7 @@ for recid in RESULT:
         checkURL(url)
     except ValueError:
         continue
+    COUNTER += 1
     record_add_field(common_fields, '001', controlfield_value=str(recid))
     common_tags['0247_'] = [('a', doi), ('2', 'DOI'), ('9', 'OSTI')]
     for key in common_tags:
@@ -46,7 +48,7 @@ for recid in RESULT:
 
 
 OUTPUT.close()
-print "Number of records:", len(DOIS)
+print "Number of records:", COUNTER
 print FILENAME
 quit()
 
