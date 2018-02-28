@@ -1,7 +1,9 @@
 """
-A system to extract collaboration author lists from tex files.
+A system to extract collaboration author lists from tex files or ieee.
 """
 
+import json
+import requests
 import cPickle as pickle
 import getopt
 import os
@@ -149,17 +151,24 @@ def process_author_name(author):
     #print 'OUTPUT =', author
     return author
 
-def create_xml(eprint, author_dict):
+def create_xml(eprint=None, doi=None, author_dict=None):
     """Take in the author dictionary and write it out as xml."""
-
-    try:
-        search = 'find eprint ' + eprint + ' or recid ' + eprint
-        if '/' in eprint or '.' in eprint:
-            search = 'find eprint ' + eprint
-        recid = perform_request_search(p=search, cc='HEP')[0]
-    except IndexError:
-        print 'Do not have eprint or recid', search
-        return None
+    if eprint:
+        try:
+            search = 'find eprint ' + eprint + ' or recid ' + eprint
+            if '/' in eprint or '.' in eprint:
+                search = 'find eprint ' + eprint
+            recid = perform_request_search(p=search, cc='HEP')[0]
+        except IndexError:
+            print 'Do not have eprint or recid', search
+            return None
+    elif doi:
+        try:
+            search = 'find doi ' + doi
+            recid = perform_request_search(p=search, cc='HEP')[0]
+        except IndexError:
+            print 'Do not have doi', search
+            return None        
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
     tag = '100__'
@@ -383,7 +392,32 @@ def preprocess_file(read_data):
 
     return new_read_data
 
+def process_ieee(eprint):
+    """Obtains authors and affiliations from ieee link
+    """
+    r = requests.get(eprint)
+    uncleanjson = [line for line in r.text.split('\n') if line.lstrip().startswith('global.document.metadata=')][0]
+    cleanjsonmatch = re.search('metadata\=(\{.*?\});$',uncleanjson)
+    if cleanjsonmatch:
+        cleanjson = cleanjsonmatch.group(1)
+        json_acceptable_string = cleanjson.replace('"', '\"')
+        d = json.loads(json_acceptable_string)
+        cleanauths = {}
+        try:
+            auths = d['authors']
+            for a in auths:
+                cleanauths[auths.index(a)+1] = [process_author_name(a['name']), [a['affiliation']]]
+                if 'orcid' in a:
+                    cleanauths[auths.index(a)+1][1].append(a['orcid'])
+        except KeyError:
+            print 'No IEEE authors found'            
+        try:
+            doi = d['doi']
+        except KeyError:
+            print 'No doi found'
 
+    print 'Number of authors:', len(cleanauths)
+    return create_xml(doi=doi, author_dict=cleanauths)
 
 def process_file(eprint, file_type='tex'):
     """Obtain authors and affiliations from file.
@@ -458,30 +492,52 @@ def process_file(eprint, file_type='tex'):
                 except KeyError:
                     print 'Unknown affkey for', author_dict[key]
 
-    return create_xml(eprint, author_dict)
+
+    return create_xml(eprint=eprint, author_dict=author_dict)
 
 def main(eprint):
     """Get the author list."""
+    filename = 'tmp_' + __file__
 
     eprint_tex = eprint.replace('/', '-') + ".tex"
     eprint_xml = eprint.replace('/', '-') + ".xml"
     if os.path.exists(eprint_tex) or os.path.exists(eprint_xml):
+        file_type = 'tex'
         pass
     else:
-        if not download_source(eprint):
-            return
-
+        file_type = raw_input("""Choose paper type:
+1 arXiv
+2 ieee
+""")
+        if file_type == '1':
+            file_type = 'tex'
+            if not download_source(eprint):
+                return
+        elif file_type == '2':
+            file_type = 'ieee'
+            if 'ieee' in eprint:
+                filename = re.sub('.py', '_' + re.sub('\D', '', eprint) + \
+                          '_correct.out', filename)
+            else:
+                filename = re.sub('.py', '_' + eprint.replace('/', '-').replace('.', '-') + \
+                      '_correct.out', filename)
+                eprint = 'http://dx.doi.org/'+ eprint
+            
+        else:
+            print 'Invalid choice'
+            quit()
     if os.path.exists(eprint_xml):
         print eprint_xml
         quit()
-
-
-    filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_' + eprint.replace('/', '-') + \
+    if not '_correct.out' in filename:
+        filename = re.sub('.py', '_' + eprint.replace('/', '-') + \
                       '_correct.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
-    update = process_file(eprint)
+    if file_type == 'tex':
+        update = process_file(eprint)
+    elif file_type == 'ieee':
+        update = process_ieee(eprint)
     if update:
         output.write(update)
     output.write('</collection>')
@@ -558,4 +614,3 @@ if __name__ == '__main__':
     #        print "Bad input", EPRINT
     #    except KeyboardInterrupt:
     #        print 'Exiting'
-
