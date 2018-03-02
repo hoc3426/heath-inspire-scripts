@@ -19,6 +19,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 
 VERBOSE = False
+#VERBOSE = True
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
@@ -29,10 +30,11 @@ AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
 
-    import gzip
+    #import gzip
     import tarfile
     import urllib
-
+    if VERBOSE:
+        print eprint
     download_path = DIRECTORY + "collaboration/"
     download_path = os.path.expanduser(download_path)
     filename = eprint.replace('/', '-')
@@ -80,7 +82,7 @@ def download_source(eprint, download_path = ""):
 
 def author_first_last(author):
     """Determines the components of the author's name.."""
-   
+
     if re.search(r',', author):
         author = re.sub(r'\,\s*', ', ', author)
         return author
@@ -108,6 +110,17 @@ def author_first_last(author):
 
 def process_author_name(author):
     """Convert author to INSPIRE form."""
+
+
+    #test for ALLCAPS
+    if re.search(r'[A-Z][A-Z]', author):
+        author_uplow = ''
+        for part in author.split(' '):
+            if part.upper() == part and not re.match(r'I[IV]+', part):
+                part = part.title()
+            author_uplow += ' ' + part
+        author = author_uplow
+
 
     #print 'INPUT = ', author
     author = author.replace(r'\.', r'xxxx')
@@ -168,7 +181,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
             recid = perform_request_search(p=search, cc='HEP')[0]
         except IndexError:
             print 'Do not have doi', search
-            return None        
+            return None
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
     tag = '100__'
@@ -397,24 +410,26 @@ def preprocess_file(read_data):
 def process_ieee(eprint):
     """Obtains authors and affiliations from ieee link
     """
-    r = requests.get(eprint)
-    uncleanjson = [line for line in r.text.split('\n') if line.lstrip().startswith('global.document.metadata=')][0]
-    cleanjsonmatch = re.search('metadata\=(\{.*?\});$',uncleanjson)
+    request = requests.get(eprint)
+    uncleanjson = [line for line in request.text.split('\n') if
+        line.lstrip().startswith('global.document.metadata=')][0]
+    cleanjsonmatch = re.search(r'metadata\=(\{.*?\});$', uncleanjson)
     if cleanjsonmatch:
         cleanjson = cleanjsonmatch.group(1)
         json_acceptable_string = cleanjson.replace('"', '\"')
-        d = json.loads(json_acceptable_string)
+        json_dict = json.loads(json_acceptable_string)
         cleanauths = {}
         try:
-            auths = d['authors']
-            for a in auths:
-                cleanauths[auths.index(a)+1] = [process_author_name(a['name']), [a['affiliation']]]
-                if 'orcid' in a:
-                    cleanauths[auths.index(a)+1][1].append(a['orcid'])
+            auths = json_dict['authors']
+            for auth in auths:
+                cleanauths[auths.index(auth)+1] = \
+                    [process_author_name(auth['name']), [auth['affiliation']]]
+                if 'orcid' in auth:
+                    cleanauths[auths.index(auth)+1][1].append(auth['orcid'])
         except KeyError:
-            print 'No IEEE authors found'            
+            print 'No IEEE authors found'
         try:
-            doi = d['doi']
+            doi = json_dict['doi']
         except KeyError:
             print 'No doi found'
 
@@ -436,6 +451,7 @@ def process_file(eprint, file_type='tex'):
     babar_flag = False
     reverse_babar_flag = False
     author_previous = False
+    author_affiliation = None
     for line in read_data:
         #Find author/affiliations for $^{1}$
         match = re.search(r'^(\\?\"?[A-Z].*)\$\^\{?([\w\-\s\,]+)\}?\$', line)
@@ -505,14 +521,24 @@ def main(eprint):
 
     eprint_tex = eprint.replace('/', '-') + ".tex"
     eprint_xml = eprint.replace('/', '-') + ".xml"
+    file_type = None
+    if VERBOSE:
+        print 'eprint =', eprint
     if os.path.exists(eprint_tex) or os.path.exists(eprint_xml):
         file_type = 'tex'
-        pass
+    elif re.search(r'^[a-zA-Z\-]+/\d{7}$', eprint) or \
+         re.search(r'^\d{4}\.\d{4}\d?$', eprint):
+        file_type = '1'
+    elif eprint.startswith('10.1109'):
+        file_type = '2'
     else:
         file_type = raw_input("""Choose paper type:
 1 arXiv
 2 ieee
 """)
+    if file_type in ['1', '2']:
+        if VERBOSE:
+            print 'file_type', file_type
         if file_type == '1':
             file_type = 'tex'
             if not download_source(eprint):
@@ -520,13 +546,13 @@ def main(eprint):
         elif file_type == '2':
             file_type = 'ieee'
             if 'ieee' in eprint:
-                filename = re.sub('.py', '_' + re.sub('\D', '', eprint) + \
+                filename = re.sub('.py', '_' + re.sub(r'\D', '', eprint) + \
                           '_correct.out', filename)
             else:
-                filename = re.sub('.py', '_' + eprint.replace('/', '-').replace('.', '-') + \
+                filename = re.sub('.py', '_' +
+                      eprint.replace('/', '-').replace('.', '-') + \
                       '_correct.out', filename)
                 eprint = 'http://dx.doi.org/'+ eprint
-            
         else:
             print 'Invalid choice'
             quit()

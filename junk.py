@@ -19,10 +19,50 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from invenio.intbitset import intbitset
 from invenio.textutils import translate_latex2unicode
 from invenio.search_engine import search_unit
+from invenio.search_engine import get_collection_reclist
 
-from hep_convert_email_to_id import get_hepnames_anyid_from_recid
+from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
+                                    get_hepnames_recid_from_email
 from osti_web_service import get_osti_id
 
+orcid_hidden = search_unit('*orcid*', f='541__a', m='a')
+orcid_display = search_unit('orcid', f='035__9', m='a')
+result = orcid_hidden - orcid_display & get_collection_reclist('HepNames') 
+for recid in result:
+    try:
+        orcid = get_fieldvalues(recid, '541__a')[0]
+    except IndexError:
+        #print "Problem with hidden orcid in", recid
+        continue
+    orcid = orcid.replace('orcid:', '')
+    try:
+        email = get_fieldvalues(recid, '541__b')[0]
+    except IndexError:
+        #print "Problem with hidden email in", recid
+        continue
+    for value in (orcid, email):
+        if bad_id_check(value):
+            print "Bad ID:", value, recid
+            continue
+    if get_hepnames_recid_from_email(email) == None:
+        #print "Email not in HepNames:", email, recid
+        continue
+    if get_hepnames_recid_from_email(email) != recid:
+        #print "Email mismatch:", email, recid
+        continue
+    if perform_request_search(p='035__a:' + orcid, cc='HepNames'):
+        #print "ORCID already in HEPNames:", orcid, recid 
+        continue
+    common_fields = {}
+    common_tags = {}
+    record_add_field(common_fields, '001', controlfield_value=str(recid))
+    common_tags['035__'] = [('9', 'ORCID'), ('a', orcid)]
+    for tag in common_tags:    
+        record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+            subfields=common_tags[tag])
+    print print_rec(common_fields)
+quit()    
+        
 
 tags = ['702__']
 search = '702__d:/\w/ or 702__e:/\w/ or 702__z:/\w/ 046__t:9999 119:fnal*'
