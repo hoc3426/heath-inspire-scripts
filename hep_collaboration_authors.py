@@ -141,14 +141,14 @@ def process_author_name(author):
     author = re.sub(r'^\s+', '', author)
     #print 'MIDWAY2 =', author
     match_object_1 = re.match(r'^(.*\w) ([IVJr\.]{2,}$)', author)
-    match_object_2 = re.match(u'(.*) (\(.*\))', author)
+    match_object_2 = re.match(ur'(.*) (\(.*\))', author)
     if match_object_1 or match_object_2:
         if match_object_1:
-            author = match_object_1
+            match_object = match_object_1
         elif match_object_2:
-            author = match_object_2
-        author = author_first_last(author.group(1)) + ', ' + \
-                 author.group(2)
+            match_object = match_object_2
+        author = author_first_last(match_object.group(1)) + ', ' + \
+                 match_object.group(2)
     else:
         author = author_first_last(author)
     author = author.replace(',', ', ')
@@ -422,10 +422,18 @@ def process_ieee(eprint):
         try:
             auths = json_dict['authors']
             for auth in auths:
+                if 'e-mail' in auth['affiliation']:
+                    print auth['affiliation']
+                    match_obj = re.match(r'(.*) \(e\-mail: (.*)\)',
+                                auth['affiliation'])
+                    auth['affiliation'] = match_obj.group(1)
+                    auth['email']       = match_obj.group(2)
                 cleanauths[auths.index(auth)+1] = \
                     [process_author_name(auth['name']), [auth['affiliation']]]
-                if 'orcid' in auth:
-                    cleanauths[auths.index(auth)+1][1].append(auth['orcid'])
+                for id_type in ('orcid', 'email'):
+                    if id_type in auth:
+                        cleanauths[auths.index(auth)+1][1].append(auth[id_type])
+
         except KeyError:
             print 'No IEEE authors found'
         try:
