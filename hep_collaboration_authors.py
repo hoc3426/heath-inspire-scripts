@@ -421,21 +421,20 @@ def process_ieee(eprint):
         cleanauths = {}
         try:
             auths = json_dict['authors']
-            for auth in auths:
-                if 'e-mail' in auth['affiliation']:
-                    print auth['affiliation']
-                    match_obj = re.match(r'(.*) \(e\-mail: (.*)\)',
-                                auth['affiliation'])
-                    auth['affiliation'] = match_obj.group(1)
-                    auth['email']       = match_obj.group(2)
-                cleanauths[auths.index(auth)+1] = \
-                    [process_author_name(auth['name']), [auth['affiliation']]]
-                for id_type in ('orcid', 'email'):
-                    if id_type in auth:
-                        cleanauths[auths.index(auth)+1][1].append(auth[id_type])
-
         except KeyError:
             print 'No IEEE authors found'
+            return None
+        for auth in auths:
+            if 'e-mail' in auth['affiliation']:
+                match_obj = re.match(r'(.*) \(e\-mail: (.*)\)',
+                            auth['affiliation'])
+                auth['affiliation'] = match_obj.group(1)
+                auth['email']       = match_obj.group(2)
+            cleanauths[auths.index(auth)+1] = \
+                [process_author_name(auth['name']), [auth['affiliation']]]
+            for id_type in ('orcid', 'email'):
+                if id_type in auth:
+                    cleanauths[auths.index(auth)+1][1].append(auth[id_type])
         try:
             doi = json_dict['doi']
         except KeyError:
