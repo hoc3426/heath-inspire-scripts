@@ -102,8 +102,8 @@ def check_ids(letter=None):
     print "Bad ORCIDS in BAI"
     bad_orcid_bai()
 
-    print "Finding new ORCIDs in HEP"
-    new_orcids(already_seen)
+    #print "Finding new ORCIDs in HEP"
+    #new_orcids(already_seen)
 
 def new_orcids(already_seen):
     """Search for new ORCIDs in HEP."""

@@ -43,9 +43,9 @@ RECIDS = False
 ENDING_COUNTER = 20
 
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
-                                       cc='HEP'))
+                                       cc='Fermilab'))
 
-CMS = intbitset(perform_request_search(p="037__z:fermilab*", cc='HEP'))
+CMS = intbitset(perform_request_search(p="037__z:fermilab*", cc='Fermilab'))
 
 
 def create_osti_id_pdf(recid, osti_id):
@@ -611,7 +611,7 @@ def find_records(search_input=None):
         print "That's not a search. Game over."
         return None
     print search
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if len(result) > 0:
         log = open(LOGFILE, 'a')
         date_time_stamp = \

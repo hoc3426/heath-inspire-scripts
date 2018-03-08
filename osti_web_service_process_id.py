@@ -34,7 +34,7 @@ def find_recid(mystery_id):
         return False
     search = "001:" + mystery_id + \
              " or 970__a:SPIRES-" + mystery_id + " 037:FERMILAB*"
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if len(result) == 1:
         recid = result[0]
         if recid in RECIDS:
@@ -54,17 +54,17 @@ def create_xml(osti_id, inspire_id):
     osti_id = str(osti_id)
     recid = str(inspire_id)
     search = "001:" + recid
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if len(result) != 1:
         print 'No such INSPIRE record', recid
         return None
     create_osti_id_pdf(recid, osti_id)
     search = "001:" + recid + " 035__a:" + osti_id
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if len(result) == 1:
         return None
     search = "035__9:osti 035__a:" + str(osti_id)
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if len(result) == 1:
         for item in BibFormatObject(int(recid)).fields('035__'):
             if item.has_key('9') and item.has_key('a'):
@@ -74,7 +74,7 @@ def create_xml(osti_id, inspire_id):
     search = "001:" + recid + " -035__9:OSTI"
     if TEST:
         print search
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if not len(result) == 1:
         print search, result
         print 'Problem with', recid, osti_id

@@ -38,7 +38,7 @@ def check_doi(doi):
     """Checks to see if we have the DOI in INSPIRE."""
 
     search = "0247_a:" + doi + " 037:fermilab*"
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
     if len(result) == 1:
         return result[0]
     else:
