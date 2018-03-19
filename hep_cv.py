@@ -5,6 +5,8 @@ from invenio.bibformat_engine import format_record
 
 #print_record(811388,ot=['100','520'],format='xm')
 
+CITES = True
+CITES = False
 
 author = 'Adamson, Philip'
 author = 'Vellidis, Konstantinos' 
@@ -17,7 +19,7 @@ author = 'Bellettini, Giorgio'
 #author = 'Damgov, Jordan V.'
 #author = 'Stoynev, Stoyan'
 #author = 'Betancourt, Minerba'
-#author = 'Schappert, Warren'
+author = 'Schappert, Warren'
 fileName = re.sub(r'(.*)\,.*',r'\1',author)
 fileName = fileName.replace(' ','_')
 fileName = 'www/texfiles/' + fileName + '.tex'
@@ -31,7 +33,7 @@ bai = 'Giorgio.Bellettini.1'
 #search = 'find ea J.Damgov.1'
 #search = 'find ea Stoyan.Stoynev.1'
 #search = 'find ea Minerba.Betancourt.1'
-#search = 'find ea Warren.Schappert.1'
+bai = 'Warren.Schappert.1'
 
 search = "exactauthor:" + bai
 
@@ -52,7 +54,7 @@ output.write(header)
 def clean(r) :
   #print r
   fr = format_record(r, "hlxu", "fr")
-  fr = format_record(r, "hlxu")
+  fr = format_record(r, "tlcv")
   #print fr
   fr = fr[0]
   fr = fr.replace('<br>','\n')
@@ -67,6 +69,8 @@ def clean(r) :
 for r in x:
   fr = clean(r)
   output.write(fr)
+  if not CITES:
+      continue
   search = 'refersto:recid:' + str(r) + ' -exactauthor:"' + bai + '"'
   print search
   xx = perform_request_search(p=search,cc='HEP')

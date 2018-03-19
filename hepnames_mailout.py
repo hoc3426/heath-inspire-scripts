@@ -7,6 +7,7 @@ asking them to send us their ORCID ID.
 TEST = True
 TEST = False
 VERBOSE = True
+VERBOSE = False
 RECIDS = None
 
 from hepnames_mailout_input import RECIDS
@@ -42,11 +43,18 @@ def main(recids):
             print 'Bad recid', recid
             continue
         recid_str = str(recid)
-        recid_int = int(recid)
+        try:
+            recid_int = int(recid)
+        except ValueError:
+            pass
         if re.search(r'INSPIRE-', recid_str):
             search = '035__a:' + recid_str
             result = perform_request_search(p=search, cc='HepNames')
-            recid = result[0]
+            try:
+                recid = result[0]
+            except IndexError:
+                print "Problem with:", search
+                continue
             recid_str = str(recid)
             recid_int = int(recid)
         if get_hepnames_anyid_from_recid(recid_int, 'ORCID'):
@@ -79,6 +87,7 @@ def main(recids):
         print 'email = ', contact_email
         print 'name  = ', contact_name
         print ' '
+        
         try:
             send_jobs_mail(recid_str, contact_email, contact_name)
             time.sleep(1)

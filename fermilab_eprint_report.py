@@ -67,6 +67,7 @@ def main():
 
     for report in REPORTS:
         search = "037:" + report
+        result = perform_request_search(p=search, cc='Fermilab')
         result = perform_request_search(p=search, cc='HEP')
         if len(result) == 1:
             recid = result[0]

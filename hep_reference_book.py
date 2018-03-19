@@ -77,7 +77,9 @@ BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 #['W5013','w5013','CERN-W5013','863473']]
 #BOOKS = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
 
-
+BOOKS = [['Kaluza','966','Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),1921,966','14621']] 
+EXCEPTION = None
+EXCEPTION = 'Klein'
 
 for book in BOOKS:
     referenceFlag = False
@@ -89,9 +91,10 @@ for book in BOOKS:
     recid = book[3]
     if len(book) == 5 : date = book[4]
     if re.search(r"\-",isbn): isbnTag = "r"
-    fileName =  'tmp___hep_reference_book' + recid + '.out'
-    fileName2 = 'tmp__hep_reference_book' + recid + '.out'
-    fileName3 = 'tmp_hep_reference_book' + recid + '.out'
+    if re.search(r"\.",isbn): isbnTag = "s"
+    fileName =  'tmp___hep_reference_book_' + recid + '.out'
+    fileName2 = 'tmp__hep_reference_book_' + recid + '.out'
+    fileName3 = 'tmp_hep_reference_book_' + recid + '.out'
 
     search_author = '999C5:/' + author + '/'
     search_title  = '999C5:/' + title + '/ -refersto:recid:' + recid
@@ -114,6 +117,9 @@ for book in BOOKS:
             #j = re.sub(r',',r' ',j)
             #j = re.sub('[ ]+',r' ',j)
             if re.search(title, j) and not re.search(r'$$0', j):
+                if re.search(EXCEPTION.lower(), j):
+                    print EXCEPTION, i
+                    continue
                 referenceFlag = True
                 if date:
                     if re.search(date,j):

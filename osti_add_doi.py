@@ -12,12 +12,14 @@ from check_url import checkURL
 COUNTER = 1
 COUNTER_END = 500
 SEARCH = r'037:fermilab-* 035__9:osti -0247:doi -037:arXiv -773__p:/\w/'
+SEARCH = r'035__9:osti -0247:doi -037:arXiv -773__p:/\w/'
 RESULT_HEP = perform_request_search(p=SEARCH, cc='HEP')
 RESULT_FERMILAB = perform_request_search(p=SEARCH, cc='Fermilab')
 RESULT = intbitset(RESULT_HEP) | intbitset(RESULT_FERMILAB)
+#RESULT = [1253262]
 print "Number of records:", len(RESULT)
 RESULT = reversed(RESULT)
-DOIS = set()
+OSTI_IDS = set()
 
 FILENAME = 'tmp_' + __file__
 FILENAME = re.sub('.py', '_append.out', FILENAME)
@@ -28,19 +30,23 @@ for recid in RESULT:
         break
     common_fields = {}
     common_tags = {}
-    doi = get_osti_id(recid)
-    if doi in DOIS:
-        print "Duplicate: recid, doi =", recid, doi
+    osti_id = get_osti_id(recid)
+    if osti_id in OSTI_IDS:
+        print "Duplicate: recid, osti_id =", recid, osti_id
         break
-    if not doi:
+    if not osti_id:
         print "No OSTI ID: recid =", recid
         continue
-    DOIS.add(doi)
-    doi = '10.2172/' + doi
+    OSTI_IDS.add(osti_id)
+    doi = '10.2172/' + osti_id
     url = 'https://doi.org/api/handles/' + doi
     try:
         checkURL(url)
     except ValueError:
+        try:
+            checkURL('https://www.osti.gov/biblio/' + osti_id)
+        except ValueError:
+            print "OSTI link does not work: recid, osti_id =", recid, osti_id
         continue
     COUNTER += 1
     record_add_field(common_fields, '001', controlfield_value=str(recid))

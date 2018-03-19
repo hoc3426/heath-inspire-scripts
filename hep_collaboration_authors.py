@@ -284,6 +284,9 @@ def preprocess_file(read_data):
     #Special treatment for DES and Fermi-LAT and Planck
     astro_aff_counter = 0
     for line in read_data.split('\n'):
+        #Get rid of newcommand lines now
+        if re.search('newcommand', line):
+            read_data = read_data.replace(line, '')
         if VERBOSE:
             print "LINE =", line
         if re.search(r'\\section\*\{Affiliations\}', line) or \
@@ -357,7 +360,8 @@ def preprocess_file(read_data):
     read_data = re.sub(r'[ ]*\\scriptsize[ ]+', '', read_data)
     read_data = re.sub(r'\\and[ ]+', '', read_data)
     read_data = re.sub(r'\$\s*\^', '$^', read_data)
-
+    if VERBOSE:
+        print "read_data =", read_data
     #I.J.~Arnquist\inst{10}
     read_data = re.sub(r'Irefn{(\w+)}\\Aref{(\w+)}\\Aref{(\w+)}', \
                        r'Irefn{\1,\2,\3}', read_data)
@@ -404,7 +408,8 @@ def preprocess_file(read_data):
             break
         else:
             new_read_data.append(line)
-
+    if VERBOSE:
+        print "new_read_data =", new_read_data
     return new_read_data
 
 def process_ieee(eprint):
@@ -508,7 +513,8 @@ def process_file(eprint, file_type='tex'):
                 #pass
                 reverse_babar_flag = True
                 author_affiliation = match.group(1)
-
+    if VERBOSE:
+        print 'author_dict =', author_dict
     print 'Number of authors:', author_position
     if affiliation_dict:
         for key in author_dict:
