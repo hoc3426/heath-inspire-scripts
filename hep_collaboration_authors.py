@@ -185,6 +185,8 @@ def create_xml(eprint=None, doi=None, author_dict=None):
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
     tag = '100__'
+    email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+    orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     for key in author_dict:
         subfields = []
         subfields.append(('a', author_dict[key][0]))
@@ -194,7 +196,21 @@ def create_xml(eprint=None, doi=None, author_dict=None):
             affiliation = re.sub(r'([\.\,]+)', r'\1 ', affiliation)
             affiliation = re.sub(r'\s+', ' ', affiliation)
             affiliation = re.sub(r'\s$', r'', affiliation)
-            if r"@" in affiliation:
+            if r"@" in affiliation and r"0000-" in affiliation:
+                affiliation = affiliation.replace(';', ' ')
+                affiliation = affiliation.replace(r'. ', r'.')
+                email = re.search(r"(\S+\@\S+)", affiliation).group(1)
+                orcid = re.search(r"(0000-\S+)", affiliation).group(1)
+                if re.match(email_regex, email):
+                    subfields.append(('m', 'email:' + email))
+                else:
+                    print "Email problem:", email
+                if  re.match(orcid_regex, orcid):
+                    subfields.append(('j', 'ORCID:' + orcid))
+                else:
+                    print "ORCID problem:", orcid
+                continue
+            elif r"@" in affiliation:
                 affiliation = affiliation.replace(r'. ', r'.')
                 subfields.append(('m', affiliation))
                 continue
@@ -267,6 +283,17 @@ def preprocess_file(read_data):
         except re.error:
             print '!!! Problem with user commands:', key, command_dict[key]
             sys.exit()
+
+    for line in read_data.split('\n'):
+        #\firstname{C.-H.} \lastname{Yu}
+        if re.search(r'\\firstname{', line):
+            line_new = re.sub(r'\\firstname{([^\}]+)}\s*\\lastname{([^\}]+)}',
+                      r'\2, \1', line)
+            read_data = read_data.replace(line, line_new)
+        #I.J.~Arnquist\inst{10}
+        if re.search(r'\\inst\{', line):
+           line_new = re.sub(r'\\inst({[^\}]+\})', r'$^\1$', line)
+           read_data = read_data.replace(line, line_new)
 
     #Special treatment for BaBar
     for line in read_data.split('\n'):
@@ -362,7 +389,6 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\$\s*\^', '$^', read_data)
     if VERBOSE:
         print "read_data =", read_data
-    #I.J.~Arnquist\inst{10}
     read_data = re.sub(r'Irefn{(\w+)}\\Aref{(\w+)}\\Aref{(\w+)}', \
                        r'Irefn{\1,\2,\3}', read_data)
     read_data = re.sub(r'Irefn+\{(.*)\}\\?A?r?e?f?s?\{(.*)\}', \

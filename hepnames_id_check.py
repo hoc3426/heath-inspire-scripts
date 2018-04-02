@@ -55,29 +55,37 @@ def check_ids(letter=None):
     duplicates   = set()
     bad_id_set   = set()
     fields = ['035__a', '371__m']
-    print '2 letter =', letter
+    print 'check_ids: letter =', letter
     if letter:
         fields.append('100__a')
 
     for recid, field in [(recid, field) for recid in RECIDS \
                                         for field in fields]:
+        skip = False
         field_values = get_fieldvalues(recid, field)
-        if field == '100__a' and not field_values[0].startswith(letter):
-            continue
-        for field_value in field_values:
-            if field_value in already_seen:
-                duplicates.add(field + ':"' + field_value + '"')
-                continue
-            already_seen[field_value] = field
-            if bad_id_check(field_value):
-                bad_id_set.add(field + ':"' + field_value + '"')
+        if field == '100__a':
+            try:
+                if not field_values[0].startswith(letter):
+                    skip = True
+            except IndexError:
+                print "No name on record:", recid
+        if not skip:
+            for field_value in field_values:
+                if field_value in already_seen:
+                    duplicates.add(field + ':"' + field_value + '"')
+                    continue
+                already_seen[field_value] = field
+                if bad_id_check(field_value):
+                    bad_id_set.add(field + ':"' + field_value + '"')
 
     print "Duplicates"
     for duplicate in sorted(duplicates):
         if duplicate.startswith('100__a'):
             result = perform_request_search(p=duplicate, cc='HepNames')
             for recid in result:
-                print '{0:40s} {1:20s} {2:20s}'.\
+                #name = duplicate.replace('100__a:"', '')
+                #name = name.replace('"', '')
+                print '{0:37s} {1:18s} {2:20s}'.\
                        format(duplicate, \
                          find_inspire_id_from_record(recid), \
                          get_hepnames_anyid_from_recid(recid, 'ORCID'))
@@ -138,19 +146,20 @@ def main(input_value=None):
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     print filename
-    print 'letter =', input_value
+    print 'main: letter =', input_value
     output = open(filename,'w')
-    sys.stdout = output
+    #sys.stdout = output
     check_ids(letter=input_value)
     output.close()
 
 
 if __name__ == '__main__':
     try:
-        LETTER = str(sys.argv[1:][0])
-        main(input_value=LETTER.upper())
+        LETTER = str(sys.argv[1:][0]).upper()
     except IndexError:
-        main(None)
+        LETTER = None
+    try:
+        main(input_value=LETTER)
     except KeyboardInterrupt:
         print 'Exiting'
 

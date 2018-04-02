@@ -44,7 +44,15 @@ SOURCE = 'WiggleZ'
 #INSPIRE = 73359
 #INSPIRE = 73383
 #INSPIRE = 73787
-INSPIRE = 74388
+#INSPIRE = 74388
+INSPIRE = 74741
+
+for _ in range(2000):
+    inspire_id = 'INSPIRE-00' + str(INSPIRE) + str(random.randint(1, 9))
+    print inspire_id
+    INSPIRE += 1
+print INSPIRE
+quit()
 
 if ORCIDS:
     for (name, orcid) in ORCIDS:

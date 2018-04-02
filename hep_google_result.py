@@ -30,7 +30,8 @@ def main(search):
             print 'problem with', recid
     all_refs.sort()
     counted_all_refs = Counter(all_refs)
-    sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1))
+    sorted_count = sorted(counted_all_refs.items(), key=operator.itemgetter(1),
+                          reverse=True)
     for recid_count, count in sorted_count[-10:]:
         url = 'http://inspirehep.net/record/' + str(recid_count)
         print count, url

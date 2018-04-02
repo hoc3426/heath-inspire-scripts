@@ -1,5 +1,6 @@
 import sys
 import urllib2
+import httplib
 
 def checkURL(url):
      x = 0
@@ -10,9 +11,14 @@ def checkURL(url):
      except IOError, (errno, strerror):
          print "Error with: ", url
          #print "I/O error(%s): %s" % (errno, strerror)
+         return None
      except ValueError:
          print "Error with: ", url
          print "Could not convert data to an integer."
+         return None
+     except httplib.BadStatusLine:
+         print "BadStatusLine error with: ", url
+         return None
      except:
          print "Error with: ", url
          print "Unexpected error:", sys.exc_info()[0]

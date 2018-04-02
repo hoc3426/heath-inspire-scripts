@@ -42,6 +42,7 @@ or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
 -700__u:/\\w/'
     atsearch_today = 'find du today'
     #atsearch = atsearch_today
+    atsearch = atsearch_fermilab
     print atsearch
     result = perform_request_search(p=atsearch, cc='HEP')
     result.reverse()
