@@ -54,7 +54,8 @@ EXPT_DICT = {
     ("2.3", "Deep inelastic scattering"),
     ("2.4", "Drell-Yan/Dilepton production"),
     ("2.5", "Flavor physics"),
-    ("2.6", "Lepton precision experiments")
+    ("2.6", "Lepton precision experiments"),
+    ("2.7", "Neutron/proton precision experiments")
     ],
 ("3", "Neutrino (flavor) experiments"):[
     {("3.1", "Accelerator"):[
