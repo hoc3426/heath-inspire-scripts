@@ -24,9 +24,11 @@ TYPE_DICT = {
 'MONTHLY':'PD',
 'MUCOOL':'TR',
 'PLAN':'PD',
+'POSTER':'CO',
 'PROPOSAL':'TR',
 'PUB':'JA',
 'REVIEW':'PD',
+'SLIDES':'CO',
 'THESIS':'TD',
 'TM':'TR',
 'VLHCPUB':'TR'
