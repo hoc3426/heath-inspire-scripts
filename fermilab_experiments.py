@@ -19,19 +19,22 @@ VERBOSE = False
 #VERBOSE = True
 
 SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
-SEARCH = "119__a:/^FNAL/ or 419__a:/^FNAL/"
+SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
+          419__a:/^FNAL/ or 119__u:Fermilab"
 #SEARCH = "119__a:/^FNAL-E-0830/"
+#SEARCH = "001:1667178"
+SEARCH += ' -980:ACCELERATOR'
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
 
 ELEMENT = ElementMaker(makeelement=html_parser.makeelement)
 
-HEADING_DICT = {'number':('119__a', '419__a'), 
+HEADING_DICT = {'number':('119__a', '119__c', '419__a'), 
                 'collaboration':'710__g',
                 'spokespersons':'702__', 
                 'title':'245__a',
-                'status':'046__t',
+                'status':'046__',
                 'institutions':'700__u'}
 HEADING = HEADING_DICT.keys()
 
@@ -120,7 +123,8 @@ def create_html(experiments):
     head.append(ELEMENT.TITLE("Fermilab Experiments"))
     body.append(ELEMENT.H1("Fermilab Experiments"))
     body.append(ELEMENT.P(time_stamp()))
-    body.append(ELEMENT.P(ELEMENT.A("Fermilab Proposals", href=PROPOSAL_URL)))
+    body.append(ELEMENT.P(ELEMENT.A("List of Fermilab Proposals", 
+                                     href=PROPOSAL_URL)))
     body.append(comment)   
     body.append(table)
 
@@ -141,12 +145,17 @@ def populate_experiments_dict(recid):
     experiment['recid'] = str(recid)
     for key, value in HEADING_DICT.items():
          if key == 'number':
+             sorter = None
              numbers =  get_fieldvalues(recid, value[0])
              numbers += get_fieldvalues(recid, value[1])             
              for number in numbers:
                  if number.startswith('FNAL'):
                      experiment[key] = number
                      sorter = re.sub(r'\D', '', number)
+             if not sorter:
+                 number = numbers[0]
+                 sorter = number
+                 experiment[key] = number
          elif key == 'institutions':
             experiment[key] = ' / '.join(sorted(set(get_fieldvalues(recid, 
                                                                 value))))
@@ -168,17 +177,23 @@ def populate_experiments_dict(recid):
                  experiment[key] = get_fieldvalues(recid, value)[0]
              except IndexError:
                  experiment[key] = get_fieldvalues(recid, value)
+
+
          if key == 'status':
-             try:
-                 if experiment[key] == '9999':
-                     experiment[key] = 'Running'
-                 elif re.search(r'\d', experiment[key]):
-                     experiment[key] = 'Ended: ' + experiment[key]
-             except TypeError:
-                 experiment[key] = '???'
-         if key == 'title':
-             experiment[key] = experiment[key][:50]
-    return {sorter:experiment}
+            fields = [('Proposed', 'q'), ('Approved', 'r'), 
+                      ('Started', 's'),
+                      ('Completed', 't'), ('Cancelled', 'c')]
+            for item in bfo(int(recid)).fields(value):
+                for (field, element) in fields:
+                    if item.has_key(element):
+                        if not item[element] == '9999':
+                            experiment[key] = field + ': ' + item[element]
+
+    try:
+        return {sorter:experiment}
+    except UnboundLocalError:
+        print 'Problem with:', recid, number
+
 
 def generate_experiments_dict(search):
     experiments = {}

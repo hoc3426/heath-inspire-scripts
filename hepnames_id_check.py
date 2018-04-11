@@ -148,7 +148,7 @@ def main(input_value=None):
     print filename
     print 'main: letter =', input_value
     output = open(filename,'w')
-    #sys.stdout = output
+    sys.stdout = output
     check_ids(letter=input_value)
     output.close()
 
