@@ -63,13 +63,13 @@ def main(recids):
             continue
         try:
             contact_email = get_fieldvalues(recid_int, '371__m')[0]
-        except:
+        except IndexError:
             contact_email = 'hoc@fnal.gov'
         try:
             contact_name = get_fieldvalues(recid_int, '100__a')[0]
             if "," in contact_name:
                 contact_name = " ".join(contact_name.split(", ")[::-1])
-        except:
+        except IndexError:
             contact_name = 'Sir or Madam'
         #contact_email = 'hoc@fnal.gov'
         #contact_email = "hoc3426@gmail.com"
@@ -87,12 +87,13 @@ def main(recids):
         print 'email = ', contact_email
         print 'name  = ', contact_name
         print ' '
-        
+
         try:
             send_jobs_mail(recid_str, contact_email, contact_name)
             time.sleep(1)
-        except IOError as e:
-            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        except IOError as error:
+            print "I/O error({0}): {1}".format(error.errno,
+                                               error.strerror)
             print 'PROBLEM sending mail to:'
             print recid, contact_email, contact_name, '\n'
         icount += 1
@@ -103,6 +104,9 @@ def send_jobs_mail(recid, email, name):
     Generates an email message and sends it out.
     """
 
+    if recid in BAD_RECIDS:
+        print "Bad recid:", recid, email, name
+        return None
     subject = 'record in INSPIRE HEPNames ' + recid
     subject_sender = 'Adding an ORCID to your ' + subject
     link = "http://inspirehep.net/record/" + recid
@@ -188,8 +192,8 @@ def find_records():
     else:
         print "That's not a search. Game over."
         return None
-    search += ' 371__m:/\@/'
-    search += ' -035__9:ORCID'
+    search += r' 371__m:/\@/'
+    search +=  ' -035__9:ORCID'
 
     print search
     result = perform_request_search(p=search, cc='HepNames')
@@ -200,6 +204,7 @@ def find_records():
                     + str(len(result)) + '\n'
         log.write(date_time_stamp)
         log.close()
+        result = set(result) - set(BAD_RECIDS)
         return result
     else:
         print "No results found."
@@ -211,7 +216,7 @@ if __name__ == '__main__':
         try:
             RECID = int(sys.argv[1:][0])
             RECIDS.append(RECID)
-        except:
+        except IndexError:
             RECIDS = find_records()
     try:
         if RECIDS:

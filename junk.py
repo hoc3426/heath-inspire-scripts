@@ -25,6 +25,66 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
 from osti_web_service import get_osti_id
 
+search = '037:fermilab-proposal-* -693__e:fnal*'
+for recid in perform_request_search(p=search, cc='HEP'):
+    common_fields = {}
+    common_tags = {}
+    experiment = None
+    experiment_proposal = None
+    number = None
+    for report in get_fieldvalues(recid, '037__a'):
+        if report.startswith('FERMILAB-PROPOSAL'):
+            number = re.sub(r'\D', '', report)
+    if number:
+        for type in ['E', 'P', 'T']:
+            experiment_test = 'FNAL-' + type + '-' + number
+            if type == 'P':
+                experiment_proposal = experiment_test 
+            result = perform_request_search(p='119__a:' + experiment_test,
+                                        cc='Experiments')
+            if len(result) == 1:
+                experiment = experiment_test
+    if experiment:
+        record_add_field(common_fields, '001', controlfield_value=str(recid))
+        common_tags['693__'] = [('e', experiment)]
+        for tag in common_tags:
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
+        print print_rec(common_fields)
+    else:
+        try:
+            common_tags['245__'] = [('a', 
+                get_fieldvalues(recid, '245__a')[0])]
+        except:
+            pass
+        try:
+            common_tags['520__'] = [('a', 
+                get_fieldvalues(recid, '520__a')[0])]
+        except:
+            pass
+        try:
+            common_tags['046__'] = [('q', 
+                get_fieldvalues(recid, '269__c')[0])]
+        except:
+            pass
+        common_tags['119__'] = [('a', experiment_proposal),
+                                ('u', 'Fermilab')]
+        common_tags['980__'] = [('a', 'EXPERIMENT'), ('a', 'CORE')]
+        for tag in common_tags:
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
+        print print_rec(common_fields)
+
+quit()                
+ 
+bes = perform_request_search(p='693__e:BEPC-BES-III', cc='HepNames')
+recid = 1628093
+for id in get_fieldvalues(recid, '700__i'):
+   if not perform_request_search(p='693__e:BEPC-BES-III 035__a:' + id,
+                                 cc='HepNames'):
+       print id
+quit()
+
 orcid_hidden = search_unit('*orcid*', f='541__a', m='a')
 orcid_display = search_unit('orcid', f='035__9', m='a')
 result = orcid_hidden - orcid_display & get_collection_reclist('HepNames') 

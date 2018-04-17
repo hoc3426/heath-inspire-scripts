@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ A script to create a table of all the Fermilab experiments,
     sorted by experiment number. Table displays various information
     about the experiments.
@@ -23,9 +25,10 @@ VERBOSE = False
 SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
           419__a:/^FNAL/ or 119__u:Fermilab"
-#SEARCH = "119__a:/^FNAL-E-0830/"
+#SEARCH = "119__a:/^FNAL-E-0823/"
 #SEARCH = "001:1667178"
 SEARCH += ' -980:ACCELERATOR'
+#SEARCH = "119__a:DUNE"
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
@@ -55,14 +58,21 @@ def populate_td(input_value, recid=None):
             quit()
 
     ul_elem = LH.Element("ul")
+
+    #Spokesperson name can have Unicode, so special care must be taken.
     for spokesperson in input_value:
-        name = spokesperson['name']
-        name = re.sub(r' \(.*', '', name)
-        display = name + ' (' + \
-                  spokesperson['start'] + ' - '
+        name = spokesperson['name'].encode('utf-8')
+        name = re.sub(ur' \(.*', '', name)
+        display = name + u' (' + \
+                  spokesperson['start'].encode("utf-8") + u' - '
         if spokesperson['curr'].lower() == 'current':
-            display += 'present)'
-            display = ELEMENT.B(display)
+            display += u'present)'
+            try:
+                display = ELEMENT.B(display)
+            except ValueError:
+                print 'Problem with:', display
+                quit()
+
         else:
             display += spokesperson['end'] + ')'
         ul_elem.append(ELEMENT.LI(display))
@@ -80,10 +90,12 @@ def create_html_table(experiments):
     new_heading = list(HEADING)
     new_heading.remove('number')
     for heading in new_heading:
+        width_value = ''
         if heading == 'institutions':
-            table_tr.append(ELEMENT.TH(heading.capitalize(), width="12%"))
-        else:
-            table_tr.append(ELEMENT.TH(heading.capitalize()))
+            width_value = '12%'
+        elif heading == 'title':
+            width_value = '30%'
+        table_tr.append(ELEMENT.TH(heading.capitalize(), width=width_value))
     table.append(table_tr)
     for _, experiment in sorted(experiments.items(), reverse=True):
         table_tr = ELEMENT.TR()
@@ -92,14 +104,28 @@ def create_html_table(experiments):
         new_heading = list(HEADING)
         new_heading.remove('number')
         for key in new_heading:
-            #print key, experiment[key]
+            if VERBOSE:
+                print key
+                #print experiment[key]
             try:
+                if key == 'status' and experiment[key].startswith('Started:'):
+                    experiment[key] = ELEMENT.B(experiment[key])
                 table_tr.append(ELEMENT.TD(experiment[key]))
-            except KeyError:
+            except (KeyError, TypeError):
                 try:
                     table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
-                except KeyError:
+                except (KeyError, TypeError):
                     table_tr.append(ELEMENT.TD())
+                except ValueError:
+                    print 'Problem with metadata', _, experiment[key]
+                    quit()
+                except Exception as ex:
+                    print 'Problem with metadata', _, experiment[key]
+                    template = "An exception of type {0} occurred. \
+                                Arguments:\n{1!r}"
+                    message = template.format(type(ex).__name__, ex.args)
+                    print message
+
         table.append(table_tr)
     return table
 
@@ -122,13 +148,17 @@ def create_html(experiments):
     body = LH.Element("body")
     head = LH.Element("head")
     table = create_html_table(experiments)
-    comment = ET.Comment("Fermilab Experiments")
+    title = "Fermilab Experiments, Proposals and Tests"
+    status_explanation = "Status values: Proposed, Approved, Started,\
+                          Completed and Cancelled"
+    comment = ET.Comment(title)
 
-    head.append(ELEMENT.TITLE("Fermilab Experiments"))
-    body.append(ELEMENT.H1("Fermilab Experiments"))
+    head.append(ELEMENT.TITLE(title))
+    body.append(ELEMENT.H1(title))
     body.append(ELEMENT.P(time_stamp()))
     body.append(ELEMENT.P(ELEMENT.A("List of Fermilab Proposals",
                                      href=PROPOSAL_URL)))
+    body.append(ELEMENT.P(status_explanation))
     body.append(comment)
     body.append(table)
 
@@ -173,12 +203,16 @@ def populate_experiments_dict(recid):
                 spoke = {}
                 for (field, element) in fields:
                     if item.has_key(element):
-                        spoke[field] = item[element]
+                        spoke[field] = re.sub(r'^(\d{4}).*', r'\1',
+                                              item[element])
                     else:
                         spoke[field] = '???'
+                    if VERBOSE:
+                        print 'spoke', field, spoke[field]
                 spokes.append(spoke)
+            if spokes == []:
+                spokes = ['???']
             experiment[key] = spokes
-
         elif key == 'status':
             fields = [('Proposed', 'q'), ('Approved', 'r'),
                       ('Started', 's'),
@@ -188,8 +222,6 @@ def populate_experiments_dict(recid):
                     if item.has_key(element):
                         if not item[element] == '9999':
                             experiment[key] = field + ': ' + item[element]
-
-
         else:
             try:
                 experiment[key] = get_fieldvalues(recid, value)[0]

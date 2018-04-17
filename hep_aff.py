@@ -38,6 +38,7 @@ or 100__v:/cern/ or 700__v:/cern/ \
 or 100__v:/60510/ or 700__v:/60510/ \
 or 100__v:/Fermilab/ or 700__v:/Fermilab/ \
 or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
+or 100__v:/slac/ or 700__v:/slac/ \
 -100__u:/\\w/ \
 -700__u:/\\w/'
     atsearch_today = 'find du today'

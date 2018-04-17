@@ -97,7 +97,8 @@ EXPT_DICT = {
 ("7", "Accelerator Test Facility Experiments" ):[
     ("7.1", "Electron and positron beams"),
     ("7.2", "Muon beams"),
-    ("7.3", "Proton beams")
+    ("7.3", "Proton beams"),
+    ("7.4", "Neutrino beams")
     ],
 ("8", "Astronomy experiments"):[
     ("8.1", "CMB"),
