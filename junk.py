@@ -29,6 +29,7 @@ search = '037:fermilab-proposal-* -693__e:fnal*'
 for recid in perform_request_search(p=search, cc='HEP'):
     common_fields = {}
     common_tags = {}
+    common_tags['670__'] = [('a', 'Fermilab Workbook')]
     experiment = None
     experiment_proposal = None
     number = None

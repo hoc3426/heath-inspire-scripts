@@ -12,6 +12,7 @@ import lxml.etree as ET
 
 from lxml.html.builder import ElementMaker, html_parser
 from BeautifulSoup import BeautifulSoup as BS
+from bs4 import Doctype
 
 from invenio.search_engine import perform_request_search, \
                                   get_fieldvalues
@@ -26,7 +27,7 @@ SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
           419__a:/^FNAL/ or 119__u:Fermilab"
 #SEARCH = "119__a:/^FNAL-E-0823/"
-#SEARCH = "001:1667178"
+SEARCH = "001:1108188"
 SEARCH += ' -980:ACCELERATOR'
 #SEARCH = "119__a:DUNE"
 
@@ -49,6 +50,8 @@ INDEXES = {'Institutions':'110__u', 'Experiments':'119__a',
 def populate_td(input_value, recid=None):
     '''Populate the <td> elements of the table'''
 
+    if VERBOSE:
+        print 'input_value =', input_value
     if recid:
         href_link = INSPIRE_URL + recid
         try:
@@ -98,6 +101,7 @@ def create_html_table(experiments):
         table_tr.append(ELEMENT.TH(heading.capitalize(), width=width_value))
     table.append(table_tr)
     for _, experiment in sorted(experiments.items(), reverse=True):
+    #for _, experiment in sorted(experiments.items()):
         table_tr = ELEMENT.TR()
         table_tr.append(ELEMENT.TD(populate_td(experiment['number'],
                                    recid=experiment['recid'])))
@@ -105,26 +109,39 @@ def create_html_table(experiments):
         new_heading.remove('number')
         for key in new_heading:
             if VERBOSE:
-                print key
-                #print experiment[key]
+                print key, experiment[key]
+            if experiment[key] == None:
+                table_tr.append(ELEMENT.TD())
+                #table_tr.append(LH.Element('TD'))
+                continue
             try:
                 if key == 'status' and experiment[key].startswith('Started:'):
                     experiment[key] = ELEMENT.B(experiment[key])
                 table_tr.append(ELEMENT.TD(experiment[key]))
-            except (KeyError, TypeError):
+            except TypeError:
                 try:
                     table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
-                except (KeyError, TypeError):
-                    table_tr.append(ELEMENT.TD())
-                except ValueError:
-                    print 'Problem with metadata', _, experiment[key]
-                    quit()
-                except Exception as ex:
-                    print 'Problem with metadata', _, experiment[key]
-                    template = "An exception of type {0} occurred. \
-                                Arguments:\n{1!r}"
-                    message = template.format(type(ex).__name__, ex.args)
-                    print message
+                except KeyError:
+                    print key, experiment
+            except KeyError:
+                 table_tr.append(ELEMENT.TD())
+                #if key == 'spokespersons':
+                #    table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
+                #else:
+                #    table_tr.append(ELEMENT.TD())
+                #try:
+                #    table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
+                #except (KeyError, TypeError):
+                #    table_tr.append(ELEMENT.TD())
+                #except ValueError:
+                #    print 'Problem with metadata', _, experiment[key]
+                #    quit()
+                #except Exception as ex:
+                #    print 'Problem with metadata', _, experiment[key]
+                #    template = "An exception of type {0} occurred. \
+                #                Arguments:\n{1!r}"
+                #    message = template.format(type(ex).__name__, ex.args)
+                #    print message
 
         table.append(table_tr)
     return table
@@ -144,6 +161,10 @@ def time_stamp():
 def create_html(experiments):
     """Creates the html for the page."""
 
+    #doctype = LH.Element("doctype") creates open and close element
+    #print BS(LH.tostring(doctype))
+    #doctype.append("html")
+    #doctype = ET.Doctype("html") doesn't work
     html = LH.Element("html")
     body = LH.Element("body")
     head = LH.Element("head")
@@ -164,8 +185,18 @@ def create_html(experiments):
 
     html.append(head)
     html.append(body)
+    #root = doctype.append(html)
+    root = html
+    #Look at using html5
+    return ET.tostring(root.getroottree(), pretty_print=True, 
+                       xml_declaration=True, encoding='utf-8')
+    root = LH.tostring(root)
 
-    root = LH.tostring(html)
+    declaration = "<!doctype html>"
+    declaration = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'''
+
+    root = declaration + root
 
     soup = BS(root)         #make BeautifulSoup
     out = soup.prettify()   #prettify the html
@@ -211,7 +242,7 @@ def populate_experiments_dict(recid):
                         print 'spoke', field, spoke[field]
                 spokes.append(spoke)
             if spokes == []:
-                spokes = ['???']
+                spokes = '???'
             experiment[key] = spokes
         elif key == 'status':
             fields = [('Proposed', 'q'), ('Approved', 'r'),
@@ -222,12 +253,15 @@ def populate_experiments_dict(recid):
                     if item.has_key(element):
                         if not item[element] == '9999':
                             experiment[key] = field + ': ' + item[element]
+            if key not in experiment:
+                experiment[key] = '???' 
         else:
             try:
                 experiment[key] = get_fieldvalues(recid, value)[0]
             except IndexError:
                 experiment[key] = get_fieldvalues(recid, value)
-
+        if experiment[key] == [] or experiment[key] == '':
+            experiment[key] = None
 
     try:
         return {sorter:experiment}
