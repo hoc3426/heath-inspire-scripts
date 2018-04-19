@@ -32,7 +32,7 @@ SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
 #SEARCH = "119__a:/^FNAL-E-0823/"
 SEARCH = "001:1108188"
 SEARCH += ' -980:ACCELERATOR'
-#SEARCH = "119__a:DUNE"
+SEARCH = "119__a:DUNE"
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
@@ -163,9 +163,12 @@ def create_html(experiments):
 
     html.append(head)
     html.append(body)
-    root = html
-    return ET.tostring(root.getroottree(), pretty_print=True,
-                       xml_declaration=True, encoding='utf-8')
+    return ET.tostring(html.getroottree(), 
+                       encoding='utf-8', pretty_print=True,
+                       xml_declaration=True)
+
+    return out
+
 
 def populate_experiments_dict(recid):
     '''Get all the information on each experiment.'''
