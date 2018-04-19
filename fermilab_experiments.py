@@ -11,8 +11,6 @@ import lxml.html as LH
 import lxml.etree as ET
 
 from lxml.html.builder import ElementMaker, html_parser
-from BeautifulSoup import BeautifulSoup as BS
-from bs4 import Doctype
 
 from invenio.search_engine import perform_request_search, \
                                   get_fieldvalues
@@ -22,6 +20,11 @@ print 'cd /web/sites/ccd.fnal.gov/htdocs/techpubs'
 
 VERBOSE = False
 #VERBOSE = True
+
+TITLE = "Fermilab Experiments, Proposals and Tests"
+STATUS_EXPLANATION = "Status values: Proposed, Approved, Started,\
+                          Completed and Cancelled"
+
 
 SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
@@ -112,7 +115,6 @@ def create_html_table(experiments):
                 print key, experiment[key]
             if experiment[key] == None:
                 table_tr.append(ELEMENT.TD())
-                #table_tr.append(LH.Element('TD'))
                 continue
             try:
                 if key == 'status' and experiment[key].startswith('Started:'):
@@ -124,25 +126,8 @@ def create_html_table(experiments):
                 except KeyError:
                     print key, experiment
             except KeyError:
-                 table_tr.append(ELEMENT.TD())
-                #if key == 'spokespersons':
-                #    table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
-                #else:
-                #    table_tr.append(ELEMENT.TD())
-                #try:
-                #    table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
-                #except (KeyError, TypeError):
-                #    table_tr.append(ELEMENT.TD())
-                #except ValueError:
-                #    print 'Problem with metadata', _, experiment[key]
-                #    quit()
-                #except Exception as ex:
-                #    print 'Problem with metadata', _, experiment[key]
-                #    template = "An exception of type {0} occurred. \
-                #                Arguments:\n{1!r}"
-                #    message = template.format(type(ex).__name__, ex.args)
-                #    print message
-
+                print key, experiment
+                table_tr.append(ELEMENT.TD())
         table.append(table_tr)
     return table
 
@@ -161,49 +146,26 @@ def time_stamp():
 def create_html(experiments):
     """Creates the html for the page."""
 
-    #doctype = LH.Element("doctype") creates open and close element
-    #print BS(LH.tostring(doctype))
-    #doctype.append("html")
-    #doctype = ET.Doctype("html") doesn't work
+
+
     html = LH.Element("html")
     body = LH.Element("body")
     head = LH.Element("head")
     table = create_html_table(experiments)
-    title = "Fermilab Experiments, Proposals and Tests"
-    status_explanation = "Status values: Proposed, Approved, Started,\
-                          Completed and Cancelled"
-    comment = ET.Comment(title)
 
-    head.append(ELEMENT.TITLE(title))
-    body.append(ELEMENT.H1(title))
+    head.append(ELEMENT.TITLE(TITLE))
+    body.append(ELEMENT.H1(TITLE))
     body.append(ELEMENT.P(time_stamp()))
     body.append(ELEMENT.P(ELEMENT.A("List of Fermilab Proposals",
                                      href=PROPOSAL_URL)))
-    body.append(ELEMENT.P(status_explanation))
-    body.append(comment)
+    body.append(ELEMENT.P(STATUS_EXPLANATION))
     body.append(table)
 
     html.append(head)
     html.append(body)
-    #root = doctype.append(html)
     root = html
-    #Look at using html5
-    return ET.tostring(root.getroottree(), pretty_print=True, 
+    return ET.tostring(root.getroottree(), pretty_print=True,
                        xml_declaration=True, encoding='utf-8')
-    root = LH.tostring(root)
-
-    declaration = "<!doctype html>"
-    declaration = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'''
-
-    root = declaration + root
-
-    soup = BS(root)         #make BeautifulSoup
-    out = soup.prettify()   #prettify the html
-
-    return out
-
-
 
 def populate_experiments_dict(recid):
     '''Get all the information on each experiment.'''
@@ -254,7 +216,7 @@ def populate_experiments_dict(recid):
                         if not item[element] == '9999':
                             experiment[key] = field + ': ' + item[element]
             if key not in experiment:
-                experiment[key] = '???' 
+                experiment[key] = '???'
         else:
             try:
                 experiment[key] = get_fieldvalues(recid, value)[0]
