@@ -77,6 +77,8 @@ def find_records_containing_email():
     print "Checking", len(result), "records"
     return sorted(result, reverse=True)
 
+
+
 def get_hepnames_recid_from_email(email):
     """
     Find the HEPNames recid based on email
@@ -100,6 +102,14 @@ def get_hepnames_recid_from_email(email):
     else:
         if VERBOSE:
             print "WARNING: no hepnames record found for %s: " % (email)
+        return None
+
+def get_recid_from_id(id_number):
+    search = '035__a:' + id_number
+    result = perform_request_search(p=search, cc='HepNames')
+    if len(result) == 1:
+        return result[0]
+    else:
         return None
 
 def get_hepnames_anyid_from_recid(record, id_type):

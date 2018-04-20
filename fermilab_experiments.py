@@ -9,12 +9,15 @@ import re
 
 import lxml.html as LH
 import lxml.etree as ET
-
 from lxml.html.builder import ElementMaker, html_parser
+
+import unicodedata
 
 from invenio.search_engine import perform_request_search, \
                                   get_fieldvalues
 from invenio.bibformat_engine import BibFormatObject as bfo
+
+from hep_convert_email_to_id import get_recid_from_id
 
 print 'cd /web/sites/ccd.fnal.gov/htdocs/techpubs'
 
@@ -29,10 +32,7 @@ STATUS_EXPLANATION = "Status values: Proposed, Approved, Started,\
 SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
           419__a:/^FNAL/ or 119__u:Fermilab"
-#SEARCH = "119__a:/^FNAL-E-0823/"
-SEARCH = "001:1108188"
 SEARCH += ' -980:ACCELERATOR'
-SEARCH = "119__a:DUNE"
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
@@ -50,38 +50,47 @@ HEADING = HEADING_DICT.keys()
 INDEXES = {'Institutions':'110__u', 'Experiments':'119__a',
            'HepNames':'678__a', 'HEP':'001'}
 
+def make_url(input_value, recid):
+    '''Make a url based on link and display.'''
+
+    href_link = INSPIRE_URL + str(recid)
+    try:
+        return ELEMENT.a(input_value, href=href_link)
+    except ValueError:
+        print 'Problem with', input_value, href_link
+        quit()
+
 def populate_td(input_value, recid=None):
     '''Populate the <td> elements of the table'''
 
     if VERBOSE:
         print 'input_value =', input_value
-    if recid:
-        href_link = INSPIRE_URL + recid
-        try:
-            return ELEMENT.A(input_value, href=href_link)
-        except ValueError:
-            print 'Problem with', input_value, href_link
-            quit()
+    if recid and isinstance(input_value, str):
+        return make_url(input_value, recid)
 
     ul_elem = LH.Element("ul")
 
-    #Spokesperson name can have Unicode, so special care must be taken.
     for spokesperson in input_value:
-        name = spokesperson['name'].encode('utf-8')
+        name = spokesperson['name']
         name = re.sub(ur' \(.*', '', name)
-        display = name + u' (' + \
-                  spokesperson['start'].encode("utf-8") + u' - '
+        try:
+            name = make_url(name, spokesperson['recid'])
+        except KeyError:
+            pass
+        try:
+            display = LH.Element("li")
+            display.append(name)
+        except TypeError:
+            display = ELEMENT.li(name)
+        dates = ' (' + spokesperson['start'] + ' - '
         if spokesperson['curr'].lower() == 'current':
-            display += u'present)'
-            try:
-                display = ELEMENT.B(display)
-            except ValueError:
-                print 'Problem with:', display
-                quit()
-
+            dates += 'present)'
+            display.append(ELEMENT.b(dates))
         else:
-            display += spokesperson['end'] + ')'
-        ul_elem.append(ELEMENT.LI(display))
+            dates += spokesperson['end'] + ')'
+            display.append(ELEMENT.a(dates))
+
+        ul_elem.append(display)
     return ul_elem
 
 def create_html_table(experiments):
@@ -91,8 +100,8 @@ def create_html_table(experiments):
 
     table = LH.Element("table", attrib={"class":"sortable",
                                         "border":"1"})
-    table_tr = ELEMENT.TR()
-    table_tr.append(ELEMENT.TH('FNAL Number'))
+    table_tr = ELEMENT.tr()
+    table_tr.append(ELEMENT.th('FNAL Number'))
     new_heading = list(HEADING)
     new_heading.remove('number')
     for heading in new_heading:
@@ -101,12 +110,12 @@ def create_html_table(experiments):
             width_value = '12%'
         elif heading == 'title':
             width_value = '30%'
-        table_tr.append(ELEMENT.TH(heading.capitalize(), width=width_value))
+        table_tr.append(ELEMENT.th(heading.capitalize(), width=width_value))
     table.append(table_tr)
     for _, experiment in sorted(experiments.items(), reverse=True):
     #for _, experiment in sorted(experiments.items()):
-        table_tr = ELEMENT.TR()
-        table_tr.append(ELEMENT.TD(populate_td(experiment['number'],
+        table_tr = ELEMENT.tr()
+        table_tr.append(ELEMENT.td(populate_td(experiment['number'],
                                    recid=experiment['recid'])))
         new_heading = list(HEADING)
         new_heading.remove('number')
@@ -114,20 +123,20 @@ def create_html_table(experiments):
             if VERBOSE:
                 print key, experiment[key]
             if experiment[key] == None:
-                table_tr.append(ELEMENT.TD())
+                table_tr.append(ELEMENT.td())
                 continue
             try:
                 if key == 'status' and experiment[key].startswith('Started:'):
-                    experiment[key] = ELEMENT.B(experiment[key])
-                table_tr.append(ELEMENT.TD(experiment[key]))
+                    experiment[key] = ELEMENT.b(experiment[key])
+                table_tr.append(ELEMENT.td(experiment[key]))
             except TypeError:
                 try:
-                    table_tr.append(ELEMENT.TD(populate_td(experiment[key])))
+                    table_tr.append(ELEMENT.td(populate_td(experiment[key])))
                 except KeyError:
                     print key, experiment
             except KeyError:
                 print key, experiment
-                table_tr.append(ELEMENT.TD())
+                table_tr.append(ELEMENT.td())
         table.append(table_tr)
     return table
 
@@ -153,22 +162,19 @@ def create_html(experiments):
     head = LH.Element("head")
     table = create_html_table(experiments)
 
-    head.append(ELEMENT.TITLE(TITLE))
-    body.append(ELEMENT.H1(TITLE))
-    body.append(ELEMENT.P(time_stamp()))
-    body.append(ELEMENT.P(ELEMENT.A("List of Fermilab Proposals",
+    head.append(ELEMENT.title(TITLE))
+    body.append(ELEMENT.h1(TITLE))
+    body.append(ELEMENT.p(time_stamp()))
+    body.append(ELEMENT.p(ELEMENT.a("List of Fermilab Proposals",
                                      href=PROPOSAL_URL)))
-    body.append(ELEMENT.P(STATUS_EXPLANATION))
+    body.append(ELEMENT.p(STATUS_EXPLANATION))
     body.append(table)
 
     html.append(head)
     html.append(body)
-    return ET.tostring(html.getroottree(), 
+    return ET.tostring(html.getroottree(),
                        encoding='utf-8', pretty_print=True,
                        xml_declaration=True)
-
-    return out
-
 
 def populate_experiments_dict(recid):
     '''Get all the information on each experiment.'''
@@ -193,7 +199,7 @@ def populate_experiments_dict(recid):
                                                                 value))))
         elif key == 'spokespersons':
             spokes = []
-            fields = [('name', 'a'), ('id', 'i'), ('start', 'd'),
+            fields = [('name', 'a'), ('idnum', 'i'), ('start', 'd'),
                       ('end', 'e'), ('curr', 'z')]
             for item in bfo(int(recid)).fields(value):
                 spoke = {}
@@ -201,10 +207,17 @@ def populate_experiments_dict(recid):
                     if item.has_key(element):
                         spoke[field] = re.sub(r'^(\d{4}).*', r'\1',
                                               item[element])
-                    else:
+                    elif field != 'idnum':
                         spoke[field] = '???'
                     if VERBOSE:
                         print 'spoke', field, spoke[field]
+                if 'idnum' in spoke:
+                    spoke_recid = get_recid_from_id(spoke['idnum'])
+                    if spoke_recid:
+                        spoke['recid'] = str(spoke_recid)
+                spoke['name'] = unicodedata.normalize('NFKD', \
+                                unicode(spoke['name'])).\
+                                encode('ascii','ignore')
                 spokes.append(spoke)
             if spokes == []:
                 spokes = '???'
