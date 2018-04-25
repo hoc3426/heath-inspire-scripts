@@ -26,13 +26,16 @@ VERBOSE = False
 
 TITLE = "Fermilab Experiments, Proposals and Tests"
 STATUS_EXPLANATION = "Status values: Proposed, Approved, Started,\
-                          Completed and Cancelled"
+Completed, Cancelled (terminated after approval) \
+and Rejected. <br /> \
+Verified: The date the INSPIRE records was last verified by the spokesperson."
 
 
 SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
           419__a:/^FNAL/ or 119__u:Fermilab"
 SEARCH += ' -980:ACCELERATOR'
+#SEARCH = "119__a:FNAL-E-0830"
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
@@ -44,8 +47,10 @@ HEADING_DICT = {'number':('119__a', '119__c', '419__a'),
                 'spokespersons':'702__',
                 'title':'245__a',
                 'status':'046__',
-                'institutions':'700__u'}
+                'institutions':'700__u',
+                'verified':'670__d'}
 HEADING = HEADING_DICT.keys()
+HEADING.append('proposal')
 
 INDEXES = {'Institutions':'110__u', 'Experiments':'119__a',
            'HepNames':'678__a', 'HEP':'001'}
@@ -53,7 +58,10 @@ INDEXES = {'Institutions':'110__u', 'Experiments':'119__a',
 def make_url(input_value, recid):
     '''Make a url based on link and display.'''
 
-    href_link = INSPIRE_URL + str(recid)
+    recid = str(recid)
+    href_link = INSPIRE_URL + recid
+    if re.search(r'search\?p=', recid):
+        href_link = re.sub(r'record/', r'', href_link)
     try:
         return ELEMENT.a(input_value, href=href_link)
     except ValueError:
@@ -122,6 +130,24 @@ def create_html_table(experiments):
         for key in new_heading:
             if VERBOSE:
                 print key, experiment[key]
+            if key == 'proposal':
+                if not re.match(r'^FNAL.*\d{4}$', experiment['number']):
+                    table_tr.append(ELEMENT.td())
+                    continue
+                search = '037__a:fermilab-proposal-' + \
+                         re.sub(r'\D', '', experiment['number']) + '*'
+                result = perform_request_search(p=search, cc='HEP')
+                if len(result) == 1:
+                    table_tr.append(ELEMENT.td(populate_td(key,
+                                    recid=result[0])))
+                    continue
+                elif len(result) > 1:
+                    url_argument = 'search?p=' + search
+                    table_tr.append(ELEMENT.td(populate_td(key,
+                                    recid=url_argument)))
+                    continue
+                else:
+                    experiment[key] = None
             if experiment[key] == None:
                 table_tr.append(ELEMENT.td())
                 continue
@@ -231,6 +257,11 @@ def populate_experiments_dict(recid):
                     if item.has_key(element):
                         if not item[element] == '9999':
                             experiment[key] = field + ': ' + item[element]
+                #Rejected experiments have Cancelled but not Approved
+                if item.has_key('q') and item.has_key('c') and not \
+                   item.has_key('r'):
+                    experiment[key] = 'Rejected' + ': ' + item['c']
+
             if key not in experiment:
                 experiment[key] = '???'
         else:
