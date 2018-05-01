@@ -25,8 +25,9 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
 from osti_web_service import get_osti_id
 
-search = '037:fermilab-proposal-* -693__e:fnal*'
-for recid in perform_request_search(p=search, cc='HEP'):
+if False:
+#search = '037:fermilab-proposal-* -693__e:fnal*'
+#for recid in perform_request_search(p=search, cc='HEP'):
     common_fields = {}
     common_tags = {}
     common_tags['670__'] = [('a', 'Fermilab Workbook')]
@@ -76,15 +77,13 @@ for recid in perform_request_search(p=search, cc='HEP'):
                 subfields=common_tags[tag])
         print print_rec(common_fields)
 
-quit()                
- 
-bes = perform_request_search(p='693__e:BEPC-BES-III', cc='HepNames')
-recid = 1628093
-for id in get_fieldvalues(recid, '700__i'):
+if False:
+#bes = perform_request_search(p='693__e:BEPC-BES-III', cc='HepNames')
+#recid = 1628093
+#for id in get_fieldvalues(recid, '700__i'):
    if not perform_request_search(p='693__e:BEPC-BES-III 035__a:' + id,
                                  cc='HepNames'):
        print id
-quit()
 
 orcid_hidden = search_unit('*orcid*', f='541__a', m='a')
 orcid_display = search_unit('orcid', f='035__9', m='a')

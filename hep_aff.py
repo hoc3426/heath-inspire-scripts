@@ -7,6 +7,14 @@ import cPickle as pickle
 import re
 import sys
 
+AFFILIATIONS_DONE = {}
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
+AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
+AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
+
+sys.path.append(DIRECTORY + '/afftranslator')
+
 from invenio.search_engine import perform_request_search, get_record
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
@@ -16,11 +24,6 @@ from afftranslator2 import bestmatch
 VERBOSE = False
 #VERBOSE = True
 
-AFFILIATIONS_DONE = {}
-DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
-AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
-AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
-AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 
 def find_records():
     """Find records that have raw string affilations."""
@@ -47,7 +50,7 @@ or 100__v:/slac/ or 700__v:/slac/ \
     print atsearch
     result = perform_request_search(p=atsearch, cc='HEP')
     result.reverse()
-    result = result[:50]
+    result = result[:200]
     return result
 
 def get_aff(aff):

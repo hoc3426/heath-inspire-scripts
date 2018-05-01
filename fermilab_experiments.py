@@ -26,16 +26,18 @@ VERBOSE = False
 
 TITLE = "Fermilab Experiments, Proposals and Tests"
 STATUS_EXPLANATION = "Status values: Proposed, Approved, Started,\
-Completed, Cancelled (terminated after approval) \
-and Rejected. <br /> \
-Verified: The date the INSPIRE records was last verified by the spokesperson."
+Completed, Cancelled (terminated after approval) and Rejected."
+VERIFIED_EXPLANATION = "Verified: The date the INSPIRE records was \
+last verified by the spokesperson. A verification date of 2007 means \
+the information has been taken from the final Fermilab Workbook."
 
 
-SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-1/"
+SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
           419__a:/^FNAL/ or 119__u:Fermilab"
 SEARCH += ' -980:ACCELERATOR'
 #SEARCH = "119__a:FNAL-E-0830"
+#SEARCH = "419__a:/^FNAL/"
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
@@ -194,6 +196,7 @@ def create_html(experiments):
     body.append(ELEMENT.p(ELEMENT.a("List of Fermilab Proposals",
                                      href=PROPOSAL_URL)))
     body.append(ELEMENT.p(STATUS_EXPLANATION))
+    body.append(ELEMENT.p(VERIFIED_EXPLANATION))
     body.append(table)
 
     html.append(head)
@@ -212,6 +215,7 @@ def populate_experiments_dict(recid):
             sorter = None
             numbers =  get_fieldvalues(recid, value[0])
             numbers += get_fieldvalues(recid, value[1])
+            numbers += get_fieldvalues(recid, value[2])
             for number in numbers:
                 if number.startswith('FNAL'):
                     experiment[key] = number
