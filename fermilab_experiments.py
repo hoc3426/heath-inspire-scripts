@@ -32,12 +32,14 @@ last verified by the spokesperson. A verification date of 2007 means \
 the information has been taken from the final Fermilab Workbook."
 
 
-SEARCH = "119__a:/^FNAL-[EPT]-1/ or 419__a:/^FNAL-[EPT]-/"
 SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
-          419__a:/^FNAL/ or 119__u:Fermilab"
+419__a:/^FNAL/ or 119__u:Fermilab"
 SEARCH += ' -980:ACCELERATOR'
-#SEARCH = "119__a:FNAL-E-0830"
+
 #SEARCH = "419__a:/^FNAL/"
+#SEARCH = "001:1108199 or 001:1668677"
+
+SORTER_ALREADY_SEEN = {}
 
 INSPIRE_URL = 'http://inspirehep.net/record/'
 PROPOSAL_URL = 'https://ccd.fnal.gov/techpubs/fermilab-reports-proposal.html'
@@ -224,6 +226,13 @@ def populate_experiments_dict(recid):
                 number = numbers[0]
                 sorter = number
                 experiment[key] = number
+            if sorter:
+                if sorter in SORTER_ALREADY_SEEN:
+                    print "Duplicate sorter:", sorter, recid
+                    print sorter, SORTER_ALREADY_SEEN[sorter]
+                    quit()
+                else:
+                    SORTER_ALREADY_SEEN[sorter] = recid
         elif key == 'institutions':
             experiment[key] = ' / '.join(sorted(set(get_fieldvalues(recid,
                                                                 value))))

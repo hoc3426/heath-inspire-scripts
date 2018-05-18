@@ -15,6 +15,7 @@ for eprint in eprints :
     search = "100__j:ORCID* or 700__j:ORCID*"
     search = "037:fermilab* 773__p:IEEE* (773__y:2011 or 773__y:2012 or 773__y:2013 or 773__y:2014 or 773__y:2015 or 773__y:2016)"
     search = "037:fermilab* 773__y:2016 980:published"
+    search = "find exp fnal-e-0741 or exp fnal-e-0775 or exp fnal-e-0830"
     #search = "037:fermilab* 980:published 773__y:2016 authorcount:50+"
     x = perform_request_search(p=search,cc='HEP')
     journals = []
@@ -36,8 +37,10 @@ for eprint in eprints :
         url = re.sub(' ', '+', url)
         total += count
         #print '%-25s %3d' % (recid_count, count)
-        print '%s\t\t\t%3d' % (recid_count, count)
+        #print '%s\t\t\t%3d' % (recid_count, count)
+        print('{0:30s} {1:3d}'.format(recid_count, count))
 
+quit()
 #c = Counter(journals)
 #l = list(set(journals))
 #for letter in c:

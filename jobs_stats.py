@@ -9,7 +9,7 @@ fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
 
 search = 'dadd:2018-01-01->2018-03-31'
-print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
+#print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 
 if False:
 #  for field in fields:
@@ -32,10 +32,12 @@ if False:
 #quit()  
 
 total = 0
-for yymm in ['1801', '1802', '1803']:
+for yymm in ['05', '06', '07', '08', '09', '10', '11',
+         '12', '13', '14', '15', '16', '17', '1801', '1802', '1803', '1804']:
   search = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
+  search = '037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   x = perform_request_search(p=search, cc='HEP')
-  print search
+  #print search
   print yymm, len(x)
   total += len(x)
 print "Total =", total

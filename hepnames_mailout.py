@@ -39,9 +39,6 @@ def main(recids):
 
     icount = 1
     for recid in recids:
-        if recid in BAD_RECIDS:
-            print 'Bad recid', recid
-            continue
         recid_str = str(recid)
         try:
             recid_int = int(recid)
@@ -57,6 +54,9 @@ def main(recids):
                 continue
             recid_str = str(recid)
             recid_int = int(recid)
+        if recid_int in BAD_RECIDS:
+                print 'Bad recid', recid, '\n'
+                continue
         if get_hepnames_anyid_from_recid(recid_int, 'ORCID'):
             print recid_str, 'already has an ORCID\n'
             icount += 1

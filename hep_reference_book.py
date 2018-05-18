@@ -77,9 +77,11 @@ BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 #['W5013','w5013','CERN-W5013','863473']]
 #BOOKS = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
 
-BOOKS = [['Kaluza','966','Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),1921,966','14621']] 
+#BOOKS = [['Kaluza','966','Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),1921,966','14621']] 
+#BOOKS = [['Gibbons','karpacz','PRINT-86-0411','18460','1986']]
+#BOOKS = [['Gibbons','quantized flux tubes in einstein','PRINT-86-0411','18460','1986']]
 EXCEPTION = None
-EXCEPTION = 'Klein'
+#EXCEPTION = 'Klein'
 
 for book in BOOKS:
     referenceFlag = False
@@ -96,8 +98,8 @@ for book in BOOKS:
     fileName2 = 'tmp__hep_reference_book_' + recid + '.out'
     fileName3 = 'tmp_hep_reference_book_' + recid + '.out'
 
-    search_author = '999C5:/' + author + '/'
-    search_title  = '999C5:/' + title + '/ -refersto:recid:' + recid
+    search_author = '999C5:/' + author + '/ -refersto:recid:' + recid
+    search_title  = '999C5:/' + title  + '/ -refersto:recid:' + recid
     x_author = perform_request_search(p=search_author,cc='HEP')
     x_title = perform_request_search(p=search_title,cc='HEP')
     x = list(intbitset(x_author) & intbitset(x_title))
@@ -117,15 +119,19 @@ for book in BOOKS:
             #j = re.sub(r',',r' ',j)
             #j = re.sub('[ ]+',r' ',j)
             if re.search(title, j) and not re.search(r'$$0', j):
-                if re.search(EXCEPTION.lower(), j):
-                    print EXCEPTION, i
-                    continue
-                referenceFlag = True
+                try:
+                    if re.search(EXCEPTION.lower(), j):
+                        print EXCEPTION, i
+                        continue
+                except AttributeError:
+                    pass
                 if date:
                     if re.search(date,j):
                        i = i + "$$" + isbnTag + isbn + "$$0" + recid
+                       referenceFlag = True
                 else:
                     i = i + "$$" + isbnTag + isbn  + "$$0" + recid
+                    referenceFlag = True
                 if not re.search(r'CURATOR',i):
                     i = i + "$$9CURATOR"
         output2.write(i)
