@@ -53,15 +53,23 @@ def find_records():
 def create_request(recid):
     '''Creates a line request for an article.'''
 
-    journal = get_fieldvalues(recid, '773__p')[0]
-    author = get_fieldvalues(recid, '100__a')[0]
-    author = re.sub(r'\,.*', '', author)
-    volume = get_fieldvalues(recid, '773__v')[0]
-    page = get_fieldvalues(recid, '773__c')[0]
-    page = re.sub(r'\-.*', '', page)
-    year = get_fieldvalues(recid, '773__y')[0]
-    return "%0A|{0}|{1}|{2}||{3}|{4}||{5}||".format(journal, author,
-                                                 volume, page, year, recid)
+    p_dict = {}
+    metadata = [('journal', '773__p'),
+                ('author', '100__a'),
+                ('volume', '773__v'),
+                ('page', '773__c'),
+                ('year', '773__y')]
+    for (attribute, code) in metadata:
+        try:
+            p_dict[attribute] = get_fieldvalues(recid, code)[0]
+        except IndexError:
+            print "Problem with", attribute, recid
+            quit()
+    p_dict['author'] = re.sub(r'\,.*', '', p_dict['author'])
+    p_dict['page'] = re.sub(r'\-.*', '', p_dict['page'])
+    return "%0A|{0}|{1}|{2}||{3}|{4}||{5}||".\
+    format(p_dict['journal'], p_dict['author'],
+           p_dict['volume'], p_dict['page'], p_dict['year'], recid)
 
 def msnet_submit(request):
     '''Submits a request to MSNET.'''
@@ -105,6 +113,7 @@ def main():
         print 'Exiting'
         return None
 
+
     recids = set(find_records()) - recids_nomatch
     print 'Initial set of candidates:', len(recids)
     request = ''
@@ -116,13 +125,12 @@ def main():
     filename = re.sub('.py', '_append.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
-    
     for msnet_record in msnet_result.split('\n'):
         try:
             recid = msnet_record.split('|')[8]
             msnet = msnet_record.split('|')[9]
             if msnet == '':
-                recids_nomatch.add(recid)
+                recids_nomatch.add(int(recid))
                 continue
             try:
                 output.write(create_xml(recid, msnet))
