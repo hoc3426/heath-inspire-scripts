@@ -27,14 +27,19 @@ curl "https://mathscinet.ams.org/batchmrlookup?&amp;api=xref&amp;qdata=
 
 '''
 
+import cPickle as pickle
+import itertools
 import re
-
 from urllib2 import Request, urlopen, HTTPError
 
 from invenio.search_engine import perform_request_search
 from invenio.intbitset import intbitset
 from invenio.search_engine import get_fieldvalues
 from invenio.bibrecord import print_rec, record_add_field
+
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+RECIDS_NOMATCH_FILE = 'hep_msnet_recids_nomatch.p'
+RECIDS_NOMATCH_FILE = DIRECTORY + RECIDS_NOMATCH_FILE
 
 def find_records():
     '''Looks for candidate records.'''
@@ -43,7 +48,7 @@ def find_records():
     search = "035__9:msnet"
     result_i = perform_request_search(p=search, cc='HEP')
     result = intbitset(result_m) - intbitset(result_i)
-    return result[:5]
+    return result
 
 def create_request(recid):
     '''Creates a line request for an article.'''
@@ -62,8 +67,8 @@ def msnet_submit(request):
     '''Submits a request to MSNET.'''
 
     url = "https://mathscinet.ams.org/batchmrlookup?&amp;api=xref&amp;qdata="
-    #url += "|J.Geom.Phys.|Gerasimov|44||41|2002||539482||"
     url += request
+    url = re.sub(' ', '%20', url)
     try:
         return urlopen(Request(url)).read()
     except HTTPError:
@@ -93,8 +98,16 @@ def main():
     Create a file to upload.
     '''
 
+    try:
+        recids_nomatch = pickle.load(open(RECIDS_NOMATCH_FILE, "rb"))
+        print 'Number of non-matching recids 1:', len(recids_nomatch)
+    except pickle.UnpicklingError:
+        print 'Exiting'
+
+    recids = set(find_records()) - recids_nomatch
+    print 'Initial set of candidates:', len(recids)
     request = ''
-    for recid in find_records():
+    for _, recid in enumerate(itertools.islice(recids, 100)):
         request += create_request(recid)
     msnet_result = msnet_submit(request)
 
@@ -102,11 +115,14 @@ def main():
     filename = re.sub('.py', '_append.out', filename)
     output = open(filename,'w')
     output.write('<collection>')
+    
     for msnet_record in msnet_result.split('\n'):
         try:
             recid = msnet_record.split('|')[8]
             msnet = msnet_record.split('|')[9]
             if msnet == '':
+                recids_nomatch.add(recid)
+                print "No match", recid
                 continue
             try:
                 output.write(create_xml(recid, msnet))
@@ -117,6 +133,14 @@ def main():
     output.write('</collection>')
     output.close()
 
+    with open(RECIDS_NOMATCH_FILE, "wb") as fname:
+        try:
+            pickle.dump(recids_nomatch, fname)
+        except pickle.PicklingError:
+            print "Problem adding:"
+
+    print 'Number of non-matching recids 2:', len(recids_nomatch)
+    print filename
 
 if __name__ == '__main__':
     try:
