@@ -103,6 +103,7 @@ def main():
         print 'Number of non-matching recids 1:', len(recids_nomatch)
     except pickle.UnpicklingError:
         print 'Exiting'
+        return None
 
     recids = set(find_records()) - recids_nomatch
     print 'Initial set of candidates:', len(recids)
@@ -122,7 +123,6 @@ def main():
             msnet = msnet_record.split('|')[9]
             if msnet == '':
                 recids_nomatch.add(recid)
-                print "No match", recid
                 continue
             try:
                 output.write(create_xml(recid, msnet))
