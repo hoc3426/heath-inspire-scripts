@@ -19,6 +19,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 
 from hepnames_fermilab_aff_from_email import aff_from_email
 from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS
+print AUTHORS
 
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
@@ -33,10 +34,12 @@ EXPERIMENT = 'Baby-MIND'
 EXPERIMENT = 'HARPO'
 EXPERIMENT = None
 EXPERIMENT = 'WiggleZ'
+EXPERIMENT = None
 
 SOURCE = 'Fermilab'
 #SOURCE = 'HARPO'
 SOURCE = 'WiggleZ'
+SOURCE = 'Fermilab'
 
 #INSPIRE = 72053
 #INSPIRE = 72499
@@ -45,14 +48,14 @@ SOURCE = 'WiggleZ'
 #INSPIRE = 73383
 #INSPIRE = 73787
 #INSPIRE = 74388
-INSPIRE = 74741
+INSPIRE = 76741
 
 for _ in range(2000):
     inspire_id = 'INSPIRE-00' + str(INSPIRE) + str(random.randint(1, 9))
     print inspire_id
     INSPIRE += 1
-print INSPIRE
-quit()
+#print INSPIRE
+#quit()
 
 if ORCIDS:
     for (name, orcid) in ORCIDS:
