@@ -32,8 +32,9 @@ if False:
 #quit()  
 
 total = 0
-for yymm in ['05', '06', '07', '08', '09', '10', '11',
-         '12', '13', '14', '15', '16', '17', '1801', '1802', '1803', '1804']:
+for yymm in ['91','92','93', '05', '06', '07', '08', '09', '10', '11',
+         '12', '13', '14', '15', '16', '17', '1801', '1802', '1803', '1804',
+         '1805']:
   search = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   search = '037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   x = perform_request_search(p=search, cc='HEP')

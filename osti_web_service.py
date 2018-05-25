@@ -153,7 +153,9 @@ def get_url(recid):
         for url_i in urls:
             if re.search(r'lss.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_fermilab = url_i
-            elif re.search(r'record/\d+/files/arXiv', url_i, re.IGNORECASE):
+            elif re.search(r'record/\d+/files/arXiv', url_i, re.IGNORECASE) \
+              or re.search(r'record/\d+/files/\d{4}\.\d{5}\.pdf$',
+                             url_i, re.IGNORECASE):
                 url_arxiv = url_i
             if re.search(r'inspirehep.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i

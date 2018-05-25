@@ -41,9 +41,13 @@ DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 RECIDS_NOMATCH_FILE = 'hep_msnet_recids_nomatch.p'
 RECIDS_NOMATCH_FILE = DIRECTORY + RECIDS_NOMATCH_FILE
 
+YEAR = 2010
+YEAR = 2009
+YEAR = 2008
+
 def find_records():
     '''Looks for candidate records.'''
-    search = "find fc m and tc p and jy 2010"
+    search = "find fc m and tc p and jy " + str(YEAR)
     result_m = perform_request_search(p=search, cc='HEP')
     search = "035__9:msnet"
     result_i = perform_request_search(p=search, cc='HEP')
