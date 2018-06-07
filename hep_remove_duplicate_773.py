@@ -14,6 +14,9 @@ import re
 
 from hep_ads_xml_bibcodes import BIBCODE_DICT
 
+BIBCODE_DICT = {'PRL':'Phys.Rev.Lett', 'ApJ':'Astrophys.J.',
+'MNRAS':'Mon.Not.Roy.Astron.Soc.', 'AJ':'Astron.J.', 'PR':'Phys.Rev.'}
+
 def create_xml(recid):
     """
     Searches for duplicate instances of 773 and keeps the good one.

@@ -43,9 +43,9 @@ def create_xml(recid, type_code):
 
 
 
-def main(paper_type):
+def process(paper_type, collection):
     filename = 'tmp_' + re.sub('.py', '', __file__)
-    filename += '_' + paper_type + '_append.out'
+    filename += '_' + paper_type + '_' + collection + '_' + '_append.out'
     output = open(filename,'w')
     output.write('<collection>')
     search = ''
@@ -67,11 +67,11 @@ def main(paper_type):
         #search += ' -980:BookChapter'
         #search += ' -980:Introductory'
         search_intro = search + ' 980:Introductory'
-        result_intro = perform_request_search(p=search_intro, cc='HEP')
+        result_intro = perform_request_search(p=search_intro, cc=collection)
         if len(result_intro) > 0:
             search += ' 980:arxiv cited:10->999 -980:Introductory'
         #search += ' -245:/erratum/'
-        result = perform_request_search(p=search, cc='HEP')
+        result = perform_request_search(p=search, cc=collection)
         result = result[:500]
         if len(result):
             for recid in result:
@@ -84,9 +84,13 @@ def main(paper_type):
     output.close()
 
 
+def main():
+    for collection in ('HEP', 'Fermilab'):
+        for type in ('pub', 'conf'):
+            process(type, collection)
+
 if __name__ == '__main__':
     try:
-        main('pub')
-        main('conf')
+        main()
     except KeyboardInterrupt:
         print 'Exiting'

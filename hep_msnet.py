@@ -44,6 +44,7 @@ RECIDS_NOMATCH_FILE = DIRECTORY + RECIDS_NOMATCH_FILE
 YEAR = 2010
 YEAR = 2009
 YEAR = 2008
+YEAR = 2007
 
 def find_records():
     '''Looks for candidate records.'''

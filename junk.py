@@ -25,6 +25,31 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
 from osti_web_service import get_osti_id
 
+from hep_msnet import create_xml
+
+for line in open('inspireMathscinetOutput.txt', 'r').readlines():
+    try:
+        match_obj = re.match(r'(\d+) (10\.\S+) (\d+)', line)
+        recid =  match_obj.group(1)
+        msnet = match_obj.group(3)
+        print create_xml(recid, msnet)
+    except:
+        pass
+quit()
+
+search = "find fc m and tc p"
+result_m = perform_request_search(p=search, cc='HEP')
+search = "035__9:msnet"
+result_i = perform_request_search(p=search, cc='HEP')
+search = "0247_2:doi"
+result_d = perform_request_search(p=search, cc='HEP')
+result = intbitset(result_m) & intbitset(result_d) - intbitset(result_i)
+for recid in result:
+    doi = get_fieldvalues(recid, '0247_a')[0]
+    print recid, doi
+quit()
+
+
 if False:
 #search = '037:fermilab-proposal-* -693__e:fnal*'
 #for recid in perform_request_search(p=search, cc='HEP'):
