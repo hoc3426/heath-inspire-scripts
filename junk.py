@@ -27,17 +27,7 @@ from osti_web_service import get_osti_id
 
 from hep_msnet import create_xml
 
-for line in open('inspireMathscinetOutput.txt', 'r').readlines():
-    try:
-        match_obj = re.match(r'(\d+) (10\.\S+) (\d+)', line)
-        recid =  match_obj.group(1)
-        msnet = match_obj.group(3)
-        print create_xml(recid, msnet)
-    except:
-        pass
-quit()
-
-search = "find fc m and tc p"
+search = "find fc t not fc m and tc p"
 result_m = perform_request_search(p=search, cc='HEP')
 search = "035__9:msnet"
 result_i = perform_request_search(p=search, cc='HEP')

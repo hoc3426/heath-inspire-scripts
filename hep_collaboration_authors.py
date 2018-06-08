@@ -24,8 +24,10 @@ VERBOSE = False
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
 AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
-AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
-
+try:
+    AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
+except EOFError:
+    print "Error opening:", AFFILIATIONS_DONE_FILE
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
