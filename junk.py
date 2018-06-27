@@ -27,7 +27,38 @@ from osti_web_service import get_osti_id
 
 from hep_msnet import create_xml
 
-search = "find fc t not fc m and tc p"
+IDS = ["1420402",
+"1420403",
+"1420404",
+"1420405",
+"1420406",
+"1420407",
+"1420408",
+"1420409",
+"1420410",
+"1420411",
+"1420412",
+"1420413",
+"1420414",
+"1420415",
+"1420416",
+"1420417",
+"1420418",
+"1420419",
+"1420420",
+"1420421",
+"1420422"]
+for id in IDS:
+    if not perform_request_search(p="035__a:" + id, cc='HEP'):
+        print id
+quit()
+
+
+#print print_record(1674528, ot=['001','100', '700'], format='xm')
+#quit()
+
+'''
+search = "find fc g not fc t not fc m and tc p"
 result_m = perform_request_search(p=search, cc='HEP')
 search = "035__9:msnet"
 result_i = perform_request_search(p=search, cc='HEP')
@@ -38,7 +69,7 @@ for recid in result:
     doi = get_fieldvalues(recid, '0247_a')[0]
     print recid, doi
 quit()
-
+'''
 
 if False:
 #search = '037:fermilab-proposal-* -693__e:fnal*'

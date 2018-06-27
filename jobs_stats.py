@@ -32,15 +32,19 @@ if False:
 #quit()  
 
 total = 0
-for yymm in ['91','92','93', '05', '06', '07', '08', '09', '10', '11',
+for yymm in ['91','92','93', '94', '95', '96', '97', '98', '99',
+         '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
          '12', '13', '14', '15', '16', '17', '1801', '1802', '1803', '1804',
          '1805']:
   search = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   search = '037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   x = perform_request_search(p=search, cc='HEP')
+  search = '037__c:acc-phys 037__a:"acc-phys/' + yymm + '*"'
+  y = perform_request_search(p=search, cc='HEP')
   #print search
-  print yymm, len(x)
-  total += len(x)
+  length = len(x) + len(y)
+  print yymm, length
+  total += length
 print "Total =", total
 
 if False:

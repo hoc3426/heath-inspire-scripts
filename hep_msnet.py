@@ -48,7 +48,7 @@ YEAR = 2007
 
 def find_records():
     '''Looks for candidate records.'''
-    search = "find fc m and tc p and jy " + str(YEAR)
+    search = "find fc g not fc m not fc t and tc p and jy " + str(YEAR)
     result_m = perform_request_search(p=search, cc='HEP')
     search = "035__9:msnet"
     result_i = perform_request_search(p=search, cc='HEP')

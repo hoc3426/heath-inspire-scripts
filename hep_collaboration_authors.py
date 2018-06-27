@@ -458,6 +458,7 @@ def process_ieee(eprint):
             print 'No IEEE authors found'
             return None
         for auth in auths:
+            auth['affiliation'] = re.sub(r'^\s+', '', auth['affiliation'])
             if 'e-mail' in auth['affiliation']:
                 match_obj = re.match(r'(.*) \(e\-mail: (.*)\)',
                             auth['affiliation'])

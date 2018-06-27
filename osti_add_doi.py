@@ -9,7 +9,7 @@ from invenio.intbitset import intbitset
 from osti_web_service import get_osti_id
 from check_url import checkURL
 
-COUNTER = 1
+COUNTER = 0
 COUNTER_END = 500
 SEARCH = r'037:fermilab-* 035__9:osti -0247:doi -037:arXiv -773__p:/\w/'
 SEARCH = r'035__9:osti du:2018 -0247:doi -037:arXiv -773__p:/\w/'

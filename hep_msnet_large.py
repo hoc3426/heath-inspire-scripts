@@ -9,6 +9,8 @@ import re
 from hep_msnet import RECIDS_NOMATCH_FILE, create_xml
 
 MSNET_FILE = 'inspireMathscinetOutput.txt'
+MSNET_FILE = 'inspire2MathscinetOutput.txt'
+MSNET_FILE = 'inspire3MathscinetOutput.txt'
 
 def main():
     '''
