@@ -193,11 +193,16 @@ def create_xml(eprint=None, doi=None, author_dict=None):
         subfields = []
         subfields.append(('a', author_dict[key][0]))
         for affiliation in author_dict[key][1]:
+            affiliation = re.sub(r'\\affinfn{(.*)}{(.*)}', r'INFN \1 \2',
+                                 affiliation)
+            affiliation = re.sub(r'\\affuni{(.*)}{(.*)}', r'\1 University \2',
+                                 affiliation)
             affiliation = translate_latex2unicode(affiliation)
             #affiliation = re.sub(r'(\w)\W*$', r'\1', affiliation)
             affiliation = re.sub(r'([\.\,]+)', r'\1 ', affiliation)
             affiliation = re.sub(r'\s+', ' ', affiliation)
             affiliation = re.sub(r'\s$', r'', affiliation)
+
             if r"@" in affiliation and r"0000-" in affiliation:
                 affiliation = affiliation.replace(';', ' ')
                 affiliation = affiliation.replace(r'. ', r'.')

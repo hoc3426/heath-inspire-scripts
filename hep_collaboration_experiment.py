@@ -24,6 +24,7 @@ experiments = {
 'DAMIC':'FNAL-E-0987',
 'DES':'DES',
 'Double Chooz':'DOUBLECHOOZ',
+'DUNE':'DUNE',
 'IceCube':'ICECUBE',
 'LHCb':'CERN-LHC-LHCB',
 'LUX':'LUX',

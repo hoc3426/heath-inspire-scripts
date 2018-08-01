@@ -27,27 +27,23 @@ from osti_web_service import get_osti_id
 
 from hep_msnet import create_xml
 
-IDS = ["1420402",
-"1420403",
-"1420404",
-"1420405",
-"1420406",
-"1420407",
-"1420408",
-"1420409",
-"1420410",
-"1420411",
-"1420412",
-"1420413",
-"1420414",
-"1420415",
-"1420416",
-"1420417",
-"1420418",
-"1420419",
-"1420420",
-"1420421",
-"1420422"]
+recid = 499284
+for primarch in ['astro-ph*', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph',
+                 'hep-th', 'math-ph', 'math*', 'nucl-ex', 'nucl-th',
+                 'quant-ph']:
+    search = 'refersto:recid:' + str(recid)
+    search += ' 037__c:' + primarch
+    number = len(perform_request_search(p=search, cc='HEP'))
+    print primarch, number
+quit()
+
+
+
+IDS = ["1420402", "1420403", "1420404", "1420405", "1420406", "1420407", 
+"1420408", "1420409", "1420410", "1420411", "1420412", "1420413", 
+"1420414", "1420415", "1420416", "1420417", "1420418", "1420419", 
+"1420420", "1420421", "1420422"]
+
 for id in IDS:
     if not perform_request_search(p="035__a:" + id, cc='HEP'):
         print id

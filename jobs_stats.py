@@ -9,19 +9,17 @@ fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
 
 search = 'dadd:2018-01-01->2018-03-31'
-#print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
+print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 
-if False:
+#if False:
 #  for field in fields:
-#grand_total = 0
+grand_total = 0
 #  for month in range(1,10) + [10, 11, 12]:
 #  for month in [10, 11, 12]:
-
-#if True:
-  #search = '65017:' + field
-  #if month < 10:
-  #    month = '0' +  str(month)
-  #search = 'dadd:2017-' + str(month)
+for month in range(4,7):
+  if month < 10:
+      month = '0' +  str(month)
+  search = 'dadd:2018-' + str(month)
   x = perform_request_search(p=search, cc='Jobs')
   y = perform_request_search(p=search, cc='Jobs Hidden')
   total = len(x+y)
@@ -29,7 +27,7 @@ if False:
   print "{0:20s} {1:5d} {2:5d} {3:5d} {4:5d}".format(search, len(x), len(y), total, 
         grand_total)
 
-#quit()  
+quit()  
 
 total = 0
 for yymm in ['91','92','93', '94', '95', '96', '97', '98', '99',

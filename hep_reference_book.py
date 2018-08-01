@@ -80,6 +80,8 @@ BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 #BOOKS = [['Kaluza','966','Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),1921,966','14621']] 
 #BOOKS = [['Gibbons','karpacz','PRINT-86-0411','18460','1986']]
 #BOOKS = [['Gibbons','quantized flux tubes in einstein','PRINT-86-0411','18460','1986']]
+BOOKS = [['Jeanneret','time projection chambers and detection of neutrinos','HA-60456','1680989','2001']]
+BOOKS = [['Jeffreys','Theory of Probability','9780198503682', '1420611']]
 EXCEPTION = None
 #EXCEPTION = 'Klein'
 
@@ -87,7 +89,7 @@ for book in BOOKS:
     referenceFlag = False
     date = False
     author = book[0]
-    title = book[1]
+    title = book[1].lower()
     isbn = book[2]
     isbnTag = "i"
     recid = book[3]
@@ -133,7 +135,7 @@ for book in BOOKS:
                     i = i + "$$" + isbnTag + isbn  + "$$0" + recid
                     referenceFlag = True
                 if not re.search(r'CURATOR',i):
-                    i = i + "$$9CURATOR"
+                    i = i + "$$9CURATOR$$z1"
         output2.write(i)
         output2.write("\n")
     output2.close()
@@ -193,7 +195,7 @@ for i in open(fileName,'r'):
                     i = i + "$$" + doiTag + doi  + "$$0" + recid
                     print i
                 if not re.search(r'CURATOR',i):
-                    i = i + "$$9CURATOR"
+                    i = i + "$$9CURATOR$$z1"
     output2.write(i)
     output2.write("\n")
 output2.close()
