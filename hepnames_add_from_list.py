@@ -14,8 +14,10 @@ from invenio.search_engine import perform_request_search
 from hep_convert_email_to_id import get_hepnames_recid_from_email
 from invenio.bibrecord import print_rec, record_add_field
 
-from hepnames_add_from_list_email_to_aff import aff_from_email
+from hepnames_add_from_list_email_to_aff import *
 from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS
+
+from hep_collaboration_authors import process_author_name 
 
 EXPERIMENT = 'FNAL-E-0974'
 EXPERIMENT = 'AUGER'
@@ -31,10 +33,14 @@ EXPERIMENT = 'HARPO'
 EXPERIMENT = None
 EXPERIMENT = 'WiggleZ'
 EXPERIMENT = 'DUNE'
+EXPERIMENT = 'HAWC'
+EXPERIMENT = None
 
 SOURCE = 'Fermilab'
 #SOURCE = 'HARPO'
 SOURCE = 'WiggleZ'
+SOURCE = 'Fermilab'
+SOURCE = 'HAWC'
 SOURCE = 'Fermilab'
 
 #INSPIRE = 72053
@@ -45,7 +51,8 @@ SOURCE = 'Fermilab'
 #INSPIRE = 73787
 #INSPIRE = 74388
 #INSPIRE = 76741
-INSPIRE = 78756
+#INSPIRE = 78756
+INSPIRE = 78849
 
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''
@@ -91,8 +98,12 @@ def create_xml(author, email, affiliation, experiment, inspire_id):
     common_tags['980__'] = [('a', 'HEPNAMES')]
     common_tags['100__'] = [('a', author), ('q', author2), ('g', 'ACTIVE')]
     if affiliation:
-        for aff in affiliation:
-            common_tags['371__'] = [('m', email), ('a', aff),
+        if isinstance(affiliation, (list,)):
+            for aff in affiliation:
+                common_tags['371__'] = [('m', email), ('a', aff),
+                                        ('z', 'current')]
+        else:
+            common_tags['371__'] = [('m', email), ('a', affiliation),
                                     ('z', 'current')]
     else:
         common_tags['371__'] = [('m', email), ('z', 'current')]
@@ -131,13 +142,22 @@ def main(authors, inspire):
             if len(perform_request_search(p = search, cc = 'HepNames')) == 1:
                 print 'or', recid
             continue
-        try:
-            affiliation = author_info[2]
-            affiliation = get_aff(affiliation)
-        except IndexError:
-            affiliation = aff_from_email(email)
-        if ", " not in author:
-            author = re.sub(r'(.*) (\S+)', r'\2, \1', author)
+        #print 'email =', email
+        affiliation = aff_from_email(email)
+        #print 'affiliation =', affiliation
+        if affiliation == None:
+            try:
+                affiliation = author_info[2]
+                affiliation = get_aff(affiliation)
+            except IndexError:
+                pass
+        #print 'affiliation =', affiliation
+
+        #if ", " not in author:
+        #    author = re.sub(r'(.*) (\S+)', r'\2, \1', author)
+        #author = author.replace(',', ', ')
+        #author = re.sub(r'\s+', ' ', author)
+        author = process_author_name(author)
         inspire_id = 'INSPIRE-00' + str(inspire) + \
                      str(random.randint(1, 9))
         output.write(create_xml(author, email, affiliation,
@@ -150,6 +170,7 @@ def main(authors, inspire):
 
 if __name__ == '__main__':
 
+    TEST = True
     TEST = False
 
     try:

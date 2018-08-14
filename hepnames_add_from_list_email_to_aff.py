@@ -469,11 +469,12 @@ EMAIL_TO_AFF = {"acnet.ge":"Tbilisi, Inst. Phys.",
 
 def aff_from_email(email):
     domain = re.sub(r'.*\@(.*)', r'\1', email)
-    for key in aff_domain:
+    for key in EMAIL_TO_AFF:
         search_string = r'.*\W' + key
         #print search_string, domain
         if re.search(search_string, domain) or domain == key:
-            return aff_domain[key]
-    return False
+            return EMAIL_TO_AFF[key]
+    return None
+
 
 

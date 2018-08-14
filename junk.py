@@ -24,8 +24,62 @@ from invenio.search_engine import get_collection_reclist
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
 from osti_web_service import get_osti_id
-
 from hep_msnet import create_xml
+
+from tmp_hawc_aff import AFFS
+import cPickle as pickle
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
+AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
+AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
+from invenio.textutils import translate_latex2unicode
+
+for aff in AFFS:
+    aff2 = translate_latex2unicode(aff)
+    try:
+        print AFFILIATIONS_DONE[re.sub(r'\W+', ' ', aff2).upper()][0], ';', aff
+    except KeyError:
+        print '?? ;', aff
+quit()
+
+
+search='693__e:hawc'
+authors = []
+for recid in perform_request_search(p=search, cc='HepNames'):
+    author = []
+    orcid = ''
+    inspire = ''
+    name = get_fieldvalues(recid, '100__a')[0]
+    for item in BibFormatObject(int(recid)).fields('035__'):
+        if item.has_key('9') and item.has_key('a'):
+            if item['9'].lower() == 'orcid':
+                orcid = item['a']
+            elif item['9'].lower() == 'inspire':
+                inspire = item['a']
+    #for email in get_fieldvalues(recid, '371__m'):
+    #    emails.append(email)
+    try:
+        email = get_fieldvalues(recid, '371__m')[0]
+    except:
+        email = ''
+    print name, ';', orcid, ';', inspire, ';', email
+    #print author
+quit()
+
+emails = set()
+search = '700__m:/fnal.gov/ -700__m:email*'
+for recid in perform_request_search(p=search, cc='HEP'):
+    for email in get_fieldvalues(recid, '700__m'):
+        if 'fnal' in email:
+            emails.add(email)
+for email in emails:
+    print 'or', email
+quit()
+
+
+print print_record(1680821,ot=['001', '100', '700'],format='xm')
+quit()
+
 
 recid = 499284
 for primarch in ['astro-ph*', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph',
