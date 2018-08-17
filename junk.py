@@ -26,20 +26,20 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
-from tmp_hawc_aff import AFFS
+from pdg_aff import AFFS
 import cPickle as pickle
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
 AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
 AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 from invenio.textutils import translate_latex2unicode
-
+from hep_aff import get_aff
 for aff in AFFS:
     aff2 = translate_latex2unicode(aff)
     try:
         print AFFILIATIONS_DONE[re.sub(r'\W+', ' ', aff2).upper()][0], ';', aff
     except KeyError:
-        print '?? ;', aff
+        print get_aff(aff), ';', aff
 quit()
 
 

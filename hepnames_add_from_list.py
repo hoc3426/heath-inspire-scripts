@@ -52,7 +52,8 @@ SOURCE = 'Fermilab'
 #INSPIRE = 74388
 #INSPIRE = 76741
 #INSPIRE = 78756
-INSPIRE = 78849
+#INSPIRE = 78849
+INSPIRE =  78890
 
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''
@@ -129,11 +130,17 @@ def main(authors, inspire):
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '.out', filename)
     output = open(filename, 'w')
+    emails = set()
     for author_info in authors:
         #print author_info
         author = author_info[0]
         email = author_info[1]
         email = email.lower()
+        if email in emails:
+            print "Duplicate", email
+            continue
+        else:
+           emails.add(email)
         recid = get_hepnames_recid_from_email(email)
         if recid and EXPERIMENT == None:
             continue
