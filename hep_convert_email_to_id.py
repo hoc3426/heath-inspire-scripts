@@ -99,6 +99,7 @@ def get_hepnames_recid_from_email(email):
             print "WARNING: more than one hepnames record found for %s: " \
                   % (email)
             print '\t' + ', '.join([str(r) for r in reclist])
+        return [r for r in reclist]
     else:
         if VERBOSE:
             print "WARNING: no hepnames record found for %s: " % (email)
@@ -172,7 +173,7 @@ def convert_email_to_inspire_id(email):
     inspire_id = None
     orcid      = None
     recid = get_hepnames_recid_from_email(email)
-    if recid:
+    if str(recid).isdigit():
         inspire_id = find_inspire_id_from_record(recid)
         orcid      = get_hepnames_anyid_from_recid(recid, 'ORCID')
     return [inspire_id, orcid]
