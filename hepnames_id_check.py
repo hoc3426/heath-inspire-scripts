@@ -3,12 +3,16 @@
 This module looks for duplicate names and bad IDs in HEPNames.
 """
 
+import numpy
 import re
 import sys
 
 from invenio.search_engine import get_collection_reclist
 from invenio.search_engine import get_fieldvalues
 from invenio.search_engine import perform_request_search
+from invenio.search_engine import get_all_field_values
+from invenio.intbitset import intbitset
+
 #from invenio.bibauthorid_dbinterface \
 #     import _select_from_aidpersoniddata_where
 from invenio.dbquery import run_sql
@@ -20,7 +24,10 @@ from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     get_hepnames_anyid_from_recid
 
 LETTER = None
-RECIDS = get_collection_reclist('HepNames')
+RECIDS_HEPN = get_collection_reclist('HepNames')
+RECIDS_INST = get_collection_reclist('Institutions')
+RECIDS_EXPT = get_collection_reclist('Experiments')
+
 BAI_URL = 'https://inspirehep.net/author/manage_profile/'
 
 def bad_orcid_bai():
@@ -59,7 +66,7 @@ def check_ids(letter=None):
     if letter:
         fields.append('100__a')
 
-    for recid, field in [(recid, field) for recid in RECIDS \
+    for recid, field in [(recid, field) for recid in RECIDS_HEPN \
                                         for field in fields]:
         skip = False
         field_values = get_fieldvalues(recid, field)
@@ -140,6 +147,24 @@ def new_orcids(already_seen):
             #      format(str(recid), orcid)
 
 
+def bad_experiments_affilations():
+    """Check to see bad metadata."""
+
+    metadata = {#'inst':{'HepNames':'371__a', 'Truth':'110__u'},
+                'expt':{'HepNames':'693__e', 'Truth':'119__a'}}
+
+    for aff in metadata:
+        for value in numpy.setdiff1d(get_all_field_values(
+                                     metadata[aff]['HepNames']),
+                                     get_all_field_values(
+                                     metadata[aff]['Truth'])):
+            search = metadata[aff]['HepNames'] + ':"' + value + '"'
+            result = perform_request_search(p=search, cc='HepNames')
+            result = intbitset(result) & RECIDS_HEPN
+            if len(result) > 0:
+                print search, result
+
+
 def main(input_value=None):
     """Runs the script, outputting to a file."""
 
@@ -149,7 +174,8 @@ def main(input_value=None):
     print 'main: letter =', input_value
     output = open(filename,'w')
     sys.stdout = output
-    check_ids(letter=input_value)
+    #check_ids(letter=input_value)
+    bad_experiments_affilations()
     output.close()
 
 

@@ -21,7 +21,7 @@ from hep_convert_email_to_id_input import RECIDS, SEARCH, VERBOSE
 
 HN = get_collection_reclist('HepNames')
 
-COUNTER_MAX = 100
+COUNTER_MAX = 200
 
 def generate_check_digit(base_digits):
     '''
@@ -42,6 +42,8 @@ def bad_id_check(id_num):
     """Check various IDs for correct format."""
 
     email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+    email_regex = re.compile(
+        r"^[\w\-\.\'\+]+@[\w\-\.]+\.(\w{2,4}|email|canon)$")
     bitnet_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-]+\.bitnet$")
     orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     inspire_regex = re.compile(r'^INSPIRE-\d{8}$')

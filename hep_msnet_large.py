@@ -15,6 +15,7 @@ from hep_msnet import RECIDS_NOMATCH_FILE, create_xml
 MSNET_FILE = 'inspireMathscinetOutput.txt'
 MSNET_FILE = 'inspire2MathscinetOutput.txt'
 MSNET_FILE = 'inspire3MathscinetOutput.txt'
+MSNET_FILE = 'tmp_hep_msnet_large_send.out'
 
 def find_recids_nomatch():
     '''Find the records that have already been checked.'''
