@@ -169,11 +169,13 @@ def process_author_name(author):
 def create_xml(eprint=None, doi=None, author_dict=None):
     """Take in the author dictionary and write it out as xml."""
     if eprint:
+        search = 'find eprint ' + eprint + ' or recid ' + eprint
+        if '/' in eprint or '.' in eprint:
+            search = 'find eprint ' + eprint
+        recid = perform_request_search(p=search, cc='HEP') or \
+                perform_request_search(p=search, cc='Fermilab')
         try:
-            search = 'find eprint ' + eprint + ' or recid ' + eprint
-            if '/' in eprint or '.' in eprint:
-                search = 'find eprint ' + eprint
-            recid = perform_request_search(p=search, cc='HEP')[0]
+            recid = recid[0]
         except IndexError:
             print 'Do not have eprint or recid', search
             return None

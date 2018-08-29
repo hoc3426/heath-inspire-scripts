@@ -73,7 +73,7 @@ def generate_list_to_send(search):
     '''
 
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_send.out', filename)
+    filename = re.sub('.py', '_send.txt', filename)
     output = open(filename,'w')
 
     recids_nomatch = find_recids_nomatch()

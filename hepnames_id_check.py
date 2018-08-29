@@ -150,8 +150,8 @@ def new_orcids(already_seen):
 def bad_experiments_affilations():
     """Check to see bad metadata."""
 
-    metadata = {#'inst':{'HepNames':'371__a', 'Truth':'110__u'},
-                'expt':{'HepNames':'693__e', 'Truth':'119__a'}}
+    metadata = {'Institutions':{'HepNames':'371__a', 'Truth':'110__u'},
+                'Experiments':{'HepNames':'693__e', 'Truth':'119__a'}}
 
     for aff in metadata:
         for value in numpy.setdiff1d(get_all_field_values(
@@ -162,7 +162,9 @@ def bad_experiments_affilations():
             result = perform_request_search(p=search, cc='HepNames')
             result = intbitset(result) & RECIDS_HEPN
             if len(result) > 0:
-                print search, result
+                if perform_request_search(
+                p=metadata[aff]['Truth'] + ':"' + value + '"', cc=aff) == []:
+                    print search, result
 
 
 def main(input_value=None):
@@ -174,7 +176,7 @@ def main(input_value=None):
     print 'main: letter =', input_value
     output = open(filename,'w')
     sys.stdout = output
-    #check_ids(letter=input_value)
+    check_ids(letter=input_value)
     bad_experiments_affilations()
     output.close()
 
