@@ -136,6 +136,8 @@ def process_author_name(author):
     author = author.replace(r'xxxx', r'\~')
     #print 'MIDWAY1 =', author
     author = translate_latex2unicode(author)
+    if '\\' in author:
+        print 'Problem with', author
     author = author.replace(',', ', ')
     author = author.replace('.', '. ')
     author = re.sub(r'\s+', ' ', author)

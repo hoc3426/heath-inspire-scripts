@@ -5,19 +5,13 @@ or astro-ph.EP or astro-ph.IM \
 or astro-ph.sr)"
 
 
-search = "find a Anderson, A \
-or Annis, J \
+search = "find a Annis, J \
 or Bauer, D \
 or Benson, B \
-or Brice, S \
 or Buckley-Geer, E \
-or Cholis, I \
-or Chou, A \
-or Cottle, A \
+or Chou, Aaron \
 or Crisler, M \
-or Dahl, E \
 or Diehl, T \
-or Dodelson, S \
 or Drlica-Wagner, A"
 search += SEARCH_A
 print search
@@ -31,19 +25,13 @@ or Glass, H \
 or Gnedin, N \
 or Gottschalk, E \
 or Gutierrez, G \
-or Guardincerri, Y \
-or Handville, S \
-or Hogan, C \
 or Hojvat, C \
-or Hooper, D \
 or Hsu, L \
 or Kent, S \
 or Kron, R \
 or Kubik, D \
 or Krnjaic, G \
 or Kuropatkin, N \
-or Lang, C \
-or Laue, C \
 or Lebrun, P \
 or Lin, H \
 or Lippincott, H \
@@ -59,14 +47,11 @@ or Marriner, J \
 or Mazur, P \
 or Merritt, W \
 or Neilsen, E \
-or Nguyen, H \
+or Nguyen, Hogan \
 or Nord, B \
 or Peoples, J \
 or Pordes, S \
-or Rahlin \
 or Ramberg, E \
-or S Reitzner \
-or Robinson, A \
 or Soares-Santos, M \
 or Scarpine, V \
 or Sonnenschein, A \
@@ -76,7 +61,16 @@ or Tiffenberg, J \
 or Tucker, D \
 or Wester, W \
 or Yanny, B \
-or Yoo, J"
+or Yoo, J \
+or Gnedin, Nick \
+or Hooper, Dan \
+or Stebbins, Albert \
+or Kent, Steve \
+or Benson, Bradford \
+or Frieman, Josh \
+or Kron, Rich \
+or Guardincerri, Yann \
+or Hogan, Craig"
 search += SEARCH_A
 print search
 
@@ -93,23 +87,26 @@ or Fox, P \
 or Giele, W \
 or Harnik, R \
 or Hill, C \
-or Isaacson, J \
 or Kronfeld, A \
 or Lykken, J \
+or Machado, P \
 or Mackenzie, P \
 or Parke, S \
+or Prestel, S \
 or Quigg, C \
 or Van de Water, R \
 or Coloma, P \
 or Howe, K \
-or Ipek, S \
-or Kearney, J \
+or Huges, C \
+or Isaacson, J \
+or Krause, C \
 or Liu, Zhen \
 or Neumann, T \
 or Turner, J \
 or Veernala, A \
-or Banik, N \
-or Denton, P "
+or Zhang, Yue \
+or Lin, Yin \
+or Johnson, Evan "
 
 search += SEARCH_T
 print search
@@ -120,7 +117,6 @@ or Mohlabeng, G \
 or Tenneti, A \
 or Albright, C \
 or Bardeen, w \
-or Bailey, J \
 or de Gouvea, A \
 or Freeland, E \
 or Hill, R \
@@ -145,22 +141,30 @@ or Bowring, D \
 or Broemmelsiek, D \
 or Bross, A \
 or Bruce, M \
+or Burov, A \
 or Carlson, K \
 or Chou, W \
 or Crawford, D \
+or Dey, J \
+or Duel, K \
 or Edstrom, D \
 or Gallo, P \
 or Gianfelice-Wendt, E \
 or Johnson, W \
 or Johnstone, J \
 or Kriss, M \
+or Kufer, M \
+or Lebedev, V \
 or Leonova, M \
+or Madrak, R \
 or Mokhov, N \
 or Moretti, A \
+or Nagaitsev, S \
 or Neuffer, D \
 or Ng, K \
 or Novitski, I \
-or Palmer, M \
+or Pasquinelli, R \
+or Peterson, D \
 or Piekarz, H \
 or Piot, P \
 or Popovic, M \
@@ -174,6 +178,7 @@ or Shin, Y Min \
 or Shiltsev, V \
 or Snopok, P \
 or Stancari, G \
+or Stratakis, D \
 or Striganov, S \
 or Thangaraj, C \
 or Tropin, I \

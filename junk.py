@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 import unicodedata
 import re
+import operator
 import os
 import string
 from datetime import date
@@ -26,6 +27,30 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+#search = '100__a:/\\\\/ or 700__a:/\\\\/ 710__g:babar 001:1000000->1700000'
+#print search
+#result = perform_request_search(p=search, cc='HEP')
+#print len(result)
+#output = open("tmp.out","w+")
+#for recid in result:
+#    #print 'or', recid
+#    output.write(print_record(recid, ot=['100', '700'],format='xm'))
+#output.close()
+#quit()
+
+
+
+collabs = get_all_field_values('710__g')
+collab_dict = {}
+for collab in collabs:
+    result = perform_request_search(p='710__g:' + collab + ' date:2017->2018', 
+                                    cc='HEP')
+    if len(result) > 10:
+        collab_dict[collab] = len(result)
+sorted_collab_dict = sorted(collab_dict.items(), key=operator.itemgetter(1))
+for key in sorted_collab_dict:
+    print key, sorted_collab_dict[key]
+quit()
 
 print print_record(1665613, ot=['700'],format='hm')
 quit()

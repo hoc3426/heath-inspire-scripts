@@ -118,7 +118,7 @@ if __name__ == '__main__':
     PDF_CHECK = False
     QUIET = False
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'p:q')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'pq')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)

@@ -33,6 +33,7 @@ or 100__v:/60510/ or 700__v:/60510/ \
 or 100__v:/Fermilab/ or 700__v:/Fermilab/ \
 or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
 or 100__v:/Brookhaven/ or 700__v:/Brookhaven/ \
+or 100__v:/Stony Brook/ or 700__v:/Stony Brook/ \
 or 100__v:/jlab/ or 700__v:/JLAB/ \
 or 100__v:/cern/ or 700__v:/cern/ \
 -100__u:/\\w/ \
@@ -46,7 +47,7 @@ or 100__v:/slac/ or 700__v:/slac/ \
 -700__u:/\\w/'
     atsearch_today = 'find du today'
     #atsearch = atsearch_today
-    atsearch = atsearch_fermilab
+    #atsearch = atsearch_fermilab
     print atsearch
     result = perform_request_search(p=atsearch, cc='HEP')
     result.reverse()
