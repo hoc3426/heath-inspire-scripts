@@ -9,6 +9,7 @@ from BeautifulSoup import BeautifulSoup as BS
 from operator import itemgetter
 
 import re
+import time
 
 from invenio.search_engine import perform_request_search
 from particle_discoveries_input import DISCOVERY_LIST
@@ -225,6 +226,9 @@ def create_html():
 
     email = ELEMENT.A(EMAIL, href=MAILTO)
     paragraph = ELEMENT.P(PARAGRAPH, email, ".")
+    date_time = 'Updated ' + time.strftime('%Y-%m-%d %H:%M:%S')
+    date_time = ELEMENT.I(date_time)
+    paragraph.append(date_time)
     paragraph = LH.tostring(paragraph)
     paragraph = re.sub(r' \.', '.', paragraph)
 

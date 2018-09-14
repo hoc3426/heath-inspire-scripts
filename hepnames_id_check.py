@@ -147,6 +147,23 @@ def new_orcids(already_seen):
             #      format(str(recid), orcid)
 
 
+def bad_url_z():
+    """Check to make sure $$z field is correct."""
+
+    field = '8564_z'
+    GOOD_VALUES = set(['postprint', 'openaccess'])
+    for value in get_all_field_values(field):
+        search = field + ':' + value
+        result = perform_request_search(p=search, cc='Fermilab')
+        if len(result) == 0:
+            continue
+        if value in GOOD_VALUES:
+            print value, len(result)
+        else:
+            print value, result
+
+            
+
 def bad_experiments_affilations():
     """Check to see bad metadata."""
 
@@ -178,6 +195,7 @@ def main(input_value=None):
     sys.stdout = output
     check_ids(letter=input_value)
     bad_experiments_affilations()
+    bad_url_z()
     output.close()
 
 
