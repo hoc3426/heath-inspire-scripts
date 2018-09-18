@@ -26,11 +26,11 @@ def check_record_status(recid):
     if True in accepted_status:
         return True
     elif None in accepted_status:
-        if not QUIET:
+        if VERBOSE:
             print 'No url on:\nhttp://inspirehep.net/record/' + str(recid)
         return False
     else:
-        if not QUIET:
+        if VERBOSE:
             print recid, accepted_status
         return False
 
@@ -46,6 +46,9 @@ def check_doi(doi):
         result = perform_request_search(p=search, cc='HEP')
         if len(result) == 1:
             recid = result[0]
+            if 'Published' not in get_fieldvalues(recid, "980__a"):
+                print '** Record not marked as published:'
+                print 'http://inspirehep.net/record/' + str(recid) + '\n'
             affiliations = get_fieldvalues(recid, "100__u") \
                          + get_fieldvalues(recid, "700__u")
             if "Fermilab" not in affiliations:
@@ -59,7 +62,7 @@ def check_doi(doi):
                 if report_number.startswith('arXiv'):
                     eprint = report_number
                     break
-            if eprint or QUIET == False:
+            if eprint or VERBOSE:
                 print '* Fermilab report number needed on:'
                 if eprint:
                     print eprint
@@ -105,6 +108,7 @@ def main():
 
     result = {}
     for year in YEARS:
+        print 'Year:', year
         result[year] = check_accepted(DOIS[year], TOTAL[year])
     for year in YEARS:
         print 'Fiscal Year:', year
@@ -116,9 +120,9 @@ def main():
 if __name__ == '__main__':
 
     PDF_CHECK = False
-    QUIET = False
+    VERBOSE = False
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'pq')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'pv')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
@@ -126,8 +130,8 @@ if __name__ == '__main__':
     for option, argument in OPTIONS:
         if option == '-p':
             PDF_CHECK = True
-        elif option == '-q':
-            QUIET = True
+        elif option == '-v':
+            VERBOSE = True
     try:
         RECID = ARGUMENTS[0]
         check_accepted([RECID], 1)

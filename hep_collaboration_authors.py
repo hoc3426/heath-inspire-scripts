@@ -206,6 +206,9 @@ def create_xml(eprint=None, doi=None, author_dict=None):
             affiliation = re.sub(r'([\.\,]+)', r'\1 ', affiliation)
             affiliation = re.sub(r'\s+', ' ', affiliation)
             affiliation = re.sub(r'\s$', r'', affiliation)
+            affiliation = re.sub(r'\s*also at[\:\s]*', r'',  
+                                 affiliation, re.IGNORECASE)
+            affiliation = re.sub(r'\s*\\and$', r'', affiliation)
 
             if r"@" in affiliation and r"0000-" in affiliation:
                 affiliation = affiliation.replace(';', ' ')

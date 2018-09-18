@@ -27,6 +27,18 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+domain = set()
+for url in get_all_field_values('8564_u'):
+    if re.search('([^\/]+linkedin[^\/]+)', url):
+        domain.add(r'\1')
+print domain
+quit()
+
+for x in range(1,14):
+    search = 'find topcite ' + str(x) + '000->' + str(x) + '999'
+    print search, len(perform_request_search(p=search, cc='HEP'))
+quit()
+
 #search = '100__a:/\\\\/ or 700__a:/\\\\/ 710__g:babar 001:1000000->1700000'
 #print search
 #result = perform_request_search(p=search, cc='HEP')

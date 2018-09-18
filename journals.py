@@ -16,8 +16,8 @@ for eprint in eprints :
     search = "037:fermilab* 773__p:IEEE* (773__y:2011 or 773__y:2012 or 773__y:2013 or 773__y:2014 or 773__y:2015 or 773__y:2016)"
     search = "037:fermilab* 773__y:2016 980:published"
     search = "find exp fnal-e-0741 or exp fnal-e-0775 or exp fnal-e-0830"
-    #search = "037:fermilab* 980:published 773__y:2016 authorcount:50+"
-    x = perform_request_search(p=search,cc='HEP')
+    search = "037:/ND/ 980:published 773__y:2018" # authorcount:50+"
+    x = perform_request_search(p=search,cc='Fermilab')
     journals = []
     for r in x :    
       try:
