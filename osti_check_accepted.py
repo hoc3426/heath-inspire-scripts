@@ -4,6 +4,7 @@
 import getopt
 import re
 import sys
+from Counter import Counter
 
 from invenio.search_engine import perform_request_search, \
                                   get_fieldvalues
@@ -12,6 +13,8 @@ from osti_web_service import get_url, get_osti_id, \
      check_already_sent
 from osti_check_accepted_dois import DOIS, TOTAL, YEARS
 
+JOURNALS = []
+
 def check_record_status(recid):
     """Checks to see if a PDF has already been sent
        or if we have an accepted manuscript.
@@ -19,6 +22,13 @@ def check_record_status(recid):
 
     if check_already_sent(recid):
         return True
+
+    try:
+        JOURNALS.append(get_fieldvalues(recid, '773__p')[0])
+    except IndexError:
+        print 'No journal on:\nhttp://inspirehep.net/record/' + \
+               str(recid)
+
     if not PDF_CHECK:
         return False
     print "Checking accepted status", recid
@@ -116,13 +126,16 @@ def main():
                                                  result[year][2])
         print 'Number -> OSTI:    ', calc_output(result[year][1],
                                                  result[year][2])
+    JOURNALS.sort()
+    for key in Counter(JOURNALS):
+        print key, Counter(JOURNALS)[key]
 
 if __name__ == '__main__':
 
     PDF_CHECK = False
     VERBOSE = False
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'pv')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'pvy:')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
@@ -130,8 +143,14 @@ if __name__ == '__main__':
     for option, argument in OPTIONS:
         if option == '-p':
             PDF_CHECK = True
-        elif option == '-v':
+        if option == '-v':
             VERBOSE = True
+        if option == '-y':
+            try:
+                YEARS = [int(argument)]
+            except ValueError:
+                print argument, 'is not a year'
+                quit()
     try:
         RECID = ARGUMENTS[0]
         check_accepted([RECID], 1)
