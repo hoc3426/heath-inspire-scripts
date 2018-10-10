@@ -128,7 +128,7 @@ def main():
                                                  result[year][2])
     JOURNALS.sort()
     for key in Counter(JOURNALS):
-        print key, Counter(JOURNALS)[key]
+        print '{0:26s} {1:2d}'.format(key, Counter(JOURNALS)[key])
 
 if __name__ == '__main__':
 

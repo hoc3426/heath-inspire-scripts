@@ -131,6 +131,7 @@ def process_author_name(author):
     author = re.sub('[ ]+', ' ', author)
     author = re.sub(r'\\(cor|corauth|fn)ref\{\w+\}', r'', author)
     author = re.sub(r'\}?\\thanks\{\\?.*\}?', r'', author)
+    author = author.replace(r'\,', r'~')
     author = author.replace(r'\~', r'xxxx')
     author = author.replace(r'~', r' ')
     author = author.replace(r'xxxx', r'\~')

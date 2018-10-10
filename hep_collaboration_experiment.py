@@ -40,6 +40,7 @@ experiments = {
 'PHENIX':'BNL-RHIC-PHENIX',
 'PHOBOS':'BNL-RHIC-PHOBOS',
 'SciBooNE':'FNAL-E-0954',
+'SPT':'SPT',
 'STAR':'BNL-RHIC-STAR',
 'T2K':'T2K',
 'Telescope Array':'TELESCOPE-ARRAY'

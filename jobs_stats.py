@@ -14,9 +14,9 @@ print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 #if False:
 #  for field in fields:
 grand_total = 0
-#  for month in range(1,10) + [10, 11, 12]:
+for month in range(1,10) + [10, 11, 12]:
 #  for month in [10, 11, 12]:
-for month in range(4,7):
+#for month in range(4,7):
   if month < 10:
       month = '0' +  str(month)
   search = 'dadd:2018-' + str(month)

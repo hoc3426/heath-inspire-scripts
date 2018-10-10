@@ -43,7 +43,10 @@ def bad_id_check(id_num):
 
     email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
     email_regex = re.compile(
-        r"^[\w\-\.\'\+]+@[\w\-\.]+\.(\w{2,4}|email|canon)$")
+        u"^[\w\-\.\'\+]+@[\w\-\.]+\.(\w{2,4}|email|canon)$")
+    email_regex = re.compile(
+        r"^(([^<>()\[\]\.,;:\s@\"]{1,64}(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@\[*(?!.*?\.\.)(([^<>()[\]\.,;\s@\"]+\.?)+[^<>()[\]\.,;\s@\"]{2,})\]?$")
+
     bitnet_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-]+\.bitnet$")
     orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     inspire_regex = re.compile(r'^INSPIRE-\d{8}$')

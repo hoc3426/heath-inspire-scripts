@@ -27,6 +27,169 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+OSTIS = ["15017018",
+"15017308",
+"784401",
+"783404",
+"804712",
+"805567",
+"811926",
+"1226354",
+"815976",
+"816272",
+"820745",
+"820903",
+"828011",
+"828681",
+"825289",
+"15011775",
+"15011773",
+"15011784",
+"15011768",
+"15011779",
+"939716",
+"990844",
+"815749",
+"875566",
+"879050",
+"892264",
+"892333",
+"892384",
+"971008",
+"6472570",
+"897155",
+"993218",
+"993216",
+"993557",
+"15017331",
+"15011486",
+"15020205",
+"892513",
+"15017283",
+"15020168",
+"879160",
+"15020356",
+"892460",
+"879031",
+"892452",
+"892345",
+"937252",
+"5881220",
+"6401803",
+"5731078",
+"878946",
+"892287",
+"7181",
+"804448"]
+
+#for recid in perform_request_search(p='035__z:/\d/', cc='HEP'):
+#    print print_record(recid, ot=['035'],format='hm')
+#quit()
+
+
+for osti in OSTIS:
+    result = perform_request_search(p='035:__z' + osti, cc='HEP')
+    if len(result) == 1:
+        print recid
+    if len(result) == 0:
+        print "Don't have:", osti
+        continue
+    recid = result[0]
+    for recid in result:
+        for item in BibFormatObject(int(recid)).fields('035__'):
+            if item.has_key('9') and item.has_key('a'):
+                if item['9'].lower() == 'osti':
+                    if int(item['a']) == int(osti):
+                        continue
+                    else:
+                        print "Different osti r,o,this", recid, osti, item['a']
+                else:
+                    if item['a'].isdigit():
+                        if int(item['a'])== int(osti):
+                            print "Other ID r,o,this", recid, osti, item['9']
+
+quit()
+
+
+search = 'find tc t and cc us and date > 2009'
+search = 'reportnumber:"fermilab-thesis*"'
+result = perform_request_search(p=search, cc='HEP')
+elements = ['100__a', '502__b', '502__d', '502__c', '245__a', '693__e', '701__a']
+#for recid in result[:5]:
+for recid in result:
+    line = str(recid) + '|'
+    for element in elements:
+        try:
+            value = get_fieldvalues(recid, element)[0]
+            if element == '502__d':
+                value = value[:4]
+        except IndexError:
+            value = ''
+            if element == '502__d':
+                value = get_fieldvalues(recid, '269__c')[0][:4]
+            elif element == '502__c':
+                try:
+                    value = get_fieldvalues(recid, '100__u')[0]
+                except IndexError:
+                    print 'No aff on', recid
+                    quit() 
+        line += value + '|'
+    print line
+quit()
+
+
+for number in range(1,20):
+    search = 'find fc p or fc t and tc p and topcite 100+ and ac ' + str(number)
+    x1 = perform_request_search(p=search, cc='HEP')
+    search = 'find fc p or fc t and tc p and ac ' + str(number)
+    x2 = perform_request_search(p=search, cc='HEP')
+    print '{0:2d} {1:8d} {2:10d} {3:10f}'.format(number, len(x1), len(x2), float(len(x1))/float(len(x2)))
+quit()
+
+#SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
+#419__a:/^FNAL/ or 119__u:Fermilab"
+#SEARCH += ' -980:ACCELERATOR'
+#search=SEARCH
+#for recid in perform_request_search(p=search, cc='Experiments'):
+#    print print_record(recid,format='xm')
+#quit()
+
+hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
+print 'hiddenm', len(hidden_m)
+hidden_o = search_unit('*@fnal.gov', f='595__o', m='a')
+print 'hiddeno', len(hidden_o)
+search = '371:/fnal.gov$/'
+result = intbitset(perform_request_search(p=search, cc='HepNames'))
+print '371', len(result)
+result = hidden_m | hidden_o | result
+print 'result mor', len(result)
+search = '035__9:orcid'
+result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
+print 'result orcid', len(result)
+for recid in result:
+    orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+    for email in get_fieldvalues(recid, '371__m') + \
+                 get_fieldvalues(recid, '371__o') + \
+                 get_fieldvalues(recid, '595__m') + \
+                 get_fieldvalues(recid, '595__o'):
+        if re.search(r'fnal.gov', email):
+            x = get_hepnames_recid_from_email(email)
+            try:
+                len(x)
+                print "CHECK THIS", recid, email, x
+            except TypeError:
+                email_fnal = email
+                break
+    continue
+    try:
+        output = email_fnal + ',' + orcid
+        print output
+    except NameError:
+        print recid
+print recid, email
+quit()
+
+
 domain = set()
 for url in get_all_field_values('8564_u'):
     if re.search('([^\/]+linkedin[^\/]+)', url):
@@ -387,20 +550,6 @@ for recid in perform_request_search(p=search, cc='HEP'):
 quit()
 
 
-search = '035__9:orcid 371__m:/fnal.gov$/'
-for recid in perform_request_search(p=search, cc='HepNames'):
-    orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
-    for email in get_fieldvalues(recid, '371__m'):
-        if re.search(r'fnal.gov', email):
-            email_fnal = email
-            break
-    try:
-        output = email_fnal + ',' + orcid
-        print output
-    except NameError:
-        print recid
-quit()
- 
 
 search_d = {'osti':'035__9:osti', 'doi':'0247_2:doi',
           'arXiv':'980__a:arXiv'}

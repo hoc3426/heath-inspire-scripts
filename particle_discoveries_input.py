@@ -14,6 +14,19 @@ DISCOVERY_LIST = [
  'laureates_wolf':''
 },
 
+{'discovery':'Inventions in laser physics',
+ 'year':'1970 and 1985',
+ 'papers':('63002', '1696667'),
+ 'lab':('Bell Labs and Rochester', 
+        ('AT-T Bell Labs, Holmdel', 'Rochester U.')),
+ 'exp':'',
+ 'nobel':'2018',
+ 'laureates':'Ashkin, Mourou, Strickland',
+ 'wolf':'',
+ 'laureates_wolf':''
+},
+
+
 {'discovery':'Gravitational waves',
  'year':'2016',
  'papers':'1421100',
