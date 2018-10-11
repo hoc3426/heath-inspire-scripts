@@ -24,6 +24,7 @@ from invenio.search_engine import get_collection_reclist
 
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
+from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
@@ -86,8 +87,8 @@ OSTIS = ["15017018",
 #    print print_record(recid, ot=['035'],format='hm')
 #quit()
 
-
-for osti in OSTIS:
+if 0:
+#for osti in OSTIS:
     result = perform_request_search(p='035:__z' + osti, cc='HEP')
     if len(result) == 1:
         print recid
@@ -108,16 +109,17 @@ for osti in OSTIS:
                         if int(item['a'])== int(osti):
                             print "Other ID r,o,this", recid, osti, item['9']
 
-quit()
+#quit()
 
 
 search = 'find tc t and cc us and date > 2009'
-search = 'reportnumber:"fermilab-thesis*"'
+search = 'reportnumber:"fermilab-thesis*" 500:/advisor/ -701:/\w/'
+search = 'reportnumber:"fermilab-masters*"'
 result = perform_request_search(p=search, cc='HEP')
-elements = ['100__a', '502__b', '502__d', '502__c', '245__a', '693__e', '701__a']
+elements = ['100__a', '500__a', '502__b', '502__d', '502__c', '245__a', '693__e', '701__a', '701__u']
 #for recid in result[:5]:
 for recid in result:
-    line = str(recid) + '|'
+    line = str(recid).zfill(9) + '|'
     for element in elements:
         try:
             value = get_fieldvalues(recid, element)[0]
@@ -133,6 +135,16 @@ for recid in result:
                 except IndexError:
                     print 'No aff on', recid
                     quit() 
+        #if element in ['500__a', '502__c', '701__a', '701__u']:
+        #    if element == '500__a':
+        #        match = re.match(r'Ph.D.\s*Thesis\s*\(Advisor[;:]\s*(.*)\)', value, 
+        #                         re.IGNORECASE)
+        #        try:
+        #            value = author_first_last(match.group(1))
+        #        except AttributeError:
+        #            print '!!!!!!', recid
+        #    #print  recid, element, value
+        #    line += element + value + '$$'
         line += value + '|'
     print line
 quit()

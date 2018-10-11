@@ -48,7 +48,7 @@ or 100__v:/slac/ or 700__v:/slac/ \
     atsearch_today = 'find du today'
     #atsearch = "find a atiyah not cc uk not cc us"
     #atsearch = atsearch_today
-    atsearch = atsearch_fermilab
+    #atsearch = atsearch_fermilab
     print atsearch
     result = perform_request_search(p=atsearch, cc='HEP')
     result.reverse()
