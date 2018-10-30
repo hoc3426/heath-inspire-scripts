@@ -4,9 +4,11 @@ import unicodedata
 import re
 import os
 
+from invenio.intbitset import intbitset
 from invenio.search_engine import print_record
 from invenio.search_engine import perform_request_search
-from invenio.intbitset import intbitset
+from invenio.textmarc2xmlmarc import encode_for_xml
+
 
 DATAS = [
 ['asqtad', '64192f21b781m0028m014', '10.15484/milc.asqtad.en24a/1177873', '1364957'],
@@ -76,18 +78,15 @@ BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
 #BOOKS = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
 #['W5013','w5013','CERN-W5013','863473']]
 #BOOKS = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
-
-#BOOKS = [['Kaluza','966','Sitzungsber.Preuss.Akad.Wiss.Berlin (Math.Phys.),1921,966','14621']] 
-#BOOKS = [['Gibbons','karpacz','PRINT-86-0411','18460','1986']]
-#BOOKS = [['Gibbons','quantized flux tubes in einstein','PRINT-86-0411','18460','1986']]
-BOOKS = [['Jeanneret','time projection chambers and detection of neutrinos','HA-60456','1680989','2001']]
-BOOKS = [['Jeffreys','Theory of Probability','9780198503682', '1420611']]
-EXCEPTION = None
-#EXCEPTION = 'Klein'
+BOOKS = [['Baxter', 
+'exactly solved models in statistical mechanics', '0486462714' ,
+'1120339']]
+#BOOKS = [['Anderson','The Problem of time','9783319588469','1625434','2017']]
 
 for book in BOOKS:
-    referenceFlag = False
-    date = False
+    reference_flag = False
+    date = None
+    counter = 0
     author = book[0]
     title = book[1].lower()
     isbn = book[2]
@@ -95,24 +94,24 @@ for book in BOOKS:
     recid = book[3]
     if len(book) == 5 : date = book[4]
     if re.search(r"\-",isbn): isbnTag = "r"
-    if re.search(r"\.",isbn): isbnTag = "s"
-    fileName =  'tmp___hep_reference_book_' + recid + '.out'
-    fileName2 = 'tmp__hep_reference_book_' + recid + '.out'
-    fileName3 = 'tmp_hep_reference_book_' + recid + '.out'
 
-    search_author = '999C5:/' + author + '/ -refersto:recid:' + recid
-    search_title  = '999C5:/' + title  + '/ -refersto:recid:' + recid
+    search_author = '999C5:/' + author + '/'
+    search_title  = '999C5:/' + title + '/ -refersto:recid:' + recid
     x_author = perform_request_search(p=search_author,cc='HEP')
     x_title = perform_request_search(p=search_title,cc='HEP')
-    x = list(intbitset(x_author) & intbitset(x_title))
-    x = x[:50]
+    result = list(intbitset(x_author) & intbitset(x_title))
 
-    output = open(fileName,'w')
-    for r in x:
-        output.write(print_record(r,ot=['999C5'],format='hm'))
-    output.close()
-    output2 = open(fileName2,'w')
-    for i in open(fileName,'r'):
+    records = []
+    new_records = []
+    for recid in result:
+        records.append(print_record(recid, ot=['999C5'], format='hm'))
+    #lines = [record.split('\n') for record in records]]
+    for record in records:
+      if counter > 50:
+          continue
+      new_record = []
+      reference_flag = False
+      for i in record.split('\n'):
         i = re.sub(r'\n',r'',i)
         i = re.sub(r'</?pre>','',i)
         i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
@@ -121,87 +120,21 @@ for book in BOOKS:
             #j = re.sub(r',',r' ',j)
             #j = re.sub('[ ]+',r' ',j)
             if re.search(title, j) and not re.search(r'$$0', j):
-                try:
-                    if re.search(EXCEPTION.lower(), j):
-                        print EXCEPTION, i
-                        continue
-                except AttributeError:
-                    pass
                 if date:
                     if re.search(date,j):
-                       i = i + "$$" + isbnTag + isbn + "$$0" + recid
-                       referenceFlag = True
+                       i = i + "$$" + isbnTag + isbn + "$$0" + str(recid)
+                       reference_flag = True
                 else:
-                    i = i + "$$" + isbnTag + isbn  + "$$0" + recid
-                    referenceFlag = True
+                    i = i + "$$" + isbnTag + isbn  + "$$0" + str(recid)
+                    reference_flag = True
                 if not re.search(r'CURATOR',i):
-                    i = i + "$$9CURATOR$$z1"
-        output2.write(i)
-        output2.write("\n")
-    output2.close()
-    conversion = "iconv -c -f utf-8 -t ascii " + fileName2 + " > " + fileName3
-    os.system(conversion)
-    os.unlink(fileName)
-    os.unlink(fileName2)
-    if not referenceFlag : os.unlink(fileName3)
-
-RECID = 1421164
-RECID = 1394175
-
-x = [RECID]
-recid = str(RECID)
-
-fileName =  'tmp___hep_reference_book' + recid + '.out'
-fileName2 = 'tmp__hep_reference_book' + recid + '.out'
-fileName3 = 'tmp_hep_reference_book' + recid + '.out'
-
-output = open(fileName,'w')
-for r in x:
-    output.write(print_record(r,ot=['999C5'],format='hm'))
-output.close()
-output2 = open(fileName2,'w')
-
-for i in open(fileName,'r'):
-    i = re.sub(r'\n',r'',i)
-    i = re.sub(r'</?pre>','',i)
-    i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
-
-    for book in BOOKS:  
-        referenceFlag = False
-        date = False
-        author = book[0]
-        title = book[1]
-        doi = book[2]
-        doiTag = "a"
-        recid = book[3]
-        if len(book) == 5 : date = book[4]
-        if re.search(r"\-",doi): doiTag = "r"
-
-        i = re.sub(r'\n',r'',i)
-        i = re.sub(r'</?pre>','',i)
-        i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
-        if re.search(author,i):
-            j = i.lower()
-            #j = re.sub(r',',r' ',j)
-            #j = re.sub('[ ]+',r' ',j)
-            title_strict = re.compile(r'\b%s\b' % title, re.I) 
-            if re.search(title_strict, j) and not re.search(r'\$\$0', j):
-                referenceFlag = True
-                if date:
-                    if re.search(date,j):
-                       i = i + "$$" + doiTag + doi + "$$0" + recid
-                else:
-                    print i
-                    i = i + "$$" + doiTag + doi  + "$$0" + recid
-                    print i
-                if not re.search(r'CURATOR',i):
-                    i = i + "$$9CURATOR$$z1"
-    output2.write(i)
-    output2.write("\n")
-output2.close()
-conversion = "iconv -c -f utf-8 -t ascii " + fileName2 + " > " + fileName3
-os.system(conversion)
-os.unlink(fileName)
-os.unlink(fileName2)
-if not referenceFlag : os.unlink(fileName3)
+                    i = i + "$$9CURATOR"
+                if reference_flag:
+                    counter += 1
+        new_record.append(i)
+      if reference_flag:
+        new_records.append(new_record)
+for record in new_records:
+    for line in record:
+        print line
 

@@ -27,7 +27,6 @@ experiments = {
 'DUNE':'DUNE',
 'IceCube':'ICECUBE',
 'LHCb':'CERN-LHC-LHCB',
-'LIGO Scientific':'LIGO',
 'LUX':'LUX',
 'MAGIC':'MAGIC',
 'MicroBooNE':'FNAL-E-0974',
@@ -41,11 +40,9 @@ experiments = {
 'PHENIX':'BNL-RHIC-PHENIX',
 'PHOBOS':'BNL-RHIC-PHOBOS',
 'SciBooNE':'FNAL-E-0954',
-'SPT':'SPT',
 'STAR':'BNL-RHIC-STAR',
 'T2K':'T2K',
-'Telescope Array':'TELESCOPE-ARRAY',
-'Virgo':'VIRGO'
+'Telescope Array':'TELESCOPE-ARRAY'
 }
 
 def create_xml(recid, experiment):

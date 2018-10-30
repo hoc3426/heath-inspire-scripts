@@ -64,7 +64,10 @@ def main(recids):
         try:
             contact_email = get_fieldvalues(recid_int, '371__m')[0]
         except IndexError:
-            contact_email = 'hoc@fnal.gov'
+            try:
+                contact_email = get_fieldvalues(recid_int, '595__m')[0]
+            except IndexError:
+                contact_email = 'hoc@fnal.gov'
         try:
             contact_name = get_fieldvalues(recid_int, '100__a')[0]
             if "," in contact_name:

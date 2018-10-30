@@ -83,9 +83,10 @@ OSTIS = ["15017018",
 "7181",
 "804448"]
 
-#for recid in perform_request_search(p='035__z:/\d/', cc='HEP'):
-#    print print_record(recid, ot=['035'],format='hm')
-#quit()
+
+if 0:
+#for recid in perform_request_search(p='500__a:/All figures and tables/', cc='HEP'):
+    print print_record(recid, ot=['500'],format='hm')
 
 if 0:
 #for osti in OSTIS:
@@ -114,7 +115,9 @@ if 0:
 
 search = 'find tc t and cc us and date > 2009'
 search = 'reportnumber:"fermilab-thesis*" 500:/advisor/ -701:/\w/'
-search = 'reportnumber:"fermilab-masters*"'
+search = 'reportnumber:"CERN-thesis-*"'
+search = '693:cern-* or 035:cds or 037:cern-thesis* and 980:thesis'
+search = 'find tc t and cc us and date < 2010'
 result = perform_request_search(p=search, cc='HEP')
 elements = ['100__a', '500__a', '502__b', '502__d', '502__c', '245__a', '693__e', '701__a', '701__u']
 #for recid in result[:5]:
@@ -128,7 +131,11 @@ for recid in result:
         except IndexError:
             value = ''
             if element == '502__d':
-                value = get_fieldvalues(recid, '269__c')[0][:4]
+                try:
+                    value = get_fieldvalues(recid, '269__c')[0][:4]
+                except IndexError:
+                    print 'No date on', recid
+                    quit()
             elif element == '502__c':
                 try:
                     value = get_fieldvalues(recid, '100__u')[0]

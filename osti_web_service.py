@@ -614,6 +614,8 @@ def find_records(search_input=None):
         return None
     print search
     result = perform_request_search(p=search, cc='Fermilab')
+    if VERBOSE:
+        print len(result)
     if len(result) > 0:
         log = open(LOGFILE, 'a')
         date_time_stamp = \

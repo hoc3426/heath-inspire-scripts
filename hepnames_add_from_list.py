@@ -34,7 +34,11 @@ EXPERIMENT = None
 EXPERIMENT = 'WiggleZ'
 EXPERIMENT = 'DUNE'
 EXPERIMENT = 'HAWC'
-EXPERIMENT = None
+EXPERIMENT = 'KATRIN'
+EXPERIMENT = 'SUPER-KAMIOKANDE'
+#EXPERIMENT = None
+
+
 
 SOURCE = 'Fermilab'
 #SOURCE = 'HARPO'
@@ -42,6 +46,8 @@ SOURCE = 'WiggleZ'
 SOURCE = 'Fermilab'
 SOURCE = 'HAWC'
 SOURCE = 'Fermilab'
+SOURCE = 'KATRIN'
+SOURCE = 'SUPER-KAMIOKANDE'
 
 #INSPIRE = 72053
 #INSPIRE = 72499
@@ -54,6 +60,8 @@ SOURCE = 'Fermilab'
 #INSPIRE = 78756
 #INSPIRE = 78849
 INSPIRE =  78890
+INSPIRE =  78916
+INSPIRE =  78935
 
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''

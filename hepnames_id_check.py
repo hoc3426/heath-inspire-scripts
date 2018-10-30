@@ -61,7 +61,7 @@ def check_ids(letter=None):
     already_seen = {}
     duplicates   = set()
     bad_id_set   = set()
-    fields = ['035__a', '371__m']
+    fields = ['035__a', '035__z', '371__m']
     print 'check_ids: letter =', letter
     if letter:
         fields.append('100__a')
