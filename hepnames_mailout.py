@@ -65,6 +65,7 @@ def main(recids):
             contact_email = get_fieldvalues(recid_int, '371__m')[0]
         except IndexError:
             try:
+                #The hidden contact address
                 contact_email = get_fieldvalues(recid_int, '595__m')[0]
             except IndexError:
                 contact_email = 'hoc@fnal.gov'
