@@ -1,14 +1,20 @@
 #!/usr/bin/python
 
-import unicodedata
+'''Stadardizes references to books and other items.'''
+
 import re
 import os
+import sys
+#import unicodedata
+
+from contextlib import contextmanager
 
 from invenio.intbitset import intbitset
 from invenio.search_engine import print_record
 from invenio.search_engine import perform_request_search
-from invenio.textmarc2xmlmarc import encode_for_xml
+from invenio.textmarc2xmlmarc import transform_file
 
+COUNTER_MAX = 1
 
 DATAS = [
 ['asqtad', '64192f21b781m0028m014', '10.15484/milc.asqtad.en24a/1177873', '1364957'],
@@ -49,7 +55,7 @@ DATAS = [
 
 BOOKS = [
 #['Itzykson', 'quantum field theory', '0486445682', '159194'],
-['Baxter', 'exactly solved models in statistical mechanics', '0486462714' , 
+['Baxter', 'exactly solved models in statistical mechanics', '0486462714' ,
 '1120339'],
 ['Carroll', 'spacetime and geometry', '0805387323', '650093'],
 ['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
@@ -59,46 +65,52 @@ BOOKS = [
 ['Zee', 'einstein gravity in a nutshell', '069114558X', '1230427'],
 ['Quigg', 'gauge theories of the strong', '0805360204', '195708', '1983'],
 ['Quigg', 'gauge theories of the strong', '0805360204', '195708'],
-['Zinn\-Justin', 'quantum field theory and critical phenomena', '0198509235', '290037'],
-['Deligne','quantum fields and strings', '0821820125', '508870'],
-['Collins','foundations of perturbative qcd','9781107645257','922696'],
-['Chandrasekhar','mathematical theory of black holes','9780198503705','224457'],
-['H\S+bsch','bestiary for physicists','9789810219277','338506'],
-['Streater','pct.*spin and statistics.*and all that','0691070628','290343'],
-['Galperin','harmonic superspace*camb','9780511535109','570842'],
-['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512'],
-['W5013','w5013','CERN-W5013','863473']]
+['Zinn-Justin', 'quantum field theory and critical phenomena', '0198509235', '290037'],
+['Deligne', 'quantum fields and strings', '0821820125', '508870'],
+['Collins', 'foundations of perturbative qcd', '9781107645257', '922696'],
+['Chandrasekhar', 'mathematical theory of black holes', '9780198503705', '224457'],
+[r'H\S+bsch', 'bestiary for physicists', '9789810219277', '338506'],
+['Streater', 'pct.*spin and statistics.*and all that', '0691070628', '290343'],
+['Galperin', 'harmonic superspace*camb', '9780511535109', '570842'],
+['Feynman', r'photon[\s\-]+hadron interactions', '9780201360745', '85512'],
+['W5013', 'w5013', 'CERN-W5013', '863473']]
 
-BOOKS = [['Streater','pct.*spin and statistics.*and all that','0691070628','290343']]
-#BOOKS = [['Chandrasekhar','mathematical theory of black holes','9780198503705','224457']]
+BOOKS = [['Streater', 'pct.*spin and statistics.*and all that', '0691070628', '290343']]
+#BOOKS = [['Chandrasekhar', 'mathematical theory of black holes', '9780198503705', '224457']]
 BOOKS = [['Birrell', 'quantum fields in curved space', '0521278589', '181166'],
-['W5013','w5013','CERN-W5013','863473'],
+['W5013', 'w5013', 'CERN-W5013', '863473'],
 ['Baxter', 'exactly solved models in statistical mechanics', '0486462714' ,
 '1120339']]
-#BOOKS = [['Galperin','harmonic superspace.*camb','9780511535109','570842'],
-#['W5013','w5013','CERN-W5013','863473']]
-#BOOKS = [['Feynman','photon[\s\-]+hadron interactions', '9780201360745', '85512']]
-BOOKS = [['Baxter', 
+#BOOKS = [['Galperin', 'harmonic superspace.*camb', '9780511535109', '570842'],
+#['W5013', 'w5013', 'CERN-W5013', '863473']]
+#BOOKS = [['Feynman', 'photon[\s\-]+hadron interactions', '9780201360745', '85512']]
+BOOKS = [['Baxter',
 'exactly solved models in statistical mechanics', '0486462714' ,
 '1120339']]
-#BOOKS = [['Anderson','The Problem of time','9783319588469','1625434','2017']]
+#BOOKS = [['Anderson', 'The Problem of time', '9783319588469', '1625434', '2017']]
 
-for book in BOOKS:
+def process_references(book):
+    '''
+    Look through reference list to find the cited reference and clean it up.
+    '''
+
     reference_flag = False
     date = None
     counter = 0
     author = book[0]
     title = book[1].lower()
     isbn = book[2]
-    isbnTag = "i"
+    isbn_tag = "i"
     recid = book[3]
-    if len(book) == 5 : date = book[4]
-    if re.search(r"\-",isbn): isbnTag = "r"
+    if len(book) == 5:
+        date = book[4]
+    if re.search(r"\-", isbn):
+        isbn_tag = "r"
 
     search_author = '999C5:/' + author + '/'
     search_title  = '999C5:/' + title + '/ -refersto:recid:' + recid
-    x_author = perform_request_search(p=search_author,cc='HEP')
-    x_title = perform_request_search(p=search_title,cc='HEP')
+    x_author = perform_request_search(p=search_author, cc='HEP')
+    x_title = perform_request_search(p=search_title, cc='HEP')
     result = list(intbitset(x_author) & intbitset(x_title))
 
     records = []
@@ -107,34 +119,68 @@ for book in BOOKS:
         records.append(print_record(recid, ot=['999C5'], format='hm'))
     #lines = [record.split('\n') for record in records]]
     for record in records:
-      if counter > 50:
-          continue
-      new_record = []
-      reference_flag = False
-      for i in record.split('\n'):
-        i = re.sub(r'\n',r'',i)
-        i = re.sub(r'</?pre>','',i)
-        i = re.sub(r'<pre style="margin: 1em 0px;">','',i)
-        if re.search(author,i):
-            j = i.lower()
-            #j = re.sub(r',',r' ',j)
-            #j = re.sub('[ ]+',r' ',j)
-            if re.search(title, j) and not re.search(r'$$0', j):
-                if date:
-                    if re.search(date,j):
-                       i = i + "$$" + isbnTag + isbn + "$$0" + str(recid)
-                       reference_flag = True
-                else:
-                    i = i + "$$" + isbnTag + isbn  + "$$0" + str(recid)
-                    reference_flag = True
-                if not re.search(r'CURATOR',i):
-                    i = i + "$$9CURATOR"
-                if reference_flag:
-                    counter += 1
-        new_record.append(i)
-      if reference_flag:
-        new_records.append(new_record)
-for record in new_records:
-    for line in record:
-        print line
+        if counter > COUNTER_MAX:
+            continue
+        new_record = []
+        reference_flag = False
+        for i in record.split('\n'):
+            i = re.sub(r'\n', r'', i)
+            i = re.sub(r'</?pre>', '', i)
+            i = re.sub(r'<pre style="margin: 1em 0px;">', '', i)
+            if re.search(author, i):
+                j = i.lower()
+                #j = re.sub(r', ', r' ', j)
+                #j = re.sub('[ ]+', r' ', j)
+                if re.search(title, j) and not re.search(r'$$0', j):
+                    if date:
+                        if re.search(date, j):
+                            i = i + "$$" + isbn_tag + isbn + "$$0" + str(recid)
+                            reference_flag = True
+                    else:
+                        i = i + "$$" + isbn_tag + isbn  + "$$0" + str(recid)
+                        reference_flag = True
+                    if not re.search(r'CURATOR', i):
+                        i = i + "$$9CURATOR"
+                    if reference_flag:
+                        counter += 1
+            new_record.append(i + '\n')
+        if reference_flag:
+            new_records.append(new_record)
+    return new_records
+
+@contextmanager
+def stdout_redirected(new_stdout):
+    save_stdout = sys.stdout
+    sys.stdout = new_stdout
+    try:
+        yield None
+    finally:
+        sys.stdout = save_stdout
+
+
+def main():
+    '''Run the script.'''
+
+    filename_1 = 'tmp_' + __file__
+    filename_1 = re.sub('.py', '_1.out', filename_1)
+    output = open(filename_1, 'w')
+    for book in BOOKS:
+        new_records = process_references(book)
+    for record in new_records:
+        for line in record:
+            output.write(line)
+    output.close()
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '.out', filename)
+    with open(filename, "w") as final_output:
+        with stdout_redirected(final_output):
+            transform_file(filename_1)
+    final_output.close()
+    os.unlink(filename_1)
+    print filename
+
+
+if __name__ == '__main__':
+
+    main()
 
