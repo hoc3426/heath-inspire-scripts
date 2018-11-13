@@ -194,7 +194,7 @@ def main(input_value=None):
     output = open(filename,'w')
     sys.stdout = output
     check_ids(letter=input_value)
-    bad_experiments_affilations()
+    #bad_experiments_affilations()
     bad_url_z()
     output.close()
 

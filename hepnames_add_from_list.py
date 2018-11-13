@@ -15,39 +15,40 @@ from hep_convert_email_to_id import get_hepnames_recid_from_email
 from invenio.bibrecord import print_rec, record_add_field
 
 from hepnames_add_from_list_email_to_aff import *
-from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS
+from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
+                                           EXPERIMENT, SOURCE, INSPIRE
 
 from hep_collaboration_authors import process_author_name 
 
-EXPERIMENT = 'FNAL-E-0974'
-EXPERIMENT = 'AUGER'
-EXPERIMENT = 'BNL-RHIC-STAR'
-EXPERIMENT = 'DUNE'
-EXPERIMENT = 'GERDA'
-EXPERIMENT = 'EXO-200'
-EXPERIMENT = 'PEN'
-EXPERIMENT = 'PADME'
-EXPERIMENT = 'XENON1T'
-EXPERIMENT = 'Baby-MIND'
-EXPERIMENT = 'HARPO'
-EXPERIMENT = None
-EXPERIMENT = 'WiggleZ'
-EXPERIMENT = 'DUNE'
-EXPERIMENT = 'HAWC'
-EXPERIMENT = 'KATRIN'
-EXPERIMENT = 'SUPER-KAMIOKANDE'
+#EXPERIMENT = 'FNAL-E-0974'
+#EXPERIMENT = 'AUGER'
+#EXPERIMENT = 'BNL-RHIC-STAR'
+#EXPERIMENT = 'DUNE'
+#EXPERIMENT = 'GERDA'
+#EXPERIMENT = 'EXO-200'
+#EXPERIMENT = 'PEN'
+#EXPERIMENT = 'PADME'
+#EXPERIMENT = 'XENON1T'
+#EXPERIMENT = 'Baby-MIND'
+#EXPERIMENT = 'HARPO'
+#EXPERIMENT = None
+#EXPERIMENT = 'WiggleZ'
+#EXPERIMENT = 'DUNE'
+#EXPERIMENT = 'HAWC'
+#EXPERIMENT = 'KATRIN'
+#EXPERIMENT = 'SUPER-KAMIOKANDE'
 #EXPERIMENT = None
 
 
 
-SOURCE = 'Fermilab'
+#SOURCE = 'Fermilab'
 #SOURCE = 'HARPO'
-SOURCE = 'WiggleZ'
-SOURCE = 'Fermilab'
-SOURCE = 'HAWC'
-SOURCE = 'Fermilab'
-SOURCE = 'KATRIN'
-SOURCE = 'SUPER-KAMIOKANDE'
+#SOURCE = 'WiggleZ'
+#SOURCE = 'Fermilab'
+#SOURCE = 'HAWC'
+#SOURCE = 'Fermilab'
+#SOURCE = 'KATRIN'
+#SOURCE = 'SUPER-KAMIOKANDE'
 
 #INSPIRE = 72053
 #INSPIRE = 72499
@@ -59,9 +60,9 @@ SOURCE = 'SUPER-KAMIOKANDE'
 #INSPIRE = 76741
 #INSPIRE = 78756
 #INSPIRE = 78849
-INSPIRE =  78890
-INSPIRE =  78916
-INSPIRE =  78935
+#INSPIRE =  78890
+#INSPIRE =  78916
+#INSPIRE =  78935
 
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''

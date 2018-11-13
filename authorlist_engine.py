@@ -17,7 +17,10 @@
 
 """ Invenio Authorlist Data Conversion Engine. """
 
+import csv
 import getopt
+import itertools
+import pprint
 import re
 import sys
 import time
@@ -26,7 +29,20 @@ try:
 except ImportError:
     import simplejson as json
 from xml.dom import minidom
-#import invenio.authorlist_config as cfg
+import invenio.authorlist_config as cfg
+
+#from hep_aff import get_aff
+def get_aff(affiliation):
+    affiliations = {'Fermi National Accelerator Laboratory':'Fermilab',
+        'European Centre for Nuclear Physics Research':'CERN',
+        'Stanford Linear Accelerator Center':'SLAC'}
+    try:
+        return affiliations[affiliation]
+    except KeyError:
+        return 'UNDEF' + re.sub(' ', '', affiliation).upper()[:6]
+        
+
+
 EMPTY                       = re.compile('^\s*$')
 UNDEFINED                   = 'UNDEFINED'
   
@@ -247,7 +263,7 @@ def retrieve_data_from_record(recid):
                    'last_modified': int(time.time()),
                    'reference_ids': [],
                    'paper_id': '1'})
-
+    print output
     return output
 
 
@@ -586,13 +602,90 @@ def dumps(data, converter):
     return converter().dumps(data)
 
 
+def read_spreadsheet(file):
+
+    #with open(file) as input:  
+    #    lines = input.readlines()
+    #author_lines = []
+    #keys = ['given', 'family', 'inspire', 'orcid', 'icn', 'address']
+    #for line in lines:
+    #    values = line.strip().split('|')
+    #    author_lines.append(dict(zip(keys, values)))
+    elements = ['given', 'family', 'inspire', 'orcid']
+    with open('authorlist_engine_input_xsl.py') as csvfile:
+        reader = csv.DictReader(csvfile, delimiter='|', 
+                                fieldnames=elements, 
+                                restkey='affiliations')
+        author_lines = list(reader)
+    print author_lines  
+    return author_lines
+
+def create_author_institution_dict(author_lines):
+
+    affiliations = []    
+    affiliation_counter = 1
+    affiliation_seen = set()
+    authors = []
+    author_counter = 1
+    for author in author_lines:
+        author_element = [author_counter,
+                        '',
+                        author['family'],
+                        author['given'],
+                        author['family'] + ', ' + author['given'],
+                        '']
+                        #'',
+                        #[[author['inspire'], 'Inspire ID'],
+                        # [author['orcid'], 'ORCID']]]
+        author_affiliations = []
+        for affiliation in author['affiliations']:
+            affiliation_inspire = get_aff(affiliation)
+            #author_element.append([affiliation_inspire, 'Affiliated with'])
+            author_affiliations.append([affiliation_inspire, 'Affiliated with'])
+
+            if affiliation not in affiliation_seen:
+                affiliation_seen.add(affiliation)
+                affiliations.append([affiliation_counter,
+                                     '',
+                                     affiliation_inspire, #author['icn'],
+                                     '',
+                                     affiliation, #author['address'],
+                                     [''], #Where URL goes
+                                     True,
+                                     affiliation_inspire]) #author['icn']])
+                affiliation_counter += 1
+        author_element.append(author_affiliations)
+        author_element.append([[author['inspire'], 'Inspire ID'],
+                               [author['orcid'], 'ORCID']])
+
+        authors.append(author_element)
+        author_counter += 1      
+#        if author['icn'] in affiliation_seen:
+#            continue
+#        affiliation_seen.add(author['icn'])
+#        affiliations.append([affiliation_counter,
+#                             '', 
+#                             author['icn'],
+#                             '',
+#                             author['address'],
+#                             [''], #Where URL goes
+#                             True,
+#                             author['icn']])
+#        affiliation_counter += 1      
+    recid_dict = {'affiliations':affiliations, 'authors':authors}
+    recid_dict['collaboration'] = ['']
+    recid_dict['experiment_number'] = ['']
+    recid_dict['last_modified'] = int(time.time())
+    recid_dict['paper_title'] = ''
+    recid_dict['reference_ids'] = []
+    return recid_dict
+
 if __name__ == '__main__':
 
     recid_dict = None
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:')
-        print OPTIONS
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:f:')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
@@ -601,11 +694,24 @@ if __name__ == '__main__':
         print option, argument
         if option == '-r':
             recid_dict = retrieve_data_from_record(argument)
+        elif option == '-f':
+            authors = read_spreadsheet(argument)
+            recid_dict = create_author_institution_dict(authors)
     if OPTIONS == []:
         from authorlist_engine_input import RECID_DICT as recid_dict
 
     if recid_dict:
+        #pprint.pprint(recid_dict)
         data = json.dumps(recid_dict)
-        #output = dump(data, AuthorsXML)
+        output = dump(data, AuthorsXML)
         import pprint
-        pprint.pprint(recid_dict)
+        #print 'hi'
+        #print output
+        #pprint.pprint(output.toprettyxml(indent='    ',
+        #                                   newl='\r\n',
+        #                                   encoding='utf-8'))
+        author_xml = output.toprettyxml(indent='    ',
+                                           newl='\r\n',
+                                           encoding='utf-8')
+        print author_xml
+        #pprint.pprint(recid_dict)

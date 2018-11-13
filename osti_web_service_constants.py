@@ -13,6 +13,7 @@ TYPE_DICT = {
 'BACHELORS':'TD',
 'CONF':'CO',
 'CRADA':'TR',
+'D0-EN':'TR',
 'DESIGN':'TR',
 'FACTSHEET':'FS',
 'FN':'TR',

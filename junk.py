@@ -83,6 +83,12 @@ OSTIS = ["15017018",
 "7181",
 "804448"]
 
+citations = {}
+for year in range(1900,2019):
+    citations[year] = len(perform_request_search(
+           p='find topcite 2000+ and tc p and jy ' + str(year), cc='HEP'))
+    print year, citations[year]
+quit()
 
 if 0:
 #for recid in perform_request_search(p='500__a:/All figures and tables/', cc='HEP'):

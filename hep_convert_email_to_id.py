@@ -225,6 +225,8 @@ def create_xml(recid, tags, author_dict):
                 value = value.lower()
                 value2 = re.sub(r'[\,\.\;]$', '', value)
                 if value != value2:
+                    if VERBOSE:
+                        print value, value2
                     value = value2
                     flag = True
                 if bad_id_check(value):

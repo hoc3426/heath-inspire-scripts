@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 from invenio.search_engine import perform_request_search
+from invenio.search_engine import get_collection_reclist
+from invenio.intbitset import intbitset
 
 ranks = ('Student', 'Postdoc', 'Junior', 'Senior', 'Staff')
 regions = ('Africa', 'Asia', 'Australasia', 'Europe', 'Middle East', \
@@ -11,12 +13,12 @@ fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
 search = 'dadd:2018-01-01->2018-03-31'
 print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 'closed', 'total')
 
-#if False:
+if False:
 #  for field in fields:
-grand_total = 0
+#grand_total = 0
 #for month in range(1,10) + [10, 11, 12]:
 #  for month in [10, 11, 12]:
-for month in range(7,11):
+#for month in range(1,12):
   if month < 10:
       month = '0' +  str(month)
   search = 'dadd:2018-' + str(month)
@@ -27,23 +29,32 @@ for month in range(7,11):
   print "{0:20s} {1:5d} {2:5d} {3:5d} {4:5d}".format(search, len(x), len(y), total, 
         grand_total)
 
-quit()  
+#quit()  
 
 total = 0
+fermilab = get_collection_reclist('Fermilab')
 for yymm in ['91','92','93', '94', '95', '96', '97', '98', '99',
          '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
-         '12', '13', '14', '15', '16', '17', '1801', '1802', '1803', '1804',
-         '1805']:
-  search = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
+         '12', '13', '14', '15', '16', '17', '18', '1801', '1802', '1803', '1804',
+         '1805', '1806', '1807', '1808', '1809', '1810']:
+  search_f = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   search = '037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   x = perform_request_search(p=search, cc='HEP')
   search = '037__c:acc-phys 037__a:"acc-phys/' + yymm + '*"'
   y = perform_request_search(p=search, cc='HEP')
   #print search
+  x_f = intbitset(x) & fermilab
+  y_f = intbitset(y) & fermilab
   length = len(x) + len(y)
-  print yymm, length
+  length_f = len(x_f) + len(y_f)
+  try:
+      ratio = float(length_f)/float(length)
+  except ZeroDivisionError:
+      ratio = 0
+  print '{0:4s} {1:3d} {2:3d} {3:3f}'.format(yymm, length, length_f, ratio)
   total += length
 print "Total =", total
+quit()
 
 if False:
 #for rank in ranks:

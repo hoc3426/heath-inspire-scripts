@@ -394,6 +394,8 @@ def preprocess_file(read_data):
     read_data = re.sub(r'\}?\\thanks\{[^\}]+\}?', r'', read_data)
     read_data = re.sub(r'\\item\[(\$\^\{?\w+\}?\$)\]', r'\1', read_data)
     read_data = re.sub(r'\\llap\{(\$\S+\$)\}', r'\1 ', read_data)
+    read_data = re.sub(r'\\textsuperscript\{([\d\,]+)\}',
+                       r'$^{\1$}\n', read_data)
     read_data = re.sub(r'\\address', r'\\affiliation', read_data)
     read_data = re.sub(r'\\affil\b', r'\\affiliation', read_data)
     read_data = re.sub(r'\\email\{', r'\\affiliation{', read_data)
