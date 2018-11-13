@@ -618,7 +618,7 @@ def read_spreadsheet(file):
     #    values = line.strip().split('|')
     #    author_lines.append(dict(zip(keys, values)))
     elements = ['given', 'family', 'inspire', 'orcid']
-    with open('authorlist_engine_input_xsl.py') as csvfile:
+    with open(file) as csvfile:
         reader = csv.DictReader(csvfile, delimiter='|', 
                                 fieldnames=elements, 
                                 restkey='affiliations')
