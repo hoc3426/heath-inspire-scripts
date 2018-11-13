@@ -39,7 +39,7 @@ def get_aff(affiliation):
     try:
         return affiliations[affiliation]
     except KeyError:
-        return 'UNDEF' + re.sub(' ', '', affiliation).upper()[:6]
+        return 'UNDEF: ' + affiliation
         
 
 
@@ -112,11 +112,17 @@ class AuthorsXML:
   
   
 class OPTIONS:
-  IDENTIFIERS_LIST         = ['Inspire ID', 'ORCID']
-  IDENTIFIERS_MAPPING      = {'Inspire ID': 'Inspire ID',
-                              'INSPIRE': 'Inspire ID',
-                              'Inspire': 'Inspire ID',
+  #IDENTIFIERS_LIST         = ['Inspire ID', 'ORCID']
+  #IDENTIFIERS_MAPPING      = {'Inspire ID': 'Inspire ID',
+  #                            'INSPIRE': 'Inspire ID',
+  #                            'Inspire': 'Inspire ID',
+  #                            'ORCID': 'ORCID'}
+  IDENTIFIERS_LIST         = ['INSPIRE', 'ORCID']
+  IDENTIFIERS_MAPPING      = {'Inspire ID': 'INSPIRE',
+                              'INSPIRE': 'INSPIRE',
+                              'Inspire': 'INSPIRE',
                               'ORCID': 'ORCID'}
+
   AUTHOR_AFFILIATION_TYPE  = ['Affiliated with', 'Now at', 'Also at',
                               'On leave from', 'Visitor']
   
@@ -263,7 +269,7 @@ def retrieve_data_from_record(recid):
                    'last_modified': int(time.time()),
                    'reference_ids': [],
                    'paper_id': '1'})
-    print output
+    #print output
     return output
 
 
@@ -483,11 +489,11 @@ class AuthorsXML(Converter):
         name.appendChild(name_text)
         organization.appendChild(name)
 
-        # organization acronym
-        org_acronym = document.createElement('cal:orgName')
-        org_acronym_text = document.createTextNode(acronym)
-        org_acronym.appendChild(org_acronym_text)
-        organization.appendChild(org_acronym)
+        ## organization acronym
+        #org_acronym = document.createElement('cal:orgName')
+        #org_acronym_text = document.createTextNode(acronym)
+        #org_acronym.appendChild(org_acronym_text)
+        #organization.appendChild(org_acronym)
 
         # organization identifier
         org_name_info = parsed[cfg.JSON.INSPIRE_ID]
@@ -617,7 +623,7 @@ def read_spreadsheet(file):
                                 fieldnames=elements, 
                                 restkey='affiliations')
         author_lines = list(reader)
-    print author_lines  
+    #print author_lines  
     return author_lines
 
 def create_author_institution_dict(author_lines):
@@ -655,7 +661,7 @@ def create_author_institution_dict(author_lines):
                                      affiliation_inspire]) #author['icn']])
                 affiliation_counter += 1
         author_element.append(author_affiliations)
-        author_element.append([[author['inspire'], 'Inspire ID'],
+        author_element.append([[author['inspire'], 'INSPIRE'],
                                [author['orcid'], 'ORCID']])
 
         authors.append(author_element)
@@ -673,8 +679,8 @@ def create_author_institution_dict(author_lines):
 #                             author['icn']])
 #        affiliation_counter += 1      
     recid_dict = {'affiliations':affiliations, 'authors':authors}
-    recid_dict['collaboration'] = ['']
-    recid_dict['experiment_number'] = ['']
+    recid_dict['collaboration'] = ['*** WRITE YOUR COLLABORATION NAME HERE ***']
+    recid_dict['experiment_number'] = ['*** WRITE YOUR EXPERIMENT NUMBER HERE ***']
     recid_dict['last_modified'] = int(time.time())
     recid_dict['paper_title'] = ''
     recid_dict['reference_ids'] = []
