@@ -28,6 +28,21 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+result = perform_request_search(p='find exp des and date > 2015', cc='HEP')
+authors_full = set()
+for recid in result:
+    if len(get_fieldvalues(recid, '693__e')) > 1 or \
+                        len(get_fieldvalues(recid, '710__g')) > 1:
+        continue
+    authors_full = authors_full | set(get_fieldvalues(recid, '100__a') +
+                            get_fieldvalues(recid, '700__a'))
+for author in sorted(authors_full):
+    if len(perform_request_search(p='find exp des and a ' + author,
+                                  cc='HepNames')) != 1:
+        print 'find a', author, 'and exp des'
+quit()
+
+
 OSTIS = ["15017018",
 "15017308",
 "784401",
