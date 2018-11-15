@@ -15,12 +15,12 @@
 ## along with Invenio; if not, write to the Free Software Foundation, Inc.,
 ## 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-""" Invenio Authorlist Data Conversion Engine. """
+""" Convert a spreadsheet-based author list into an author.xml file. """
 
+import cPickle as pickle
 import csv
 import getopt
-import itertools
-import pprint
+import gzip
 import re
 import sys
 import time
@@ -29,103 +29,90 @@ try:
 except ImportError:
     import simplejson as json
 from xml.dom import minidom
-import invenio.authorlist_config as cfg
 
-#from hep_aff import get_aff
+AFFILIATIONS_DICT_FILE = 'authorlist_engine_affiliations.p.gz'
+AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE
+try:
+    AFFILIATIONS_DICT = pickle.load(gzip.open(AFFILIATIONS_DICT_FILE, "rb"))
+except EOFError:
+    print "Error opening:", AFFILIATIONS_DICT_FILE
+
+
+
 def get_aff(affiliation):
-    affiliations = {'Fermi National Accelerator Laboratory':'Fermilab',
-        'European Centre for Nuclear Physics Research':'CERN',
-        'Stanford Linear Accelerator Center':'SLAC'}
+    '''Convert affiliation information into INSPIRE format.'''
+
+    affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
+    affiliation_key = re.sub(r'^[ ]+', '', affiliation_key)
+    affiliation_key = re.sub(r'[ ]+$', '', affiliation_key)
+    affiliation_key = re.sub(r'[ ]+$', ' ', affiliation_key)
+
     try:
-        return affiliations[affiliation]
+        return AFFILIATIONS_DICT[affiliation_key][0]
     except KeyError:
         return 'UNDEF: ' + affiliation
-        
 
 
-EMPTY                       = re.compile('^\s*$')
-UNDEFINED                   = 'UNDEFINED'
-  
-  
-class Resources:
-    SCRIPTS                 = ['jquery.min.js',
-                               'jquery-ui.min.js',
-                               'jquery.dataTables.min.js',
-                               'jquery.dataTables.ColVis.min.js',
-                               'authorlist.js',
-                               'authorlist.spreadSheet.js',
-                               'authorlist.select.js']
-  
-    STYLESHEETS             = ['authorlist.css',
-                               'authorlist.dataTable.css',
-                               'authorlist.dataTable.jquery-ui.css',
-                               'authorlist.jquery-ui.custom.css',
-                               'authorlist.colVis.css',
-                               'authorlist.spreadSheet.css']
-  
-  
-class JSON:
-    AFFILIATIONS_KEY        = 'affiliations'
-    AUTHORS_KEY             = 'authors'
-    COLLABORATION           = 'collaboration'
-    EXPERIMENT_NUMBER       = 'experiment_number'
-    PAPER_ID                = 'paper_id'
-    LAST_MODIFIED           = 'last_modified'
-    PAPER_TITLE             = 'paper_title'
-    REFERENCE_IDS           = 'reference_ids'
-  
+
+EMPTY = re.compile(r'^\s*$')
+UNDEFINED = 'UNDEFINED'
+
+
+class JSON(object):
+    '''Defines the parameters to be used in the xml file.'''
+
+    def __init__(self):
+        pass
+
+    AFFILIATIONS_KEY = 'affiliations'
+    AUTHORS_KEY = 'authors'
+    COLLABORATION = 'collaboration'
+    EXPERIMENT_NUMBER = 'experiment_number'
+    PAPER_ID = 'paper_id'
+    LAST_MODIFIED = 'last_modified'
+    PAPER_TITLE = 'paper_title'
+    REFERENCE_IDS = 'reference_ids'
+
     # Author table indices
-    INDEX                   = 0
-    EDIT                    = 1
-    FAMILY_NAME             = 2
-    GIVEN_NAME              = 3
-    PAPER_NAME              = 4
-    STATUS                  = 5
-    AFFILIATIONS            = 6
-    IDENTIFIERS             = 7
-  
-    # Affiliation indices in author table
-    AFFILIATION_ACRONYM     = 0
-    AFFILIATION_STATUS      = 1
-  
-    # Identifiers indices in author table
-    IDENTIFIER_NUMBER      = 0
-    IDENTIFIER_NAME        = 1
-  
-    # Affiliation table indices
-    ACRONYM                = 2
-    UMBRELLA               = 3
-    NAME                   = 4
-    DOMAIN                 = 5
-    MEMBER                 = 6
-    SPIRES_ID              = 7
-  
-  
-class AuthorsXML:
-    COLLABORATION_ID       = 'c1'
-    DECEASED               = 'Deceased'
-    MEMBER                 = 'member'
-    NONMEMBER              = 'nonmember'
-    ORGANIZATION_ID        = 'o'
-    SPIRES                 = 'SPIRES'
-    TIME_FORMAT            = '%Y-%m-%d_%H:%M'
-  
-  
-class OPTIONS:
-  #IDENTIFIERS_LIST         = ['Inspire ID', 'ORCID']
-  #IDENTIFIERS_MAPPING      = {'Inspire ID': 'Inspire ID',
-  #                            'INSPIRE': 'Inspire ID',
-  #                            'Inspire': 'Inspire ID',
-  #                            'ORCID': 'ORCID'}
-  IDENTIFIERS_LIST         = ['INSPIRE', 'ORCID']
-  IDENTIFIERS_MAPPING      = {'Inspire ID': 'INSPIRE',
-                              'INSPIRE': 'INSPIRE',
-                              'Inspire': 'INSPIRE',
-                              'ORCID': 'ORCID'}
+    INDEX = 0
+    EDIT = 1
+    FAMILY_NAME = 2
+    GIVEN_NAME = 3
+    PAPER_NAME = 4
+    STATUS = 5
+    AFFILIATIONS = 6
+    IDENTIFIERS = 7
 
-  AUTHOR_AFFILIATION_TYPE  = ['Affiliated with', 'Now at', 'Also at',
+    # Affiliation indices in author table
+    AFFILIATION_ACRONYM = 0
+    AFFILIATION_STATUS = 1
+
+    # Identifiers indices in author table
+    IDENTIFIER_NUMBER = 0
+    IDENTIFIER_NAME = 1
+
+    # Affiliation table indices
+    ACRONYM = 2
+    UMBRELLA = 3
+    NAME = 4
+    DOMAIN = 5
+    MEMBER = 6
+    INSPIRE_ID = 7
+
+class OPTIONS(object):
+    '''Standardizes various parameters.'''
+
+    def __init__(self):
+        pass
+
+    IDENTIFIERS_LIST = ['INSPIRE', 'ORCID']
+    IDENTIFIERS_MAPPING = {'Inspire ID': 'INSPIRE',
+                           'INSPIRE': 'INSPIRE',
+                           'Inspire': 'INSPIRE',
+                           'ORCID': 'ORCID'}
+    AUTHOR_AFFILIATION_TYPE = ['Affiliated with', 'Now at', 'Also at',
                               'On leave from', 'Visitor']
-  
+
 
 
 
@@ -138,142 +125,9 @@ NAMESPACES = {'cal': \
               'foaf': 'http://xmlns.com/foaf/0.1/',
               }
 
-def retrieve_data_from_record(recid):
-    """
-    Extract data from a record id in order to import it to the Author list
-    interface
-    """
-
-    from invenio.search_engine import record_exists
-    if not record_exists(recid):
-        print "No such record", recid
-        return None
-
-    from invenio.bibformat_engine import BibFormatObject
-    from invenio.bibformat_elements.bfe_INSPIRE_inst_address import \
-         format_element as get_address
-
-    from invenio.search_engine import perform_request_search
-    from invenio.search_engine_utils import get_fieldvalues
-    from invenio.bibedit_utils import get_record
-
-    output = {}
-
-    DEFAULT_AFFILIATION_TYPE = cfg.OPTIONS.AUTHOR_AFFILIATION_TYPE[0]
-    DEFAULT_IDENTIFIER = cfg.OPTIONS.IDENTIFIERS_LIST[0]
-    IDENTIFIERS_MAPPING = cfg.OPTIONS.IDENTIFIERS_MAPPING
-
-    bibrecord = get_record(recid)
-
-    try:
-        paper_title = get_fieldvalues(recid, '245__a')[0]
-    except IndexError:
-        paper_title = ""
-    try:
-        collaboration_name = get_fieldvalues(recid, '710__g')
-    except IndexError:
-        collaboration_name = ""
-    try:
-        experiment_number = get_fieldvalues(recid, '693__e')
-    except IndexError:
-        experiment_number = ""
-
-    record_authors = bibrecord.get('100', [])
-    record_authors.extend(bibrecord.get('700', []))
-
-    author_list = []
-    unique_affiliations = []
-
-    for i, field_instance in enumerate(record_authors, 1):
-        family_name = ""
-        given_name = ""
-        name_on_paper = ""
-        status = ""
-        affiliations = []
-        identifiers = []
-        field = field_instance[0]
-        for subfield_code, subfield_value in field:
-            if subfield_code == "a":
-                try:
-                    family_name = subfield_value.split(',')[0]
-                    given_name = subfield_value.split(',')[1].lstrip()
-                except:
-                    pass
-                name_on_paper = subfield_value
-            elif subfield_code == "u":
-                affiliations.append([subfield_value,
-                                     DEFAULT_AFFILIATION_TYPE])
-                unique_affiliations.append(subfield_value)
-            elif subfield_code == "i":
-                # FIXME This will currently work only with INSPIRE IDs
-                id_prefix = subfield_value.split("-")[0]
-                if id_prefix in IDENTIFIERS_MAPPING:
-                    identifiers.append([subfield_value,
-                                        IDENTIFIERS_MAPPING[id_prefix]])
-        if not identifiers:
-            identifiers.append(['', DEFAULT_IDENTIFIER])
-        if not affiliations:
-            affiliations.append([UNKNOWN_AFFILIATION,
-                                 DEFAULT_AFFILIATION_TYPE])
-            unique_affiliations.append(UNKNOWN_AFFILIATION)
-        author_list.append([
-            i,              # Row number
-            '',             # Place holder for the web interface
-            family_name,
-            given_name,
-            name_on_paper,
-            status,
-            affiliations,
-            identifiers
-        ])
-
-    unique_affiliations = list(set(unique_affiliations))
-
-    output.update({'authors': author_list})
-
-    # Generate all the affiliation related information
-    affiliation_list = []
-    for i, affiliation in enumerate(unique_affiliations, 1):
-        institution = perform_request_search(c="Institutions",
-                          p='110__u:"' + affiliation + '"')
-        full_name = affiliation
-        inspire_id = ''
-        domain = ''
-        if len(institution) == 1:
-            full_name_110_a = get_fieldvalues(institution[0], '110__a')
-            if full_name_110_a:
-                full_name = str(full_name_110_a[0])
-            full_name_110_b = get_fieldvalues(institution[0], '110__b')
-            if full_name_110_b:
-                full_name += ', ' + str(full_name_110_b[0])
-            domain = get_fieldvalues(institution[0], '8564_u')
-            inspire_id = affiliation
-            address = get_address(BibFormatObject(institution[0]))
-            if address:
-                full_name += ', ' + address
-
-        affiliation = [i,
-                       '',
-                       affiliation,
-                       '',
-                       full_name,
-                       domain,
-                       True,
-                       inspire_id]
-        affiliation_list.append(affiliation)
-
-    output.update({'affiliations': affiliation_list})
-    output.update({'paper_title': paper_title,
-                   'collaboration': collaboration_name,
-                   'experiment_number': experiment_number,
-                   'last_modified': int(time.time()),
-                   'reference_ids': [],
-                   'paper_id': '1'})
-    #print output
-    return output
-
-
 class Converter(object):
+    '''Used to output final file.'''
+
     CONTENT_TYPE = 'text/plain'
     FILE_NAME = 'converted.txt'
 
@@ -288,17 +142,26 @@ class Converter(object):
 
 
 class AuthorsXML(Converter):
-    CONTENT_TYPE = 'text/xml'
-    FILE_NAME = 'authors.xml'
 
     def __init__(self):
         pass
 
+    CONTENT_TYPE = 'text/xml'
+    FILE_NAME = 'authors.xml'
+    COLLABORATION_ID = 'c1'
+    DECEASED = 'Deceased'
+    MEMBER = 'member'
+    NONMEMBER = 'nonmember'
+    ORGANIZATION_ID = 'o'
+    SPIRES = 'SPIRES'
+    INSPIRE = 'INSPIRE'
+    TIME_FORMAT = '%Y-%m-%d_%H:%M'
+
     def create_affiliation(self, document, parsed, organization_ids):
         affiliation = document.createElement('cal:authorAffiliation')
 
-        affiliation_acronym = parsed[cfg.JSON.AFFILIATION_ACRONYM]
-        affiliation_status = parsed[cfg.JSON.AFFILIATION_STATUS]
+        affiliation_acronym = parsed[JSON.AFFILIATION_ACRONYM]
+        affiliation_status = parsed[JSON.AFFILIATION_STATUS]
 
         if affiliation_acronym not in organization_ids:
             affiliation.setAttribute('organizationid',
@@ -315,8 +178,8 @@ class AuthorsXML(Converter):
     def create_identifier(self, document, parsed):
         identifier = document.createElement('cal:authorid')
 
-        identifier_number = parsed[cfg.JSON.IDENTIFIER_NUMBER]
-        identifier_name = parsed[cfg.JSON.IDENTIFIER_NAME]
+        identifier_number = parsed[JSON.IDENTIFIER_NUMBER]
+        identifier_name = parsed[JSON.IDENTIFIER_NAME]
 
         identifier.setAttribute('source', identifier_name)
         identifier_text = document.createTextNode(identifier_number)
@@ -325,7 +188,7 @@ class AuthorsXML(Converter):
         return identifier
 
     def create_authors(self, document, root, parsed, organization_ids):
-        parsed_authors = parsed[cfg.JSON.AUTHORS_KEY]
+        parsed_authors = parsed[JSON.AUTHORS_KEY]
 
         authors = document.createElement('cal:authors')
         root.appendChild(authors)
@@ -340,30 +203,30 @@ class AuthorsXML(Converter):
 
         # paper name
         paper_name = document.createElement('cal:authorNamePaper')
-        paper_name_info = parsed[cfg.JSON.PAPER_NAME]
+        paper_name_info = parsed[JSON.PAPER_NAME]
         paper_name_text = document.createTextNode(paper_name_info)
         paper_name.appendChild(paper_name_text)
         author.appendChild(paper_name)
 
         # given name
-        given_name_info = parsed[cfg.JSON.GIVEN_NAME]
-        if (cfg.EMPTY.match(given_name_info) is None):
+        given_name_info = parsed[JSON.GIVEN_NAME]
+        if EMPTY.match(given_name_info) is None:
             given_name = document.createElement('foaf:givenName')
             given_name_text = document.createTextNode(given_name_info)
             given_name.appendChild(given_name_text)
             author.appendChild(given_name)
 
         # family name
-        family_name_info = parsed[cfg.JSON.FAMILY_NAME]
-        if (cfg.EMPTY.match(family_name_info) is None):
+        family_name_info = parsed[JSON.FAMILY_NAME]
+        if EMPTY.match(family_name_info) is None:
             family_name = document.createElement('foaf:familyName')
             family_name_text = document.createTextNode(family_name_info)
             family_name.appendChild(family_name_text)
             author.appendChild(family_name)
 
         # status
-        author_status_info = parsed[cfg.JSON.STATUS]
-        if (author_status_info):
+        author_status_info = parsed[JSON.STATUS]
+        if author_status_info:
             author_status = document.createElement('cal:authorStatus')
             author_status_text = document.createTextNode(author_status_info)
             author_status.appendChild(author_status_text)
@@ -372,13 +235,13 @@ class AuthorsXML(Converter):
         # collaboration
         collaboration = document.createElement('cal:authorCollaboration')
         collaboration.setAttribute('collaborationid',
-                                   cfg.AuthorsXML.COLLABORATION_ID)
+                                   AuthorsXML.COLLABORATION_ID)
         author.appendChild(collaboration)
 
         # affiliations
         affiliations = document.createElement('cal:authorAffiliations')
         author.appendChild(affiliations)
-        for parsed_affiliation in parsed[cfg.JSON.AFFILIATIONS]:
+        for parsed_affiliation in parsed[JSON.AFFILIATIONS]:
             affiliation = self.create_affiliation(document,
                                                   parsed_affiliation,
                                                   organization_ids)
@@ -387,7 +250,7 @@ class AuthorsXML(Converter):
         # identifiers
         identifiers = document.createElement('cal:authorids')
         author.appendChild(identifiers)
-        for parsed_identifier in parsed[cfg.JSON.IDENTIFIERS]:
+        for parsed_identifier in parsed[JSON.IDENTIFIERS]:
             identifier = self.create_identifier(document, parsed_identifier)
             identifiers.appendChild(identifier)
 
@@ -397,25 +260,25 @@ class AuthorsXML(Converter):
         # collaborations
         collaborations = document.createElement('cal:collaborations')
         collaboration = document.createElement('cal:collaboration')
-        collaboration.setAttribute('id', cfg.AuthorsXML.COLLABORATION_ID)
+        collaboration.setAttribute('id', AuthorsXML.COLLABORATION_ID)
         collaborations.appendChild(collaboration)
 
         # name
         name = document.createElement('foaf:name')
         try:
-            name_info = parsed[cfg.JSON.COLLABORATION]
+            name_info = parsed[JSON.COLLABORATION]
             name_text = document.createTextNode(name_info)
         except TypeError:
-            name_info = parsed[cfg.JSON.COLLABORATION][0]
+            name_info = parsed[JSON.COLLABORATION][0]
             name_text = document.createTextNode(name_info)
         name.appendChild(name_text)
         collaboration.appendChild(name)
 
         # experiment number
-        experiment_number_info = parsed[cfg.JSON.EXPERIMENT_NUMBER]
+        experiment_number_info = parsed[JSON.EXPERIMENT_NUMBER]
         if not isinstance(experiment_number_info, basestring):
             experiment_number_info = experiment_number_info[0]
-        if (cfg.EMPTY.match(experiment_number_info) is None):
+        if EMPTY.match(experiment_number_info) is None:
             experiment_number = document.createElement('cal:experimentNumber')
             experiment_number_text = document.createTextNode(
                                          experiment_number_info)
@@ -437,20 +300,20 @@ class AuthorsXML(Converter):
     def create_header(self, document, root, parsed):
         # creation date
         creation_date = document.createElement('cal:creationDate')
-        creation_date_info = time.strftime(cfg.AuthorsXML.TIME_FORMAT)
+        creation_date_info = time.strftime(AuthorsXML.TIME_FORMAT)
         creation_date_text = document.createTextNode(creation_date_info)
         creation_date.appendChild(creation_date_text)
         root.appendChild(creation_date)
 
         # publication reference
-        for reference_info in parsed[cfg.JSON.REFERENCE_IDS]:
+        for reference_info in parsed[JSON.REFERENCE_IDS]:
             reference = document.createElement('cal:publicationReference')
             reference_text = document.createTextNode(reference_info)
             reference.appendChild(reference_text)
             root.appendChild(reference)
 
     def create_organizations(self, document, root, parsed, ids):
-        parsed_organizations = parsed[cfg.JSON.AFFILIATIONS_KEY]
+        parsed_organizations = parsed[JSON.AFFILIATIONS_KEY]
 
         # organizations container
         organizations = document.createElement('cal:organizations')
@@ -464,18 +327,18 @@ class AuthorsXML(Converter):
             organizations.appendChild(organization)
 
     def create_organization(self, document, parsed, ids):
-        acronym = parsed[cfg.JSON.ACRONYM]
+        acronym = parsed[JSON.ACRONYM]
         organization = document.createElement('foaf:Organization')
         organization.setAttribute('id', ids[acronym])
 
         # create the domain node if field is set
-        domain_info = parsed[cfg.JSON.DOMAIN]
+        domain_info = parsed[JSON.DOMAIN]
         if not isinstance(domain_info, basestring):
             try:
                 domain_info = domain_info[0]
             except IndexError:
                 domain_info = None
-        if (cfg.EMPTY.match(domain_info) is None):
+        if EMPTY.match(domain_info) is None:
             domain = document.createElement('cal:orgDomain')
             domain_text = document.createTextNode(domain_info)
             domain.appendChild(domain_text)
@@ -484,7 +347,7 @@ class AuthorsXML(Converter):
         # organization name, no presence check,
         # already done on the client side
         name = document.createElement('foaf:name')
-        name_info = parsed[cfg.JSON.NAME]
+        name_info = parsed[JSON.NAME]
         name_text = document.createTextNode(name_info)
         name.appendChild(name_text)
         organization.appendChild(name)
@@ -496,34 +359,34 @@ class AuthorsXML(Converter):
         #organization.appendChild(org_acronym)
 
         # organization identifier
-        org_name_info = parsed[cfg.JSON.INSPIRE_ID]
-        if (cfg.EMPTY.match(org_name_info) is None):
+        org_name_info = parsed[JSON.INSPIRE_ID]
+        if EMPTY.match(org_name_info) is None:
             org_name = document.createElement('cal:orgName')
-            org_name.setAttribute('source', cfg.AuthorsXML.INSPIRE)
+            org_name.setAttribute('source', AuthorsXML.INSPIRE)
             org_name_text = document.createTextNode(org_name_info)
             org_name.appendChild(org_name_text)
             organization.appendChild(org_name)
         else:
-            org_name_info = parsed[cfg.JSON.NAME]
+            org_name_info = parsed[JSON.NAME]
             org_address = document.createElement('cal:orgAddress')
             org_address_text = document.createTextNode(org_name_info)
             org_address.appendChild(org_address_text)
             organization.appendChild(org_address)
 
         # membership
-        org_status_info = parsed[cfg.JSON.MEMBER]
-        if (not org_status_info):
-            org_status_info = cfg.AuthorsXML.NONMEMBER
+        org_status_info = parsed[JSON.MEMBER]
+        if not org_status_info:
+            org_status_info = AuthorsXML.NONMEMBER
         else:
-            org_status_info = cfg.AuthorsXML.MEMBER
+            org_status_info = AuthorsXML.MEMBER
         org_status = document.createElement('cal:orgStatus')
         org_status_text = document.createTextNode(org_status_info)
         org_status.appendChild(org_status_text)
         organization.appendChild(org_status)
 
         # umbrella organization/group
-        group_info = parsed[cfg.JSON.UMBRELLA]
-        if (cfg.EMPTY.match(group_info) is None):
+        group_info = parsed[JSON.UMBRELLA]
+        if EMPTY.match(group_info) is None:
             if group_info in ids.keys():
                 group = document.createElement('cal:group')
                 group.setAttribute('with', ids[group_info])
@@ -534,7 +397,8 @@ class AuthorsXML(Converter):
     def dump(self, data):
         parsed = json.loads(data)
         document, root = self.create_document()
-        affiliations = parsed[cfg.JSON.AFFILIATIONS_KEY]
+        #affiliations = parsed[JSON.AFFILIATIONS_KEY]
+        affiliations = parsed[JSON.AFFILIATIONS_KEY]
 
         organization_ids = self.generate_organization_ids(affiliations)
 
@@ -587,8 +451,9 @@ class AuthorsXML(Converter):
         ids = {}
         # Map each organization acronym to an id of the kind 'o[index]'
         for index, organization in enumerate(organizations):
-            acronym = organization[cfg.JSON.ACRONYM]
-            ids[acronym] = cfg.AuthorsXML.ORGANIZATION_ID + str(index)
+            #acronym = organization[JSON.ACRONYM]
+            acronym = organization[JSON.ACRONYM]
+            ids[acronym] = AuthorsXML.ORGANIZATION_ID + str(index)
 
         return ids
 
@@ -608,27 +473,20 @@ def dumps(data, converter):
     return converter().dumps(data)
 
 
-def read_spreadsheet(file):
+def read_spreadsheet(file_name):
 
-    #with open(file) as input:  
-    #    lines = input.readlines()
-    #author_lines = []
-    #keys = ['given', 'family', 'inspire', 'orcid', 'icn', 'address']
-    #for line in lines:
-    #    values = line.strip().split('|')
-    #    author_lines.append(dict(zip(keys, values)))
     elements = ['given', 'family', 'inspire', 'orcid']
-    with open(file) as csvfile:
-        reader = csv.DictReader(csvfile, delimiter='|', 
-                                fieldnames=elements, 
+    with open(file_name) as csvfile:
+        reader = csv.DictReader(csvfile, delimiter='|',
+                                fieldnames=elements,
                                 restkey='affiliations')
         author_lines = list(reader)
-    #print author_lines  
+    #print author_lines
     return author_lines
 
 def create_author_institution_dict(author_lines):
 
-    affiliations = []    
+    affiliations = []
     affiliation_counter = 1
     affiliation_seen = set()
     authors = []
@@ -640,47 +498,33 @@ def create_author_institution_dict(author_lines):
                         author['given'],
                         author['family'] + ', ' + author['given'],
                         '']
-                        #'',
-                        #[[author['inspire'], 'Inspire ID'],
-                        # [author['orcid'], 'ORCID']]]
         author_affiliations = []
         for affiliation in author['affiliations']:
             affiliation_inspire = get_aff(affiliation)
-            #author_element.append([affiliation_inspire, 'Affiliated with'])
             author_affiliations.append([affiliation_inspire, 'Affiliated with'])
 
             if affiliation not in affiliation_seen:
                 affiliation_seen.add(affiliation)
                 affiliations.append([affiliation_counter,
                                      '',
-                                     affiliation_inspire, #author['icn'],
+                                     affiliation_inspire,
                                      '',
-                                     affiliation, #author['address'],
+                                     affiliation,
                                      [''], #Where URL goes
                                      True,
-                                     affiliation_inspire]) #author['icn']])
+                                     affiliation_inspire])
                 affiliation_counter += 1
         author_element.append(author_affiliations)
         author_element.append([[author['inspire'], 'INSPIRE'],
                                [author['orcid'], 'ORCID']])
 
         authors.append(author_element)
-        author_counter += 1      
-#        if author['icn'] in affiliation_seen:
-#            continue
-#        affiliation_seen.add(author['icn'])
-#        affiliations.append([affiliation_counter,
-#                             '', 
-#                             author['icn'],
-#                             '',
-#                             author['address'],
-#                             [''], #Where URL goes
-#                             True,
-#                             author['icn']])
-#        affiliation_counter += 1      
+        author_counter += 1
     recid_dict = {'affiliations':affiliations, 'authors':authors}
-    recid_dict['collaboration'] = ['*** WRITE YOUR COLLABORATION NAME HERE ***']
-    recid_dict['experiment_number'] = ['*** WRITE YOUR EXPERIMENT NUMBER HERE ***']
+    recid_dict['collaboration'] = \
+        ['*** WRITE YOUR COLLABORATION NAME HERE ***']
+    recid_dict['experiment_number'] = \
+        ['*** WRITE YOUR EXPERIMENT NUMBER HERE ***']
     recid_dict['last_modified'] = int(time.time())
     recid_dict['paper_title'] = ''
     recid_dict['reference_ids'] = []
@@ -688,36 +532,27 @@ def create_author_institution_dict(author_lines):
 
 if __name__ == '__main__':
 
-    recid_dict = None
+    RECID_DICT = None
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:f:')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'f:')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
 
     for option, argument in OPTIONS:
         print option, argument
-        if option == '-r':
-            recid_dict = retrieve_data_from_record(argument)
-        elif option == '-f':
-            authors = read_spreadsheet(argument)
-            recid_dict = create_author_institution_dict(authors)
+        if option == '-f':
+            AUTHORS = read_spreadsheet(argument)
+            RECID_DICT = create_author_institution_dict(AUTHORS)
     if OPTIONS == []:
-        from authorlist_engine_input import RECID_DICT as recid_dict
+        #from authorlist_engine_input import RECID_DICT as recid_dict
+        print "Please provide name of input file."
 
-    if recid_dict:
-        #pprint.pprint(recid_dict)
-        data = json.dumps(recid_dict)
-        output = dump(data, AuthorsXML)
-        import pprint
-        #print 'hi'
-        #print output
-        #pprint.pprint(output.toprettyxml(indent='    ',
-        #                                   newl='\r\n',
-        #                                   encoding='utf-8'))
-        author_xml = output.toprettyxml(indent='    ',
+    if RECID_DICT:
+        DATA_JSON = json.dumps(RECID_DICT)
+        OUTPUT = dump(DATA_JSON, AuthorsXML)
+        AUTHOR_XML = OUTPUT.toprettyxml(indent='    ',
                                            newl='\r\n',
                                            encoding='utf-8')
-        print author_xml
-        #pprint.pprint(recid_dict)
+        print AUTHOR_XML
