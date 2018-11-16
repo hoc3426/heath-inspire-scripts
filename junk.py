@@ -28,6 +28,47 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+def format_inst(affiliation):
+    affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
+    affiliation_key = re.sub(r'^[ ]+', '', affiliation_key)
+    affiliation_key = re.sub(r'[ ]+$', '', affiliation_key)
+    affiliation_key = re.sub(r'[ ]+$', ' ', affiliation_key)
+    return affiliation_key
+
+inst_dict = {}
+for recid in get_collection_reclist('Institutions'):
+    affiliation = get_fieldvalues(recid, '110__u')[0]
+    inst_dict[format_inst(affiliation)] = [affiliation]
+for recid in perform_request_search(p='980__b:TOP500', cc='Institutions'):     
+    value = get_fieldvalues(recid, '110__u')[0]
+    try:
+        key2 = get_fieldvalues(recid, '110__a')[0]
+    except IndexError:
+        key2 = None
+    try:
+        key3 = get_fieldvalues(recid, '110__b')[0] + ' ' + key2
+    except IndexError:
+        key3 = None
+    except TypeError:
+        key3 = None
+    for affiliation in [key2, key3]:
+        if affiliation == None:
+            continue
+        affiliation_key = format_inst(affiliation)
+        inst_dict[affiliation_key] = [value]
+inst_dict['UNIVERSITY OF CHICAGO'] = ['Chicago U.']
+inst_dict['UNIVERSITY OF CAMBRIDGE'] = ['Cambridge U.']
+inst_dict['UNIVERSITY OF TOKYO'] = ['Tokyo U.']
+inst_dict['UNIVERSITY OF HAWAII'] = ['Hawaii U.']
+inst_dict['UNIVERSITY OF GRONINGEN'] = ['Groningen U.']
+inst_dict['UNIVERSITY OF DELAWARE'] = ['Delaware U.']
+inst_dict['UNIVERSITY OF ILLINOIS'] = ['Illinois U., Urbana']
+inst_dict['UNIVERSITY OF ARIZONA'] = ['Arizona U.']
+print len(inst_dict)
+print inst_dict
+quit()
+
+
 result = perform_request_search(p='find exp des and date > 2015', cc='HEP')
 authors_full = set()
 for recid in result:
@@ -97,6 +138,8 @@ OSTIS = ["15017018",
 "892287",
 "7181",
 "804448"]
+
+    
 
 citations = {}
 for year in range(1900,2019):

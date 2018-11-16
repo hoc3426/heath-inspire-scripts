@@ -472,6 +472,34 @@ def dump(data, converter):
 def dumps(data, converter):
     return converter().dumps(data)
 
+def generate_check_digit(base_digits):
+    '''
+    Taken from https://github.com/tjwds/generate-orcid-checksum
+    '''
+    total = 0
+    for digit in str(base_digits):
+        total = (total + int(digit)) * 2
+    remainder = total % 11
+    result = (12 - remainder) % 11
+    if result == 10:
+        result = "X"
+    return result
+
+ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
+
+def bad_orcid(id_num):
+    if not re.match(ORCID_REGEX, id_num):
+        return True
+    base_digits = id_num.replace('-', '')[0:15]
+    check_digit = id_num.replace('-', '')[15]
+    if check_digit != str(generate_check_digit(base_digits)):
+        return True
+
+def bad_inspire_id(id_num):
+    if not re.match(INSPIRE_REGEX, id_num):
+        return True
+
 
 def read_spreadsheet(file_name):
 
@@ -491,7 +519,19 @@ def create_author_institution_dict(author_lines):
     affiliation_seen = set()
     authors = []
     author_counter = 1
+    id_numbers = set()
     for author in author_lines:
+        for id_number in ['orcid', 'inspire']:
+            if author[id_number] and author[id_number] in id_numbers:
+                print 'The ID', author[id_number], 'appears twice'
+                return None
+            id_numbers.add(author[id_number])
+        if author['orcid'] and bad_orcid(author['orcid']):
+            print 'Invalid ORCID:', author['orcid'], 'for author', author['family']
+            return None
+        if author['inspire'] and bad_inspire_id(author['inspire']):
+            print 'Invalid INSPIRE ID:', author['inspire'], 'for author', author['family']
+            return None
         author_element = [author_counter,
                         '',
                         author['family'],
