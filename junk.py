@@ -28,6 +28,34 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+AWARD = 'Dannie Heineman Prize'
+with open('tmp.9b') as fp:
+   for line in fp.readlines():
+       try:   
+           #[year, author] = line.rstrip().split(r':')       
+           [year, author] = re.split(r':\s+', line.rstrip())
+           search = 'author:"' + author + '" +678__a:"' + AWARD + ' ' + year + '"'
+           result = perform_request_search(p=search, cc='HepNames')
+           if len(result) == 1:
+               print "Got it!", search
+               continue
+           search = 'author:"' + author + '" -678__a:"' + AWARD + ' ' + year + '"'
+           result = perform_request_search(p=search, cc='HepNames')
+           if len(result) != 1:
+               print "Check:", search
+               continue    
+           recid = result[0]
+           x = '''<record>
+<controlfield tag="001">{0}</controlfield>
+<datafield tag="678" ind1=" " ind2=" ">
+<subfield code="a">{1} {2}</subfield>
+</datafield>
+</record>'''.format(recid, AWARD, year)
+           #print x
+       except ValueError:
+           pass
+quit() 
+
 def format_inst(affiliation):
     affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
     affiliation_key = re.sub(r'^[ ]+', '', affiliation_key)

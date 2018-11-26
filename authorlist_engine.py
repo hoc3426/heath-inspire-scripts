@@ -32,12 +32,24 @@ from xml.dom import minidom
 
 AFFILIATIONS_DICT_FILE = 'authorlist_engine_affiliations.p.gz'
 AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE
+AFFILIATIONS_DICT = {}
+
 try:
     AFFILIATIONS_DICT = pickle.load(gzip.open(AFFILIATIONS_DICT_FILE, "rb"))
 except EOFError:
-    print "Error opening:", AFFILIATIONS_DICT_FILE
-
-
+    print "Error opening affiliations file:", AFFILIATIONS_DICT_FILE    
+except IOError:
+    try:
+        AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE.replace('.gz', '')
+        AFFILIATIONS_DICT = pickle.load(open(AFFILIATIONS_DICT_FILE, "rb"))
+    except EOFError:
+        print "Error opening:", AFFILIATIONS_DICT_FILE
+    except IOError:
+        print '''REMOVE THIS WARNING:
+No affiliation file found, no institution name conversions performed.
+**********
+'''
+        
 
 def get_aff(affiliation):
     '''Convert affiliation information into INSPIRE format.'''
@@ -562,9 +574,9 @@ def create_author_institution_dict(author_lines):
         author_counter += 1
     recid_dict = {'affiliations':affiliations, 'authors':authors}
     recid_dict['collaboration'] = \
-        ['*** WRITE YOUR COLLABORATION NAME HERE ***']
+        ['*** WRITE YOUR COLLABORATION NAME HERE OR LEAVE BLANK ***']
     recid_dict['experiment_number'] = \
-        ['*** WRITE YOUR EXPERIMENT NUMBER HERE ***']
+        ['*** WRITE YOUR EXPERIMENT NUMBER HERE OR LEAVE BLANK ***']
     recid_dict['last_modified'] = int(time.time())
     recid_dict['paper_title'] = ''
     recid_dict['reference_ids'] = []
@@ -581,7 +593,6 @@ if __name__ == '__main__':
         sys.exit(0)
 
     for option, argument in OPTIONS:
-        print option, argument
         if option == '-f':
             AUTHORS = read_spreadsheet(argument)
             RECID_DICT = create_author_institution_dict(AUTHORS)
