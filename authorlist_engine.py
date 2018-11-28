@@ -37,19 +37,21 @@ AFFILIATIONS_DICT = {}
 try:
     AFFILIATIONS_DICT = pickle.load(gzip.open(AFFILIATIONS_DICT_FILE, "rb"))
 except EOFError:
-    print "Error opening affiliations file:", AFFILIATIONS_DICT_FILE    
+    print("Error opening affiliations file: " + AFFILIATIONS_DICT_FILE)
 except IOError:
     try:
         AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE.replace('.gz', '')
         AFFILIATIONS_DICT = pickle.load(open(AFFILIATIONS_DICT_FILE, "rb"))
     except EOFError:
-        print "Error opening:", AFFILIATIONS_DICT_FILE
+        print("Error opening file: " + AFFILIATIONS_DICT_FILE)
     except IOError:
-        print '''REMOVE THIS WARNING:
+        print( 
+'''
+REMOVE THIS WARNING:
 No affiliation file found, no institution name conversions performed.
 **********
 '''
-        
+             )
 
 def get_aff(affiliation):
     '''Convert affiliation information into INSPIRE format.'''
@@ -146,14 +148,15 @@ class Converter(object):
     def __init__(self):
         raise NotImplementedError
 
-    def dump(self, data):
-        raise NotImplementedError
+    #def dump(self, data):
+    #    raise NotImplementedError
 
-    def dumps(self, data):
-        raise NotImplementedError
+    #def dumps(self, data):
+    #    raise NotImplementedError
 
 
 class AuthorsXML(Converter):
+    '''Creates the author.xml file.'''
 
     def __init__(self):
         pass
@@ -170,6 +173,8 @@ class AuthorsXML(Converter):
     TIME_FORMAT = '%Y-%m-%d_%H:%M'
 
     def create_affiliation(self, document, parsed, organization_ids):
+        '''Create author affiliation.'''
+
         affiliation = document.createElement('cal:authorAffiliation')
 
         affiliation_acronym = parsed[JSON.AFFILIATION_ACRONYM]
@@ -188,6 +193,8 @@ class AuthorsXML(Converter):
         return affiliation
 
     def create_identifier(self, document, parsed):
+        '''Create the author ID element.'''
+
         identifier = document.createElement('cal:authorid')
 
         identifier_number = parsed[JSON.IDENTIFIER_NUMBER]
@@ -200,17 +207,19 @@ class AuthorsXML(Converter):
         return identifier
 
     def create_authors(self, document, root, parsed, organization_ids):
-        parsed_authors = parsed[JSON.AUTHORS_KEY]
+        '''Create the author list.'''
 
+        parsed_authors = parsed[JSON.AUTHORS_KEY]
         authors = document.createElement('cal:authors')
         root.appendChild(authors)
-
         for parsed_author in parsed_authors:
             author = self.create_author(document, parsed_author,
                                         organization_ids)
             authors.appendChild(author)
 
     def create_author(self, document, parsed, organization_ids):
+        '''Create each author element.'''
+
         author = document.createElement('foaf:Person')
 
         # paper name
@@ -269,6 +278,8 @@ class AuthorsXML(Converter):
         return author
 
     def create_collaboration(self, document, root, parsed):
+        '''Create collaboration element.'''
+
         # collaborations
         collaborations = document.createElement('cal:collaborations')
         collaboration = document.createElement('cal:collaboration')
@@ -299,6 +310,8 @@ class AuthorsXML(Converter):
         root.appendChild(collaborations)
 
     def create_document(self):
+        '''Create xml documenet.'''
+
         dom = minidom.getDOMImplementation()
         document = dom.createDocument(None, 'collaborationauthorlist', None)
         root = document.documentElement
@@ -310,6 +323,8 @@ class AuthorsXML(Converter):
         return document, root
 
     def create_header(self, document, root, parsed):
+        '''Create xml file header.'''
+
         # creation date
         creation_date = document.createElement('cal:creationDate')
         creation_date_info = time.strftime(AuthorsXML.TIME_FORMAT)
@@ -325,6 +340,8 @@ class AuthorsXML(Converter):
             root.appendChild(reference)
 
     def create_organizations(self, document, root, parsed, ids):
+        '''Create list of institutions.'''
+
         parsed_organizations = parsed[JSON.AFFILIATIONS_KEY]
 
         # organizations container
@@ -339,6 +356,8 @@ class AuthorsXML(Converter):
             organizations.appendChild(organization)
 
     def create_organization(self, document, parsed, ids):
+        '''Create institution element.'''
+
         acronym = parsed[JSON.ACRONYM]
         organization = document.createElement('foaf:Organization')
         organization.setAttribute('id', ids[acronym])
@@ -407,6 +426,8 @@ class AuthorsXML(Converter):
         return organization
 
     def dump(self, data):
+        '''Create the xml entity from the tree.'''
+
         parsed = json.loads(data)
         document, root = self.create_document()
         #affiliations = parsed[JSON.AFFILIATIONS_KEY]
@@ -422,10 +443,14 @@ class AuthorsXML(Converter):
         return document
 
     def dumps(self, data):
+        '''Returns prettyprinted xml structure.'''
+
         # FIX for toprettyxml function from website:
         # http://ronrothman.com/public/leftbraned/
         #     xml-dom-minidom-toprettyxml-and-silly-whitespace/
         def fixed_writexml(self, writer, indent="", addindent="", newl=""):
+            '''Part of dumps.'''
+
             # indent = current indentation
             # addindent = indentation to add to higher levels
             # newl = newline string
@@ -460,6 +485,8 @@ class AuthorsXML(Converter):
                                            encoding='utf-8')
 
     def generate_organization_ids(self, organizations):
+        '''Generate the org ids of the form, e.g. o23.'''
+
         ids = {}
         # Map each organization acronym to an id of the kind 'o[index]'
         for index, organization in enumerate(organizations):
@@ -517,14 +544,14 @@ def read_spreadsheet(file_name):
 
     elements = ['given', 'family', 'inspire', 'orcid']
     with open(file_name) as csvfile:
-        reader = csv.DictReader(csvfile, delimiter='|',
+        reader = csv.DictReader(csvfile, delimiter=DELIMITER,
                                 fieldnames=elements,
                                 restkey='affiliations')
         author_lines = list(reader)
-    #print author_lines
     return author_lines
 
 def create_author_institution_dict(author_lines):
+    '''Create a dictionary for the authors with their affiliations.'''
 
     affiliations = []
     affiliation_counter = 1
@@ -535,14 +562,16 @@ def create_author_institution_dict(author_lines):
     for author in author_lines:
         for id_number in ['orcid', 'inspire']:
             if author[id_number] and author[id_number] in id_numbers:
-                print 'The ID', author[id_number], 'appears twice'
+                print('The ID ' + author[id_number] + ' appears twice')
                 return None
             id_numbers.add(author[id_number])
         if author['orcid'] and bad_orcid(author['orcid']):
-            print 'Invalid ORCID:', author['orcid'], 'for author', author['family']
+            print('Invalid ORCID: ' + author['orcid'] + ' for author ' +
+                                    author['family'])
             return None
         if author['inspire'] and bad_inspire_id(author['inspire']):
-            print 'Invalid INSPIRE ID:', author['inspire'], 'for author', author['family']
+            print('Invalid INSPIRE ID: ' + author['inspire'] + ' for author ' +
+                                         author['family'])
             return None
         author_element = [author_counter,
                         '',
@@ -584,21 +613,49 @@ def create_author_institution_dict(author_lines):
 
 if __name__ == '__main__':
 
+    DELIMITER = None
     RECID_DICT = None
+    SPREADSHEET = None
+    VALID_DELIMITERS = ('|', '\t')
 
     try:
         OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'f:')
     except getopt.error:
-        print 'error: you tried to use an unknown option'
+        print('Error: you tried to use an unknown option')
         sys.exit(0)
-
+    if OPTIONS == []:
+        print(
+'''
+Please provide name of input file, e.g.,
+python authorlist_engine.py -f input.txt
+'''
+              )
+        quit()
     for option, argument in OPTIONS:
         if option == '-f':
-            AUTHORS = read_spreadsheet(argument)
-            RECID_DICT = create_author_institution_dict(AUTHORS)
-    if OPTIONS == []:
-        #from authorlist_engine_input import RECID_DICT as recid_dict
-        print "Please provide name of input file."
+            SPREADSHEET = argument
+    if SPREADSHEET:
+        try:
+            SEARCHFILE = open(SPREADSHEET, "r")
+        except IOError:
+            print("Could not find file " + SPREADSHEET)
+            quit()
+        for line in SEARCHFILE:
+            for delimiter in VALID_DELIMITERS:
+                if delimiter in line:
+                    DELIMITER = delimiter
+                    break
+            if DELIMITER:
+                break
+        SEARCHFILE.close()
+        if not DELIMITER:
+            print("Could not find delimiter in file, expecting tab or '|'.")
+            quit()
+        AUTHORS = read_spreadsheet(SPREADSHEET)
+        RECID_DICT = create_author_institution_dict(AUTHORS)
+    else:
+        print("Please provide name of input file.")
+        quit()
 
     if RECID_DICT:
         DATA_JSON = json.dumps(RECID_DICT)
@@ -606,4 +663,6 @@ if __name__ == '__main__':
         AUTHOR_XML = OUTPUT.toprettyxml(indent='    ',
                                            newl='\r\n',
                                            encoding='utf-8')
-        print AUTHOR_XML
+        print(AUTHOR_XML)
+    else:
+        print("Something went wrong, no author.xml file produced.")
