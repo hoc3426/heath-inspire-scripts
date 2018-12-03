@@ -17,7 +17,10 @@
 
 """ Convert a spreadsheet-based author list into an author.xml file. """
 
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 import csv
 import getopt
 import gzip
@@ -36,16 +39,18 @@ AFFILIATIONS_DICT = {}
 
 try:
     AFFILIATIONS_DICT = pickle.load(gzip.open(AFFILIATIONS_DICT_FILE, "rb"))
-except EOFError:
-    print("Error opening affiliations file: " + AFFILIATIONS_DICT_FILE)
+except (EOFError, UnicodeDecodeError) as err:
+    print(err)
+    print(err.args)
 except IOError:
     try:
         AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE.replace('.gz', '')
         AFFILIATIONS_DICT = pickle.load(open(AFFILIATIONS_DICT_FILE, "rb"))
-    except EOFError:
-        print("Error opening file: " + AFFILIATIONS_DICT_FILE)
+    except (EOFError, UnicodeDecodeError) as err:
+        print(err)
+        print(err.args)
     except IOError:
-        print( 
+        print(
 '''
 REMOVE THIS WARNING:
 No affiliation file found, no institution name conversions performed.
@@ -397,7 +402,8 @@ class AuthorsXML(Converter):
             org_name_text = document.createTextNode(org_name_info)
             org_name.appendChild(org_name_text)
             organization.appendChild(org_name)
-        else:
+        #else:
+        if True:
             org_name_info = parsed[JSON.NAME]
             org_address = document.createElement('cal:orgAddress')
             org_address_text = document.createTextNode(org_name_info)
@@ -524,10 +530,9 @@ def generate_check_digit(base_digits):
         result = "X"
     return result
 
-ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
-INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
-
 def bad_orcid(id_num):
+    '''Check for badly formed ORCID.'''
+
     if not re.match(ORCID_REGEX, id_num):
         return True
     base_digits = id_num.replace('-', '')[0:15]
@@ -536,15 +541,28 @@ def bad_orcid(id_num):
         return True
 
 def bad_inspire_id(id_num):
+    '''Check for badly formed INSPIRE ID.'''
+
     if not re.match(INSPIRE_REGEX, id_num):
         return True
 
 
-def read_spreadsheet(file_name):
+def read_spreadsheet(filename, delimiters, elements):
+    '''Read spreadsheet and convert it to a dictionary for the authors.'''
 
-    elements = ['given', 'family', 'inspire', 'orcid']
-    with open(file_name) as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=DELIMITER,
+    with open(filename, 'rb') as csvfile:
+        try:
+            #Read only the first line because different lines can
+            #have different numbers of columns depending on affilations.
+            dialect = csv.Sniffer().sniff(csvfile.readline(),
+                                          delimiters=delimiters)
+        except csv.Error:
+            print('Could not determine delimiter.')
+            print('Expected values are ' + delimiters)
+            return None
+        csvfile.seek(0)
+        print dialect.delimiter
+        reader = csv.DictReader(csvfile, dialect=dialect,
                                 fieldnames=elements,
                                 restkey='affiliations')
         author_lines = list(reader)
@@ -613,10 +631,12 @@ def create_author_institution_dict(author_lines):
 
 if __name__ == '__main__':
 
-    DELIMITER = None
     RECID_DICT = None
     SPREADSHEET = None
-    VALID_DELIMITERS = ('|', '\t')
+    ELEMENTS = ['given', 'family', 'inspire', 'orcid']
+    DELIMITERS = '|;\t!'
+    ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+    INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
 
     try:
         OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'f:')
@@ -636,23 +656,16 @@ python authorlist_engine.py -f input.txt
             SPREADSHEET = argument
     if SPREADSHEET:
         try:
-            SEARCHFILE = open(SPREADSHEET, "r")
+            with open(SPREADSHEET, "r") as file_handle:
+                pass
         except IOError:
             print("Could not find file " + SPREADSHEET)
             quit()
-        for line in SEARCHFILE:
-            for delimiter in VALID_DELIMITERS:
-                if delimiter in line:
-                    DELIMITER = delimiter
-                    break
-            if DELIMITER:
-                break
-        SEARCHFILE.close()
-        if not DELIMITER:
-            print("Could not find delimiter in file, expecting tab or '|'.")
+        AUTHORS = read_spreadsheet(SPREADSHEET, DELIMITERS, ELEMENTS)
+        if AUTHORS:
+            RECID_DICT = create_author_institution_dict(AUTHORS)
+        else:
             quit()
-        AUTHORS = read_spreadsheet(SPREADSHEET)
-        RECID_DICT = create_author_institution_dict(AUTHORS)
     else:
         print("Please provide name of input file.")
         quit()

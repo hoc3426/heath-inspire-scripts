@@ -11,7 +11,8 @@ VERBOSE = False
 RECIDS = None
 
 from hepnames_mailout_input import RECIDS
-from hep_convert_email_to_id import get_hepnames_anyid_from_recid
+from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
+                                    get_hepnames_recid_from_email
 from hepnames_mailout_bad_recids import BAD_RECIDS
 
 import time
@@ -44,9 +45,11 @@ def main(recids):
             recid_int = int(recid)
         except ValueError:
             pass
-        if re.search(r'INSPIRE-', recid_str):
+        if re.search(r'INSPIRE-', recid_str) or re.search(r'@', recid_str):
             search = '035__a:' + recid_str
             result = perform_request_search(p=search, cc='HepNames')
+            if re.search(r'@', recid_str):
+                result = [get_hepnames_recid_from_email(recid_str)]
             try:
                 recid = result[0]
             except IndexError:

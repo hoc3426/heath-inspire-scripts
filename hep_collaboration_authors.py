@@ -115,6 +115,7 @@ def process_author_name(author):
 
 
     #test for ALLCAPS
+    author = author.replace('YYYY', '')
     if re.search(r'[A-Z][A-Z]', author):
         author_uplow = ''
         for part in author.split(' '):
@@ -300,10 +301,16 @@ def preprocess_file(read_data):
             sys.exit()
 
     for line in read_data.split('\n'):
+        #\firstname{C.-H.} \lastname{Yu} \inst{4}
+        if re.search(r'\\firstname{', line) and re.search(r'\\inst{', line):
+            line_new = re.sub(r'\\firstname{(.*)}\s*\\lastname{(.*)}\s*\\inst(\{.*\}).*',
+                      r'YYYY\2, \1$^\3$', line)
+            read_data = read_data.replace(line, line_new)
         #\firstname{C.-H.} \lastname{Yu}
-        if re.search(r'\\firstname{', line):
-            line_new = re.sub(r'\\firstname{([^\}]+)}\s*\\lastname{([^\}]+)}',
-                      r'\2, \1', line)
+        elif re.search(r'\\firstname{', line):
+            #line_new = re.sub(r'\\firstname{([^\}]+)}\s*\\lastname{([^\}]+)}',
+            line_new = re.sub(r'\\firstname{(.*)}\s*\\lastname{(.*)}',
+                      r'YYYY\2, \1', line)
             read_data = read_data.replace(line, line_new)
         #I.J.~Arnquist\inst{10}
         if re.search(r'\\inst\{', line):
