@@ -561,7 +561,6 @@ def read_spreadsheet(filename, delimiters, elements):
             print('Expected values are ' + delimiters)
             return None
         csvfile.seek(0)
-        print dialect.delimiter
         reader = csv.DictReader(csvfile, dialect=dialect,
                                 fieldnames=elements,
                                 restkey='affiliations')
