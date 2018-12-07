@@ -22,6 +22,7 @@ try:
 except ImportError:
     import pickle
 import csv
+import datetime
 import getopt
 import gzip
 import re
@@ -31,6 +32,10 @@ try:
     import json
 except ImportError:
     import simplejson as json
+try:
+    basestring
+except NameError:
+    basestring = str
 from xml.dom import minidom
 
 AFFILIATIONS_DICT_FILE = 'authorlist_engine_affiliations.p.gz'
@@ -39,22 +44,15 @@ AFFILIATIONS_DICT = {}
 
 try:
     AFFILIATIONS_DICT = pickle.load(gzip.open(AFFILIATIONS_DICT_FILE, "rb"))
-except (EOFError, UnicodeDecodeError) as err:
-    print(err)
-    print(err.args)
 except IOError:
     try:
         AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE.replace('.gz', '')
-        AFFILIATIONS_DICT = pickle.load(open(AFFILIATIONS_DICT_FILE, "rb"))
-    except (EOFError, UnicodeDecodeError) as err:
-        print(err)
-        print(err.args)
+        AFFILIATIONS_DICT = pickle.load(open(AFFILIATIONS_DICT_FILE, "rb",
+                                             encoding="utf-8"))
     except IOError:
         print(
 '''
-REMOVE THIS WARNING:
 No affiliation file found, no institution name conversions performed.
-**********
 '''
              )
 
@@ -550,7 +548,7 @@ def bad_inspire_id(id_num):
 def read_spreadsheet(filename, delimiters, elements):
     '''Read spreadsheet and convert it to a dictionary for the authors.'''
 
-    with open(filename, 'rb') as csvfile:
+    with open(filename, 'r') as csvfile:
         try:
             #Read only the first line because different lines can
             #have different numbers of columns depending on affilations.
@@ -636,6 +634,9 @@ if __name__ == '__main__':
     DELIMITERS = '|;\t!'
     ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
+    TIMESTAMP = datetime.datetime.fromtimestamp(time.time()
+                                  ).strftime('%Y%m%d%H%M%S')
+    OUTPUT_FILE = 'authors_' + TIMESTAMP + '.xml'
 
     try:
         OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'f:')
@@ -675,6 +676,8 @@ python authorlist_engine.py -f input.txt
         AUTHOR_XML = OUTPUT.toprettyxml(indent='    ',
                                            newl='\r\n',
                                            encoding='utf-8')
-        print(AUTHOR_XML)
+        with open(OUTPUT_FILE, 'w') as output:
+            output.write(AUTHOR_XML.decode("utf-8"))
+        print("Output written to file " + OUTPUT_FILE)
     else:
         print("Something went wrong, no author.xml file produced.")
