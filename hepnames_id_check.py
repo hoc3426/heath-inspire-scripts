@@ -124,6 +124,24 @@ def new_orcids(already_seen):
     """Search for new ORCIDs in HEP."""
 
     fields = ('100__j', '700__j', '100__k', '700__k')
+    for field in fields:
+        for orcid in get_all_field_values(field):
+            if not re.search('00-000', orcid):
+                continue
+            if not orcid.startswith('ORCID:'):
+                search = field + ':' + orcid
+                recid = perform_request_search(p=search, cc='HEP')
+                if len(recid):
+                    print 'Needs to start with "ORCID:"', recid, orcid
+                continue
+            orcid = orcid.replace('ORCID:', '')
+            if bad_id_check(orcid):
+                search = field + ':' + orcid
+                recid = perform_request_search(p=search, cc='HEP')
+                if len(recid):
+                    print 'Bad ORCID', recid, orcid
+
+
     search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
               or {3}:ORCID:* 980:CORE".format(fields[0],
                   fields[1], fields[2], fields[3])
@@ -151,18 +169,16 @@ def bad_url_z():
     """Check to make sure $$z field is correct."""
 
     field = '8564_z'
-    GOOD_VALUES = set(['postprint', 'openaccess'])
+    good_values = set(['postprint', 'openaccess'])
     for value in get_all_field_values(field):
         search = field + ':' + value
         result = perform_request_search(p=search, cc='Fermilab')
         if len(result) == 0:
             continue
-        if value in GOOD_VALUES:
+        if value in good_values:
             print value, len(result)
         else:
             print value, result
-
-            
 
 def bad_experiments_affilations():
     """Check to see bad metadata."""
