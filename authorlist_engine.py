@@ -38,6 +38,14 @@ except NameError:
     basestring = str
 from xml.dom import minidom
 
+RECID_DICT = None
+SPREADSHEET = None
+ELEMENTS = ['given', 'family', 'inspire', 'orcid']
+DELIMITERS = '|;\t!'
+ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
+
+
 AFFILIATIONS_DICT_FILE = 'authorlist_engine_affiliations.p.gz'
 AFFILIATIONS_DICT_FILE = AFFILIATIONS_DICT_FILE
 AFFILIATIONS_DICT = {}
@@ -628,12 +636,6 @@ def create_author_institution_dict(author_lines):
 
 if __name__ == '__main__':
 
-    RECID_DICT = None
-    SPREADSHEET = None
-    ELEMENTS = ['given', 'family', 'inspire', 'orcid']
-    DELIMITERS = '|;\t!'
-    ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
-    INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
     TIMESTAMP = datetime.datetime.fromtimestamp(time.time()
                                   ).strftime('%Y%m%d%H%M%S')
     OUTPUT_FILE = 'authors_' + TIMESTAMP + '.xml'
