@@ -11,7 +11,8 @@ import random
 import sys
 
 from invenio.search_engine import perform_request_search
-from hep_convert_email_to_id import get_hepnames_recid_from_email
+from hep_convert_email_to_id import get_hepnames_recid_from_email, \
+                                    get_recid_from_id
 from invenio.bibrecord import print_rec, record_add_field
 
 from hepnames_add_from_list_email_to_aff import *
@@ -38,7 +39,7 @@ from hep_collaboration_authors import process_author_name
 #EXPERIMENT = 'KATRIN'
 #EXPERIMENT = 'SUPER-KAMIOKANDE'
 #EXPERIMENT = None
-
+#EXPERIMENT = 'DES'
 
 
 #SOURCE = 'Fermilab'
@@ -49,6 +50,7 @@ from hep_collaboration_authors import process_author_name
 #SOURCE = 'Fermilab'
 #SOURCE = 'KATRIN'
 #SOURCE = 'SUPER-KAMIOKANDE'
+#SOURCE = 'DES'
 
 #INSPIRE = 72053
 #INSPIRE = 72499
@@ -99,7 +101,7 @@ def email_lookup():
     quit()
 
 
-def create_xml(author, email, affiliation, experiment, inspire_id):
+def create_xml(author, email, affiliation, experiment, inspire_id, orcid):
     '''Create the xml file to upload.'''
 
     common_fields = {}
@@ -120,6 +122,8 @@ def create_xml(author, email, affiliation, experiment, inspire_id):
     if experiment:
         common_tags['693__'] = [('e', experiment), ('z', 'current')]
     common_tags['035__'] = [('9', 'INSPIRE'), ('a', inspire_id)]
+    if orcid:
+        common_tags['035__'] = [('9', 'ORCID'), ('a', orcid)]
     if SOURCE:
         common_tags['670__'] = [('a', SOURCE)]
 
@@ -140,17 +144,26 @@ def main(authors, inspire):
     filename = re.sub('.py', '.out', filename)
     output = open(filename, 'w')
     emails = set()
+    orcids = set()
     for author_info in authors:
         #print author_info
         author = author_info[0]
         email = author_info[1]
         email = email.lower()
-        if email in emails:
+        orcid = author_info[2]
+        if email in emails and email:
             print "Duplicate", email
             continue
         else:
            emails.add(email)
+        if orcid in orcids and orcid:
+            print "Duplicate", orcid
+            continue
+        else:
+           orcids.add(orcid)
         recid = get_hepnames_recid_from_email(email)
+        if not recid and orcid:
+            recid = get_recid_from_id(orcid)
         if recid and EXPERIMENT == None:
             continue
         elif recid and EXPERIMENT:
@@ -161,7 +174,8 @@ def main(authors, inspire):
         #print 'email =', email
         affiliation = aff_from_email(email)
         #print 'affiliation =', affiliation
-        if affiliation == None:
+        if False:
+        #if affiliation == None:
             try:
                 affiliation = author_info[2]
                 affiliation = get_aff(affiliation)
@@ -177,7 +191,7 @@ def main(authors, inspire):
         inspire_id = 'INSPIRE-00' + str(inspire) + \
                      str(random.randint(1, 9))
         output.write(create_xml(author, email, affiliation,
-                                EXPERIMENT, inspire_id))
+                                EXPERIMENT, inspire_id, orcid))
         output.write('\n')
         inspire += 1
     output.close()
