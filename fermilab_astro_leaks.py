@@ -96,17 +96,22 @@ or Prestel, S \
 or Quigg, C \
 or Van de Water, R \
 or Coloma, P \
+or Blinov, N \
+or Gao, Christina \
 or Howe, K \
 or Huges, C \
 or Isaacson, J \
+or Jay, W \
+or Kelly, K \
 or Krause, C \
-or Liu, Zhen \
+or Low, Matthew \
+or Martinez Soler, I \
 or Neumann, T \
+or Perez, Y \
 or Turner, J \
+or Rocco, N \
 or Veernala, A \
-or Zhang, Yue \
-or Lin, Yin \
-or Johnson, Evan "
+or Zhang, Yue "
 
 search += SEARCH_T
 print search

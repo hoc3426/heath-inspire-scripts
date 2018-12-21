@@ -28,6 +28,27 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+
+with open('tmp.1000') as fp:
+    for line in fp.readlines():
+        match_obj = re.search(r'\[(\d+)\]', line)
+        if match_obj:
+            orcid = get_hepnames_anyid_from_recid(match_obj.group(1), 'ORCID')
+            if orcid:
+                line = re.sub(match_obj.group(1), orcid, line)
+            else:
+                inspire = get_hepnames_anyid_from_recid(match_obj.group(1),
+                                                        'INSPIRE')
+                if inspire:
+                    line = re.sub(match_obj.group(1), inspire, line)
+        match_obj = re.search(r'record/(\d+)', line)
+        if match_obj:
+            inst = get_fieldvalues(match_obj.group(1), '110__u')[0]
+            line = re.sub(r'\\href{http://inspirehep.net/record/\d+}',
+                          inst + ' %', line)
+        print line.rstrip()
+quit()
+
 AWARD = 'Dannie Heineman Prize'
 with open('tmp.9b') as fp:
    for line in fp.readlines():

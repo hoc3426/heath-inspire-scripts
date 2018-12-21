@@ -123,7 +123,7 @@ def process_author_name(author):
                 part = part.title()
             author_uplow += ' ' + part
         author = author_uplow
-
+    author = author.replace('Inspire', 'INSPIRE')
 
     #print 'INPUT = ', author
     author = author.replace(r'\.', r'xxxx')
@@ -195,9 +195,28 @@ def create_xml(eprint=None, doi=None, author_dict=None):
     tag = '100__'
     email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
     orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+    inspire_regex = re.compile(r'^INSPIRE-\d{8}$')
     for key in author_dict:
         subfields = []
-        subfields.append(('a', author_dict[key][0]))
+        author = author_dict[key][0]
+
+        match_obj = re.search(r'(0000-\d{4}-\d{4}-\d{3}[\dX])', author)
+        if match_obj:
+            orcid = match_obj.group(1)
+            if not re.match(orcid_regex, orcid):
+                print 'Problem with', orcid
+            subfields.append(('j', 'ORCID:' + orcid))
+            author = author.replace(orcid, '')
+        match_obj = re.search(r'(INSPIRE-\d{8})', author)
+        if match_obj:
+            inspire = match_obj.group(1)
+            if not re.match(inspire_regex, inspire):
+                print 'Problem with', inspire
+            subfields.append(('i', inspire))
+            author = author.replace(inspire, '')
+
+        subfields.append(('a', author))
+
         for affiliation in author_dict[key][1]:
             affiliation = re.sub(r'\\affinfn{(.*)}{(.*)}', r'INFN \1 \2',
                                  affiliation)
@@ -234,6 +253,10 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 affiliation = 'ORCID:' + affiliation
                 subfields.append(('j', affiliation))
                 continue
+            elif re.match(r"^INSPIRE-", affiliation):
+                subfields.append(('i', affiliation))
+                continue
+
             affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
             try:
                 for inst in AFFILIATIONS_DONE[affiliation_key]:
@@ -681,11 +704,11 @@ if __name__ == '__main__':
 
         try:
             EPRINT = ARGUMENTS[0]
-            main(EPRINT)
+            #main(EPRINT)
         except IndexError:
             print "Bad input", EPRINT
             quit()
-
+        main(EPRINT)
 
         if exists(AFFILIATIONS_DONE_FILE):
             BACKUP = AFFILIATIONS_DONE_FILE + '.bak'
