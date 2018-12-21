@@ -441,6 +441,7 @@ def preprocess_file(read_data):
     read_data = re.sub(r'Irefn+\{(.*)\}\\?A?r?e?f?s?\{(.*)\}', \
                        r'Irefn{\1,\2}', read_data)
     read_data = re.sub(r'Arefs?{(\w+)}', r'Irefn{\1}', read_data)
+    read_data = re.sub(r'\\Idef{(\w+)}', r'$^{\1}$', read_data)
     #read_data = \
     #    re.sub(r'(\w\.?)[ \,]*\\(inst|altaffilmark|Irefn)\{(.*)\}', \
     #           r'\1$^{\3}$', read_data)
