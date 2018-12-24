@@ -42,7 +42,8 @@ experiments = {
 'SciBooNE':'FNAL-E-0954',
 'STAR':'BNL-RHIC-STAR',
 'T2K':'T2K',
-'Telescope Array':'TELESCOPE-ARRAY'
+'Telescope Array':'TELESCOPE-ARRAY',
+'TOTEM':'CERN-LHC-TOTEM'
 }
 
 def create_xml(recid, experiment):

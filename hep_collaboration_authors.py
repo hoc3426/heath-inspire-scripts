@@ -324,6 +324,22 @@ def preprocess_file(read_data):
             sys.exit()
 
     for line in read_data.split('\n'):
+        #\AddAuthor{C.~Lindsey}{11}{}{}
+        if re.search(r'\\AddAuthor{', line):
+            line_new = \
+                     re.sub(r'\\AddAuthor{(.*)}{([^\}]*)}{([^\}]*)}{([^\}]*)}',
+                              r'\1$^{\2,\3,\4}$', line)
+            line_new = re.sub('[,]+}', '}', line_new)
+            line_new = re.sub('{[,]+', '{', line_new)
+            line_new = line_new.replace(',,', ',')
+            read_data = read_data.replace(line, line_new)
+        #\AddInstitute{1a}{Blah blah} \AddExternalInstitute
+        line = line.replace('\\AddExternalInstitute', '\\AddInstitute')
+        if re.search(r'\\AddInstitute{([^\}]+)}{', line):
+            line_new = re.sub(r'\\AddInstitute{([^\}]+)}', r'$^{\1}$ ', line)
+            read_data = read_data.replace('\\AddExternalInstitute', '\\AddInstitute')
+            read_data = read_data.replace(line, line_new)
+
         #\firstname{C.-H.} \lastname{Yu} \inst{4}
         if re.search(r'\\firstname{', line) and re.search(r'\\inst{', line):
             line_new = re.sub(r'\\firstname{(.*)}\s*\\lastname{(.*)}\s*\\inst(\{.*\}).*',
@@ -339,6 +355,7 @@ def preprocess_file(read_data):
         if re.search(r'\\inst\{', line):
            line_new = re.sub(r'\\inst({[^\}]+\})', r'$^\1$', line)
            read_data = read_data.replace(line, line_new)
+    #print "read_data =", read_data
 
     #Special treatment for BaBar
     for line in read_data.split('\n'):
@@ -352,6 +369,8 @@ def preprocess_file(read_data):
         elif re.search(r'\\author\{.*\\altaffiliation', line):
             line_new = re.sub(r'\\altaffiliation.*', '', line)
             read_data = read_data.replace(line, line_new)
+        if VERBOSE:
+            print "BABAR LINE =", line_new
 
     #Special treatment for DES and Fermi-LAT and Planck
     astro_aff_counter = 0
@@ -360,7 +379,7 @@ def preprocess_file(read_data):
         if re.search('newcommand', line):
             read_data = read_data.replace(line, '')
         if VERBOSE:
-            print "LINE =", line
+            print "ASTRO LINE =", line
         if re.search(r'\\section\*\{Affiliations\}', line) or \
            re.search(r'\\institute\{\\small', line):
             astro_aff_counter = 1
