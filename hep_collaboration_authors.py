@@ -322,7 +322,8 @@ def preprocess_file(read_data):
         except re.error:
             print '!!! Problem with user commands:', key, command_dict[key]
             sys.exit()
-
+   
+    read_data = read_data.replace('{+}', '{WXYZ}')
     for line in read_data.split('\n'):
         #\AddAuthor{C.~Lindsey}{11}{}{}
         if re.search(r'\\AddAuthor{', line):
