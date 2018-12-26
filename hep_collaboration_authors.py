@@ -14,9 +14,11 @@ import time
 
 from unidecode import unidecode
 
-from invenio.search_engine import perform_request_search
+from invenio.search_engine import perform_request_search,\
+                                  get_fieldvalues
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
+from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 
 VERBOSE = False
 #VERBOSE = True
@@ -207,6 +209,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 print 'Problem with', orcid
             subfields.append(('j', 'ORCID:' + orcid))
             author = author.replace(orcid, '')
+            author = author.replace('[]', '')
         match_obj = re.search(r'(INSPIRE-\d{8})', author)
         if match_obj:
             inspire = match_obj.group(1)
@@ -214,7 +217,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 print 'Problem with', inspire
             subfields.append(('i', inspire))
             author = author.replace(inspire, '')
-
+            author = author.replace('[]', '')
         subfields.append(('a', author))
 
         for affiliation in author_dict[key][1]:
@@ -294,6 +297,7 @@ def preprocess_file_braces(read_data):
     read_data = re.sub(r'\s+([\}\)\]])', r'\1', read_data)
     read_data = re.sub(r'\\scriptsize\{(.*)\}', r'\1', read_data)
     read_data = read_data.replace(r'\\', '\n')
+    read_data = re.sub(r'\,[ ]+\$\^', r'\n$^', read_data)
     #print repr(read_data)
     return read_data
 
@@ -323,8 +327,55 @@ def preprocess_file(read_data):
             print '!!! Problem with user commands:', key, command_dict[key]
             sys.exit()
    
+   
+
     read_data = read_data.replace('{+}', '{WXYZ}')
     for line in read_data.split('\n'):
+        #\href{http://inspirehep.net/record/1068305}{J.~Alimena}$^{7}$
+        match_obj = re.search(r'/record/(\d+).*$', line)
+        if match_obj:
+            for id_type in ['ORCID', 'INSPIRE']:
+                id_num = get_hepnames_anyid_from_recid(match_obj.group(1),
+                                                       id_type)
+                if id_num:
+                    #print line
+                    line_new = re.sub(r'.*\}\{(.*)\}(\$\^.*)', 
+                                      r'\1 [' + id_num + r']\2', line)
+                    read_data = read_data.replace(line, line_new)
+                    #print line_new
+                    continue                  
+                                            
+
+            #orcid = get_hepnames_anyid_from_recid(match_obj.group(1), 'ORCID')
+            #if orcid:
+            #    line_new = re.sub(r'.*' + match_obj.group(1) + '}', 
+            #                      r'\\author[' + orcid + ']', line)
+            #    line_new = re.sub(r'\}(\$\^\{.+\}\$)', r'\1}', line_new)
+            #    read_data = read_data.replace(line, line_new)
+            #    print line_new
+            #    continue
+            #else:
+            #    inspire = get_hepnames_anyid_from_recid(match_obj.group(1),
+            #                                            'INSPIRE')
+            #    if inspire:
+            #        line_new = re.sub(r'.*' + match_obj.group(1) + '}',
+            #                          r'\\author[' + inspire + ']', line)
+            #        read_data = read_data.replace(line, line_new)
+            #        print line_new
+            #        continue
+        match_obj = re.search(r'record/(\d+)', line)
+        if match_obj:
+            try:
+                inst = get_fieldvalues(match_obj.group(1), '110__u')[0]
+                line_new = re.sub(r'\\href{http://inspirehep.net/record/\d+}',
+                           inst + ' %', line)
+                print line_new
+                read_data = read_data.replace(line, line_new)
+            except IndexError:
+                pass
+
+
+
         #\AddAuthor{C.~Lindsey}{11}{}{}
         if re.search(r'\\AddAuthor{', line):
             line_new = \
