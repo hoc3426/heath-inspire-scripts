@@ -68,7 +68,7 @@ def send_jobs_mail(recid, email, name, title, deadline):
     subject_sender = 'Your ' + subject
     subject_retain = 'Retain ' + subject
     subject_remove = 'Remove ' + subject
-    link = "http://inspirehep.net/record/" + recid
+    link = "https://inspirehep.net/record/" + recid
     html = \
 """<html>
 <head></head>
