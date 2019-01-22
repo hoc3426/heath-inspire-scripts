@@ -39,7 +39,7 @@ def main(recids):
         #contact_email = "cleggm1@fnal.gov"
         #contact_email = "cleggm1@gmail.com"
         #contact_email = "bhecker@slac.stanford.edu"
-        #contact_email = "thorsten.schwander@gmail.com"
+        contact_email = "thorsten.schwander@gmail.com"
 
         try:      
             deadline = get_fieldvalues(recid, '046__i')[0]
@@ -74,23 +74,23 @@ def send_jobs_mail(recid, email, name, title, deadline):
 <head></head>
 <body>
 <p>
-Dear %(name)s,
+Dear {name},
 <br /><br />
 The HEPJobs listing for your position:<br />
-<a href=\"%(link)s\">%(link)s</a><br />
-   %(title)s<br />
-has an expired deadline: %(deadline)s.
+<a href=\"{link}\">{link}</a><br />
+   {title}<br />
+has an expired deadline: {deadline}.
 <br /><br />
 Please click the appropriate link below to let us know if this position is:
 <br /><br />
-a) <a href=\"mailto:jobs@inspirehep.net?subject=%(subject_retain)s
-&body=Retain %(link)s             The new deadline is:\">still vacant</a>
+a) <a href=\"mailto:jobs@inspirehep.net?subject={subject_retain}
+&body=Dear INSPIRE,%0D%0A%0D%0APlease retain {link}%0D%0AThe new deadline is:%0D%0A%0D%0A-{name}\">still vacant</a>
 [you would be interested in new applications]
 <br /><br />
 OR
 <br /><br />
-b) <a href=\"mailto:jobs@inspirehep.net?subject=%(subject_remove)s
-&body=Remove %(link)s\">no longer vacant</a>
+b) <a href=\"mailto:jobs@inspirehep.net?subject={subject_remove}
+&body=Dear INSPIRE,%0D%0A%0D%0APlease remove the following position: {link}%0D%0A%0D%0A-{name}\">no longer vacant</a>
 [you do not want any more applications].
 <br /><br />
 Generally we do not remove jobs simply because the deadline has expired
@@ -113,9 +113,11 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
 </p>
 </body>
 </html>
-"""% {"link":link, "title":title, "deadline":deadline,
-      "subject_remove":subject_remove, "subject_retain":subject_retain,
-      "name":name}
+""".format(link=link, title=title, deadline=deadline, name=name,
+subject_remove=subject_remove, subject_retain=subject_retain)
+#% {"link":link, "title":title, "deadline":deadline,
+#      "subject_remove":subject_remove, "subject_retain":subject_retain,
+#      "name":name}
 
     #text = BeautifulSoup(html).text
     text = BeautifulSoup(html, "lxml").text
