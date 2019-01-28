@@ -18,7 +18,7 @@ if False:
 #grand_total = 0
 #for month in range(1,10) + [10, 11, 12]:
 #  for month in [10, 11, 12]:
-#for month in range(1,12):
+#for month in range(10,13):
   if month < 10:
       month = '0' +  str(month)
   search = 'dadd:2018-' + str(month)
@@ -33,10 +33,11 @@ if False:
 
 total = 0
 fermilab = get_collection_reclist('Fermilab')
-for yymm in ['91','92','93', '94', '95', '96', '97', '98', '99',
-         '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
-         '12', '13', '14', '15', '16', '17', '18', '1801', '1802', '1803', '1804',
-         '1805', '1806', '1807', '1808', '1809', '1810']:
+#for yymm in ['91','92','93', '94', '95', '96', '97', '98', '99',
+#         '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
+#         '12', '13', '14', '15', '16', '17', '18', '1801', '1802', '1803', '1804',
+#         '1805', '1806', '1807', '1808', '1809', '1810']:
+for yymm in ['1810', '1811', '1812']:
   search_f = '037__a:fermilab* 037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   search = '037__c:physics.acc-ph 037__a:"arXiv:' + yymm + '*"'
   x = perform_request_search(p=search, cc='HEP')

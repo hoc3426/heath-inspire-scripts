@@ -39,10 +39,11 @@ TYPE_DICT = {
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
 
 ACCEPTED_SEARCH = '8564_z:openaccess or 8564_z:postprint or \
-8564_y:"article from scoap3" or 8564_y:"Fulltext from Publisher" ignore'
+8564_y:"article from scoap3" or 8564_y:"Fulltext from Publisher" \
+0247_2:doi ignore'
 
 DADD_SEARCH = 'dadd:2012 or dadd:2013 or dadd:2014 or \
-dadd:2015 or dadd:2016 or dadd:2017 or dadd:2018'
+dadd:2015 or dadd:2016 or dadd:2017 or dadd:2018 or dadd:2019'
 
 THESIS_SEARCH = '8564_y:fermilabthesisf'
 
@@ -206,8 +207,110 @@ SEARCH5 = "035:1434700 or 035:1434699 or 035:1434698 or 035:1433910 \
 or 035:1433909 or 035:1433366 or 035:1433365 or 035:1433249 or \
 035:1433248 or 035:1433247 or 035:1433215 ignore"
 
-SEARCH = None
-SEARCH = SEARCH4
+SEARCH6 = "035:1433215 or 035:1433247 or 035:1433248 or 035:1433249 \
+or 035:1433365 or 035:1433366 or 035:1433909 or 035:1433910 \
+or 035:1434698 or 035:1434699 or 035:1434700 or 035:1435931 \
+or 035:1435932 ignore"
+
+SEARCH7a = "find recid 1695806 \
+or recid 1644100 \
+or recid 1694473 \
+or recid 1698421 \
+or recid 1639208 \
+or recid 1646260 \
+or recid 1674951 \
+or recid 1511868 \
+or recid 1674549 \
+or recid 1614453 \
+or recid 1682779 \
+or recid 1667734 \
+or recid 1589842 \
+or recid 1647350 \
+or recid 446416 \
+or recid 1695800 ignore"
+
+SEARCH7b = "find recid 1631982 \
+or recid 1634835 \
+or recid 418647 \
+or recid 1651149 \
+or recid 1662307 \
+or recid 1653680 \
+or recid 1658447 \
+or recid 1634843 \
+or recid 1637327 \
+or recid 1681439 \
+or recid 1497146 \
+or recid 440246 \
+or recid 1515694 \
+or recid 1277057 \
+or recid 1623908 ignore"
+
+SEARCH7c = "find recid 1647947 \
+or recid 1681436 \
+or recid 1666884 \
+or recid 1508173 \
+or recid 1604886 \
+or recid 1472120 \
+or recid 1601359 \
+or recid 1630635 \
+or recid 1702546 \
+or recid 1594909 \
+or recid 1508017 \
+or recid 1631985 \
+or recid 1654360 \
+or recid 1481372 \
+or recid 1676131 ignore"
+
+SEARCH7d = "find recid 1594731 \
+or recid 1666824 \
+or recid 1507168 \
+or recid 1650106 \
+or recid 1684240 \
+or recid 1689428 \
+or recid 1513361 \
+or recid 1685235 \
+or recid 1459227 \
+or recid 1635821 \
+or recid 1685532 \
+or recid 1685232 \
+or recid 1512112 \
+or recid 1593762 \
+or recid 1680459 ignore"
+
+SEARCH7e = "find recid 1668914 \
+or recid 1682023 \
+or recid 1700756 \
+or recid 1636197 \
+or recid 1635896 \
+or recid 445214 \
+or recid 1614779 \
+or recid 1682776 \
+or recid 1678111 \
+or recid 1672072 \
+or recid 1679804 \
+or recid 1650785 \
+or recid 1692399 \
+or recid 1488626 \
+or recid 1664547 ignore"
+
+SEARCH7f = "find recid 1663566 \
+or recid 1509984 \
+or recid 1616054 \
+or recid 1666015 \
+or recid 1670997 \
+or recid 1664621 \
+or recid 1703224 \
+or recid 1679268 \
+or recid 1678715 \
+or recid 444764 \
+or recid 448756 \
+or recid 1629160 \
+or recid 1671087 \
+or recid 109189 \
+or recid 1647428 \
+or recid 1695389 \
+or recid 1601294 ignore"
 
 SEARCH = None
+
 

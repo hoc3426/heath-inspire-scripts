@@ -134,6 +134,7 @@ def get_url(recid):
     url_postprint = None
     url_inspire = None
     accepted = False
+    has_doi = False
 
     for item in BibFormatObject(int(recid)).fields('8564_'):
         if item.has_key('y'):
@@ -148,6 +149,14 @@ def get_url(recid):
             elif item['z'] == 'postprint':
                 url_postprint = item['u']
                 accepted = True
+
+    #For an accepted paper to count, it should have a DOI.
+    if 'DOI' in (element.upper() for element in
+                 get_fieldvalues(recid, '0247_2')):
+        has_doi = True
+
+    if not has_doi:
+        accepted = False
 
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
