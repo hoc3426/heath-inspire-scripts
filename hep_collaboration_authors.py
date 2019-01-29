@@ -462,7 +462,7 @@ def preprocess_file(read_data):
 
 
     #Special treatment for LIGO and Virgo
-    pattern_au = re.compile(r"([A-Z])\.([^-]*)([A-Z])([^A-Z]+)\s*\%\s*"
+    pattern_au = re.compile(r"^([A-Z])[\~\.]([^-]*)([A-Z])([^A-Z]+)\s*\%\s*"
                          r"([a-z])([a-z]+)\.([a-z])([a-z]+)")
     pattern_af = re.compile(r"\\affiliation\s*\{(.*)\}\s*\%.*(\{\d+\})")
     for line in read_data.split('\n'):
@@ -470,8 +470,8 @@ def preprocess_file(read_data):
         if match:
             if match.group(5).upper() == match.group(1) and \
                match.group(7).upper() == match.group(3):
-                line_new = match.group(1) + match.group(6) + \
-                           match.group(2) + match.group(3) + \
+                line_new = match.group(1) + match.group(6) + ' ' + \
+                           match.group(2) + ' ' + match.group(3) + \
                            match.group(4)
                 #print line_new, '\t\t', line
                 read_data = read_data.replace(line, line_new)
