@@ -43,8 +43,8 @@ def show_papers(personid, external_id=None, orcid=None, inspire=None):
                     if value.replace('ORCID:', '') == external_id and \
                        value.replace('ORCID:', '') != orcid and \
                        value != inspire:
-                        hep_records += " ".join([str(bibrec),
-                                                 author, value, '\n'])
+                       hep_records += "    " + " ".join([str(bibrec),
+                                                         author, value, '\n'])
     if hep_records:
         return hep_records
     return None
@@ -110,7 +110,7 @@ def create_report(filename='', extid='ORCID'):
                      format('    HEPNames: ', orcid, inspire, author))
             hep_records = show_papers(pid, eid, orcid, inspire)
             if hep_records:
-                output.write('\nHEP records with wrong IDs\n')
+                output.write('\n    HEP records with wrong IDs\n')
                 output.write(hep_records)
             #try:
             #    output.write(show_papers(pid, eid))
@@ -135,7 +135,7 @@ if __name__ == '__main__':
             for row in multiple_ids(extid=id_type):
                 if row[0] != oldpid:
                     fhandle.write("-" * 30)
-                fhandle.write("{0}\t{1}\t{2}".format(*row))
+                fhandle.write("{0}\t{1}\t{2}".format(*row) + '\n')
                 oldpid = row[0]
 
     #oldpid = ''

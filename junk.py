@@ -28,25 +28,113 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+recid = 1685416
+print print_record(recid, ot=['100', '700', '001'], format='xm')
+quit()
 
 with open('tmp.1000') as fp:
     for line in fp.readlines():
         match_obj = re.search(r'\[(\d+)\]', line)
+        match_obj = re.search(r'\{(\d+)\}\{(.*)\}{\\ref{(.*)}}', line)
+        match_obj = re.search(r'\\iauthor\{(\d+)\}(.*)', line)
         if match_obj:
+            id = '0'
             orcid = get_hepnames_anyid_from_recid(match_obj.group(1), 'ORCID')
             if orcid:
-                line = re.sub(match_obj.group(1), orcid, line)
+                #line = re.sub(match_obj.group(1), orcid, line)
+                id = orcid
             else:
                 inspire = get_hepnames_anyid_from_recid(match_obj.group(1),
                                                         'INSPIRE')
                 if inspire:
-                    line = re.sub(match_obj.group(1), inspire, line)
-        match_obj = re.search(r'record/(\d+)', line)
+                    #line = re.sub(match_obj.group(1), inspire, line)
+                    id = inspire
+            author = match_obj.group(2)
+            #affs = match_obj.group(3)
+            line = '\\author[' + id + ']' + match_obj.group(2)
+        #print line.rstrip() 
+        #print '\\author[' + id + ']{' + author + '}\\affiliation{' + affs + '}'
+        #\newcommand{\902676}{U. Bonn, Phys. Inst.}
+        match_obj = re.search(r'newcommand{\\(\d+)', line)
         if match_obj:
             inst = get_fieldvalues(match_obj.group(1), '110__u')[0]
-            line = re.sub(r'\\href{http://inspirehep.net/record/\d+}',
-                          inst + ' %', line)
+            line = '\\newcommand{\\' + match_obj.group(1) + '}{' + inst + '}'
         print line.rstrip()
+quit()
+
+
+for recid in perform_request_search(p=
+'999C5a:/doi:10.5281\/zenodo.*:$/', cc='HEP'):
+    print recid
+    #print print_record(recid, ot=['999C5'], format='hm')
+quit()
+
+
+zenodos = []
+for ref in get_all_field_values('999C5a'):
+    if ref.startswith('doi:10.5281/zenodo.'):
+        cites =  perform_request_search(p='999C5a:' + ref, cc='HEP')
+        if len(cites):
+            zenodos.append((len(cites), ref))
+for doi in sorted(zenodos, reverse=True):
+    print doi
+quit()
+
+for recid in perform_request_search(p=
+'fin a ramgoolam and af NITheP, Matieland', cc='HEP'):
+    print print_record(recid, ot=['100', '700'], format='hm')
+quit()
+
+
+
+from pdg_aff import AFFS
+import cPickle as pickle
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
+AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
+AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
+from invenio.textutils import translate_latex2unicode
+from hep_aff import get_aff
+
+if 0:
+#with open('./institutions_names_prd.txt', 'r') as oldfh:
+    with open('./institutions_names_prd_inspire.txt', 'w') as newfh:
+        for oldaff in oldfh.readlines():
+            oldaff = oldaff.rstrip()
+            try:
+                newaff = AFFILIATIONS_DONE[re.sub(r'\W+', ' ', oldaff).upper()][0]
+            except KeyError:
+                newaff = get_aff(oldaff)[0]
+            print newaff, ':', oldaff
+#quit()
+
+
+
+with open('tmp.1000') as fp:
+    for line in fp.readlines():
+        match_obj = re.search(r'\[(\d+)\]', line)
+        match_obj = re.search(r'\{(\d+)\}\{(.*)\}{\\ref{(.*)}}', line)
+        if match_obj:
+            id = '0'
+            orcid = get_hepnames_anyid_from_recid(match_obj.group(1), 'ORCID')           
+            if orcid:
+                #line = re.sub(match_obj.group(1), orcid, line)
+                id = orcid
+            else:
+                inspire = get_hepnames_anyid_from_recid(match_obj.group(1),
+                                                        'INSPIRE')
+                if inspire:
+                    #line = re.sub(match_obj.group(1), inspire, line)
+                    id = inspire
+            author = match_obj.group(2)
+            affs = match_obj.group(3)
+        print '\\author[' + id + ']{' + author + '}\\affiliation{' + affs + '}' 
+        #match_obj = re.search(r'record/(\d+)', line)
+        #if match_obj:
+        #    inst = get_fieldvalues(match_obj.group(1), '110__u')[0]
+        #    line = re.sub(r'\\href{http://inspirehep.net/record/\d+}',
+        #                  inst + ' %', line)
+        #print line.rstrip()
 quit()
 
 AWARD = 'Dannie Heineman Prize'
@@ -395,6 +483,17 @@ AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
 AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 from invenio.textutils import translate_latex2unicode
 from hep_aff import get_aff
+
+with open('./institutions_names_prd.txt', 'r') as oldfh:
+    with open('./institutions_names_prd_inspire.txt', 'w') as newfh:
+        oldaff = foldfh.read()
+        try:
+            newaff = AFFILIATIONS_DONE[re.sub(r'\W+', ' ', oldaff).upper()][0]
+        except KeyError:
+            newaff = get_aff(oldaff)
+        print newaff, ':', oldaff
+quit()
+
 for aff in AFFS:
     aff2 = translate_latex2unicode(aff)
     try:

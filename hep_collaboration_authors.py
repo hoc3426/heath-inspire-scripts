@@ -253,8 +253,12 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 subfields.append(('m', affiliation))
                 continue
             elif re.match(r"^0000-0", affiliation):
-                affiliation = 'ORCID:' + affiliation
-                subfields.append(('j', affiliation))
+                try:
+                    orcid = re.search(r'(0000-\d{4}-\d{4}-\d{3}[\dX])',
+                                  affiliation).group(1)
+                    subfields.append(('j', 'ORCID:' + orcid))
+                except AttributeError:
+                    print "ORCID problem:", affiliation
                 continue
             elif re.match(r"^INSPIRE-", affiliation):
                 subfields.append(('i', affiliation))

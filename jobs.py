@@ -39,7 +39,7 @@ def main(recids):
         #contact_email = "cleggm1@fnal.gov"
         #contact_email = "cleggm1@gmail.com"
         #contact_email = "bhecker@slac.stanford.edu"
-        contact_email = "thorsten.schwander@gmail.com"
+        #contact_email = "thorsten.schwander@gmail.com"
 
         try:      
             deadline = get_fieldvalues(recid, '046__i')[0]
