@@ -7,6 +7,7 @@ import os
 import string
 from datetime import date
 import sys
+from check_url import checkURL
 
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_fieldvalues
@@ -28,9 +29,80 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
-recid = 1685416
-print print_record(recid, ot=['100', '700', '001'], format='xm')
+def fermilab_orcid():
+    hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
+    print 'hiddenm', len(hidden_m)
+    hidden_o = search_unit('*@fnal.gov', f='595__o', m='a')
+    print 'hiddeno', len(hidden_o)
+    search = '371:/fnal.gov$/'
+    result = intbitset(perform_request_search(p=search, cc='HepNames'))
+    print '371', len(result)
+    result = hidden_m | hidden_o | result
+    print 'result mor', len(result)
+    search = '035__9:orcid'
+    result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
+    print 'result orcid', len(result)
+    for recid in result:
+        orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+        email_fnal = None
+        emails = get_fieldvalues(recid, '371__m') + \
+                 get_fieldvalues(recid, '371__o') + \
+                 get_fieldvalues(recid, '595__m') + \
+                 get_fieldvalues(recid, '595__o')
+        for email in emails:
+            if re.search(r'fnal.gov', email, re.IGNORECASE):
+                x = get_hepnames_recid_from_email(email)
+                if x != recid:
+                    print "CHECK THIS", recid, email, x
+                else:
+                    email_fnal = email
+                    break
+        if email_fnal:
+            output = email_fnal + ',' + orcid
+            print output
+        else:
+            print "No Fermilab email:", recid, orcid
+
+
+fermilab_orcid()
 quit()
+
+search = '999C5u:"https://zenodo.org/record/*"'
+for recid in perform_request_search(p=search, cc='HEP'):
+    print print_record(recid, ot=['999C5'], format='hm')
+quit()
+
+zenodo_regex = re.compile(r'^doi:10\.5281/zenodo\.\d+$')
+zenodos = []
+zenodo = perform_request_search(p='999C5:/zenodo/', cc='HEP')
+zenodo2 = perform_request_search(p='999C5a:"doi:10.5281/zenodo.*"', cc='HEP')
+for doi in intbitset(zenodo)-intbitset(zenodo2):
+    url = 'https://inspirehep.net/record/' + str(doi) + '/references'
+    print url
+
+
+for ref in get_all_field_values('999C5a'):
+    if ref.startswith('doi:10.5281/zenodo.'):
+        search = '999C5a:' + ref         
+        cites =  perform_request_search(p=search, cc='HEP')
+        if len(cites):
+            if not re.match(zenodo_regex, ref):
+                print 'Problem with DOI extraction:', search, cites
+                continue
+            url = 'https://doi.org/api/handles/' + ref.replace('doi:', '')
+            try:
+                checkURL(url)
+            except ValueError:
+                print 'Problem with DOI:', search, cites
+                continue
+            zenodos.append((len(cites), ref, cites))
+for doi in sorted(zenodos, reverse=True):
+    print doi[0], doi[1]
+    for recid in doi[2]:
+        url = 'https://inspirehep.net/record/' + str(recid) + '/references'
+        print '   ', url
+quit()
+
 
 with open('tmp.1000') as fp:
     for line in fp.readlines():
@@ -374,19 +446,20 @@ quit()
 #    print print_record(recid,format='xm')
 #quit()
 
-hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
-print 'hiddenm', len(hidden_m)
-hidden_o = search_unit('*@fnal.gov', f='595__o', m='a')
-print 'hiddeno', len(hidden_o)
-search = '371:/fnal.gov$/'
-result = intbitset(perform_request_search(p=search, cc='HepNames'))
-print '371', len(result)
-result = hidden_m | hidden_o | result
-print 'result mor', len(result)
-search = '035__9:orcid'
-result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
-print 'result orcid', len(result)
-for recid in result:
+def fermilab_orcid():
+  hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
+  print 'hiddenm', len(hidden_m)
+  hidden_o = search_unit('*@fnal.gov', f='595__o', m='a')
+  print 'hiddeno', len(hidden_o)
+  search = '371:/fnal.gov$/'
+  result = intbitset(perform_request_search(p=search, cc='HepNames'))
+  print '371', len(result)
+  result = hidden_m | hidden_o | result
+  print 'result mor', len(result)
+  search = '035__9:orcid'
+  result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
+  print 'result orcid', len(result)
+  for recid in result:
     orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
     for email in get_fieldvalues(recid, '371__m') + \
                  get_fieldvalues(recid, '371__o') + \
@@ -406,8 +479,7 @@ for recid in result:
         print output
     except NameError:
         print recid
-print recid, email
-quit()
+  print recid, email
 
 
 domain = set()
@@ -700,7 +772,6 @@ for recid in result:
     print print_rec(correct_record)        
 quit()
 
-from check_url import checkURL
 counter = 1
 search = '037:fermilab-* 035__9:osti -0247:doi -980:arXiv -du:2018-02-15'
 result = reversed(perform_request_search(p=search, cc='HEP'))

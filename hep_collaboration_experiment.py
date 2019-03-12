@@ -25,6 +25,7 @@ experiments = {
 'DES':'DES',
 'Double Chooz':'DOUBLECHOOZ',
 'DUNE':'DUNE',
+'GERDA':'GERDA',
 'IceCube':'ICECUBE',
 'LHCb':'CERN-LHC-LHCB',
 'LIGO Scientific':'LIGO',

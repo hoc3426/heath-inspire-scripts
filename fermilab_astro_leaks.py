@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 SEARCH_A = " not r fermilab not af fermilab"
 SEARCH_A += " and (primarch astro-ph or astro-ph.he \
 or astro-ph.co or astro-ph.GA \
@@ -196,4 +199,49 @@ or Zwaska, R "
 search += SEARCH_ACC
 print search
 print "\n"
+
+print("""find a Alberto Accardi
+or Ian Balitsky
+or Raul Briceno
+or Jozef Dudek
+or Robert Edwards
+or José Goity
+or Franz Gross
+or Wally Melnitchouk
+or Kostas Orginos
+or Jianwei Qiu
+or or Anatoly Radyushkin
+or David Richards
+or or Ted Rogers
+or or Rocco Schiavilla
+or Adam Szczepaniak
+or or Wally Van Orden
+or Christian Weiss
+and (primarch hep-lat or hep-ph or nucl-th)""")
+
+print("""find a Miguel Albaladejo
+or Carlota Andres
+or Felippo Delcarro
+or Ishara Fernando
+or Luka Leskovec
+or Tianbo Liu
+or Vincent Mathieu
+or Nobuo Sato
+or Raza Sabbir Sufian
+or Kazuhiro Watanabe
+or Colin Egerer
+or Juan Vicente Guerrero
+or Christopher Johnson
+or Joseph Karpie
+or Tanjib Khan
+or Eric Moffat
+or Wayne Morris
+or Felipe Ortega Gama
+or Dimitra Pefkou
+or Archana Radhakrishnan
+or Yiyu Zhou
+and (primarch hep-lat or hep-ph or nucl-th)
+""")
+
+print('refersto:affiliation:"jefferson lab" and (037:hep-ph or 037:hep-lat or 037:nucl-th)')
 

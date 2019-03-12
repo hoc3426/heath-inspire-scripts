@@ -39,9 +39,10 @@ BOOKS = [
 ['Campbell', 'Black Book of Quantum Chromodynamics', '9780199652747', '1635686'],
 ['Carey', 'The Optics Of Charged Particle Beams', '9783718605453', '257245'],
 ['Szekeres', 'A Course in Modern Mathematical Physics', '9780521829601', '669271'],
-['Thomas', 'The Structure of the Nucleon', '9783527402977', '559956', '2001']]
+['Thomas', 'The Structure of the Nucleon', '9783527402977', '559956', '2001'],
+['Kovchegov', 'Quantum chromodynamics at high energy', '9780521112574', '1217905', '2012']]
 
-BOOKS = [BOOKS[3]]
+BOOKS = [BOOKS[23]]
 
 def process_references(book):
     '''

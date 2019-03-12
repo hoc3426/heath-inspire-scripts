@@ -123,6 +123,7 @@ def check_ids(letter=None):
 def new_orcids(already_seen):
     """Search for new ORCIDs in HEP."""
 
+    orcid_counter = 0
     fields = ('100__j', '700__j', '100__k', '700__k')
     for field in fields:
         for orcid in get_all_field_values(field):
@@ -159,11 +160,12 @@ def new_orcids(already_seen):
             already_seen[orcid] = recid
             print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
                   format(str(recid), orcid)
+            orcid_counter += 1
             #search = '001:' + str(recid) + ' 980:CORE'
             #if perform_request_search(p=search, cc='HEP'):
             #  print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
             #      format(str(recid), orcid)
-
+    print 'New orcids:', orcid_counter
 
 def bad_url_z():
     """Check to make sure $$z field is correct."""
