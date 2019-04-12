@@ -378,7 +378,11 @@ def preprocess_file(read_data):
             except IndexError:
                 pass
 
-
+        #John Smith (University of Somewhere)
+        if re.search(r'[A-Z].* \(.*\)', line):
+            line_new = re.sub(r'(.*)\s+\((.*)\)', 
+                              r'\\author{\1}\n\\affiliation{\2}', line)
+            read_data = read_data.replace(line, line_new)
 
         #\AddAuthor{C.~Lindsey}{11}{}{}
         if re.search(r'\\AddAuthor{', line):

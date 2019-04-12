@@ -10,7 +10,7 @@ import re
 from sys import argv
 
 from invenio.search_engine import perform_request_search, get_record, \
-                                  search_unit
+                                  search_unit, get_all_field_values
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
 from invenio.intbitset import intbitset
@@ -20,6 +20,12 @@ from invenio.search_engine import get_collection_reclist
 from hep_convert_email_to_id_input import RECIDS, SEARCH, VERBOSE
 
 HN = get_collection_reclist('HepNames')
+
+EMAILS_HEPNAMES = get_all_field_values('371__m') + \
+         get_all_field_values('371__o') + \
+         get_all_field_values('595__m') + \
+         get_all_field_values('595__o')
+EMAILS_HEP = get_all_field_values('100__m') + get_all_field_values('700__m')
 
 COUNTER_MAX = 400
 
@@ -72,6 +78,21 @@ def find_records_containing_email():
     Searches for HEP records with emails
     """
 
+    #emails = set()
+    #recids = set()
+    #for email in EMAILS_HEP:
+    #    if email not in EMAILS_HEPNAMES:
+    #        continue
+    #    if email.startswith('email'):
+    #        continue
+    #    emails.add(email)
+    #    search = "100__m:{0} or 700__m:{0}".format(email)
+    #    result = perform_request_search(p=search, cc='HEP')
+    #    if len(result) > 1:
+    #        recids.update(result)
+    #print recids
+    #quit()
+
     search = r'100__m:/\@/ or 700__m:/\@/ \
                 - \
                100__m:email* - 700__m:email*'
@@ -84,10 +105,16 @@ def find_records_containing_email():
 
 
 
+
 def get_hepnames_recid_from_email(email):
     """
     Find the HEPNames recid based on email
     """
+   
+    if email not in EMAILS_HEPNAMES:
+        if VERBOSE:
+            print "WARNING: no hepnames record found for %s: " % (email)
+        return None
 
     emailsearch = '371__m:%s or 371__o:%s'
     reclist = perform_request_search(p=emailsearch % (email, email),
