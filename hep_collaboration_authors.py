@@ -379,7 +379,7 @@ def preprocess_file(read_data):
                 pass
 
         #John Smith (University of Somewhere)
-        if re.search(r'[A-Z].* \(.*\)', line):
+        if re.search(r'^[A-Z].* \(.*\)', line):
             line_new = re.sub(r'(.*)\s+\((.*)\)', 
                               r'\\author{\1}\n\\affiliation{\2}', line)
             read_data = read_data.replace(line, line_new)
@@ -430,7 +430,10 @@ def preprocess_file(read_data):
             line_new = re.sub(r'\\altaffiliation.*', '', line)
             read_data = read_data.replace(line, line_new)
         if VERBOSE:
-            print "BABAR LINE =", line_new
+            try:
+                print "BABAR LINE =", line_new
+            except UnboundLocalError:
+                pass
 
     #Special treatment for DES and Fermi-LAT and Planck
     astro_aff_counter = 0
