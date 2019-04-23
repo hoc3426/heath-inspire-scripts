@@ -29,6 +29,42 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+def bad_eprint():
+    search = '037__9:arxiv -035__9:arxiv'
+    for recid in perform_request_search(p=search, cc='HEP'):
+    #for recid in [199609]:
+        x = print_record(recid, ot=['037'], format='hm')
+        #print x + '\n'
+        x = re.sub(r'\n', '', x)
+        #print x + '\n'
+        x = re.sub(r'.*>(.*)<.*', r'\1', x)
+        #print x + '\n'
+        x = re.sub(r'(^\d+) .*037__ \$\$9arXiv\$\$a([^\$]+).*', 
+                   r'\1 035__ $$9arXiv$$aoai:arXiv.org:\2', x)
+        x = x.replace('arXiv.org:arXiv', 'arXiv.org')
+        #print x + '\n'
+        print x
+bad_eprint()
+quit()
+
+
+def fermilab_experiments():
+    SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
+    419__a:/^FNAL/ or 119__u:Fermilab"
+    SEARCH += ' -980:ACCELERATOR'
+    search=SEARCH
+    result = perform_request_search(p=search, cc='Experiments')
+    for recid in result:
+        exp = get_fieldvalues(recid, '119__a')[0]
+        try:
+            url = get_fieldvalues(recid, '8564_u')[0]
+        except IndexError:
+            url = None
+        print "{0}\t{1}".format(exp, url)
+fermilab_experiments()
+quit()
+
+
 def fermilab_orcid():
     hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
     print 'hiddenm', len(hidden_m)

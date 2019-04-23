@@ -21,6 +21,7 @@ experiments = {
 'CMS':'CERN-LHC-CMS',
 'CUORE':'CUORE',
 'D0':'FNAL-E-0823',
+'Daya Bay':'DAYA-BAY',
 #'DAMIC':'FNAL-E-0987',
 'DES':'DES',
 'Double Chooz':'DOUBLECHOOZ',

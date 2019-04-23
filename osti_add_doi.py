@@ -12,7 +12,7 @@ from check_url import checkURL
 COUNTER = 0
 COUNTER_END = 500
 SEARCH = r'037:fermilab-* 035__9:osti -0247:doi -037:arXiv -773__p:/\w/'
-SEARCH = r'035__9:osti du:2019 -0247:doi -037:arXiv -773__p:/\w/'
+SEARCH = r'035__9:osti du:2018 -0247:doi -037:arXiv -773__p:/\w/'
 RESULT_HEP = perform_request_search(p=SEARCH, cc='HEP')
 RESULT_FERMILAB = perform_request_search(p=SEARCH, cc='Fermilab')
 RESULT = intbitset(RESULT_HEP) | intbitset(RESULT_FERMILAB)
