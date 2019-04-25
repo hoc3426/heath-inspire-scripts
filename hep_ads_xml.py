@@ -68,8 +68,9 @@ ENDING_COUNTER = 501
 YEAR = '2016'
 
 DOCUMENT = DIRECTORY + 'ADSmatches.xml'
-EPRINTS_DONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_done.p'
-EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
+#EPRINTS_DONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_done.p'
+#EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
+EPRINTS_DONE = set()
 
 if TEST:
     VERBOSE = 1
@@ -403,17 +404,17 @@ def main():
 
 if __name__ == '__main__':
     try:
-        EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
-        print 'Number of eprints 1:', len(EPRINTS_DONE)
+        #EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
+        #print 'Number of eprints 1:', len(EPRINTS_DONE)
         main()
-        if exists(EPRINTS_DONE_FILE):
-            BACKUP = EPRINTS_DONE_FILE + '.bak'
-            if exists(BACKUP):
-                os.remove(BACKUP)
-            os.rename(EPRINTS_DONE_FILE, BACKUP)
-        with open(EPRINTS_DONE_FILE, "wb") as fname:
-            pickle.dump(EPRINTS_DONE, fname)
-        print 'Number of eprints 2:', len(EPRINTS_DONE)
+        #if exists(EPRINTS_DONE_FILE):
+        #    BACKUP = EPRINTS_DONE_FILE + '.bak'
+        #    if exists(BACKUP):
+        #        os.remove(BACKUP)
+        #    os.rename(EPRINTS_DONE_FILE, BACKUP)
+        #with open(EPRINTS_DONE_FILE, "wb") as fname:
+        #    pickle.dump(EPRINTS_DONE, fname)
+        print 'Number of eprints examiend today:', len(EPRINTS_DONE)
     except KeyboardInterrupt:
         print 'Exiting'
 
