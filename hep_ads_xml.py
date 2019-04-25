@@ -21,7 +21,7 @@ from os.path import exists
 import re
 import random
 
-from hep_ads_xml_dois import DOIS
+#from hep_ads_xml_dois import DOIS
 
 #DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 
