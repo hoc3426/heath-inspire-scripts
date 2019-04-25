@@ -7,6 +7,7 @@ http://ads.harvard.edu/pubs/arXiv/ADSmatches_updates.xml
 """
 
 from invenio.search_engine import perform_request_search
+from invenio.search_engine import get_all_field_values
 from invenio.bibrecord import print_rec, record_add_field
 from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS, ADS_SEEN
 from hep_ads_xml_badrecs import BADRECS
@@ -17,10 +18,40 @@ import cPickle as pickle
 import os
 from os.path import exists
 import re
+import random
 
 from hep_ads_xml_dois import DOIS
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+
+ADS_REGEX = re.compile(r"^\d{4}([a-z&]+)[\d.]+[a-z.\d]+$", 
+                       re.IGNORECASE)
+ARXIV_REGEX = re.compile(r"^[a-z]+\-?[a-z]+\.?[A-Z]*/\d{7}$")
+
+INSPIRE_EPRINTS = set()
+INSPIRE_ADS_BIBCODE = set()
+INSPIRE_DOIS = set()
+EPRINT_UNION = get_all_field_values('035__a') + \
+               get_all_field_values('035__z') + \
+               get_all_field_values('037__a')
+for item in EPRINT_UNION:
+    if item.startswith('oai:arXiv.org:'):
+        INSPIRE_EPRINTS.add(item.replace('oai:arXiv.org:', ''))
+    elif item.startswith('arXiv:'):
+        INSPIRE_EPRINTS.add(item.replace('arXiv:', ''))
+    elif re.match(ARXIV_REGEX, item):
+        INSPIRE_EPRINTS.add(item)
+    elif len(item) != 19:
+        continue
+    if re.match(ADS_REGEX, item):
+        INSPIRE_ADS_BIBCODE.add(item)
+for item in get_all_field_values('0247_a'):
+    if item.startswith('10.'):
+        INSPIRE_DOIS.add(item)
+
+print 'Eprints', len(INSPIRE_EPRINTS), random.sample(INSPIRE_EPRINTS, 1)
+print 'Bibcodes', len(INSPIRE_ADS_BIBCODE), random.sample(INSPIRE_ADS_BIBCODE, 1)
+print 'DOIs', len(INSPIRE_DOIS), random.sample(INSPIRE_DOIS, 1)
 
 TEST = False
 #TEST = True
@@ -118,13 +149,18 @@ def create_xml(input_dict):
     if eprint:
         eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
 
-        if doi in DOIS:
-            search  =  'find eprint ' + eprint
-            result = perform_request_search(p=search, cc='HEP')
-            if len(result) == 0:
+        #if doi in DOIS:
+        if doi in INSPIRE_DOIS:
+            if eprint not in INSPIRE_EPRINTS:
                 print "Eprint missing:", eprint, doi
+            #search  =  'find eprint ' + eprint
+            #result = perform_request_search(p=search, cc='HEP')
+            #if len(result) == 0:
+            #    print "Eprint missing:", eprint, doi
             else:
-                search += ' and doi ' + doi
+                search  =  'find eprint ' + eprint
+                result = perform_request_search(p=search, cc='HEP')
+                search = 'find doi ' + doi
                 if len(result) != 1:
                     print "Check eprint:", eprint, doi
             return None
@@ -159,20 +195,25 @@ def create_xml(input_dict):
             return None
         if re.search(r'10.1016/j.nuclphysb', doi):
             return None
-        search  =  '0247_a:' + doi
-        result = perform_request_search(p=search, cc='HEP')
-        if DEBUG == 1:
-            print search, result
-        if len(result) == 1:
+        #search  =  '0247_a:' + doi
+        #result = perform_request_search(p=search, cc='HEP')
+        #if DEBUG == 1:
+        #    print search, result
+        #if len(result) == 1:
+        if doi in INSPIRE_DOIS:
+            search  =  '0247_a:' + doi
+            result = perform_request_search(p=search, cc='HEP')
             recid_doi = result[0]
             if recid_doi != recid_eprint:
                 print "Check eprint doi mismatch", recid_eprint, recid_doi
                 return None
-        elif len(result) == 0:
-            need_doi = True
         else:
-            print 'Multiple ', search
-            return None
+            need_doi = True
+        #elif len(result) == 0:
+        #    need_doi = True
+        #else:
+        #    print 'Multiple ', search
+        #    return None
         match_obj = re.search(r'10.1051/epjconf/(\d{4})(\d\d)(\d{5})', doi)
         if match_obj:
             journal = 'EPJ Web Conf.'
