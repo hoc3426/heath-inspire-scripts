@@ -12,6 +12,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS, ADS_SEEN
 from hep_ads_xml_badrecs import BADRECS
 from hep_published import JOURNAL_PUBLISHED_DICT
+from hep_ads_xml_input import DIRECTORY
 
 import xml.etree.ElementTree as ET
 import cPickle as pickle
@@ -22,7 +23,7 @@ import random
 
 from hep_ads_xml_dois import DOIS
 
-DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+#DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 
 ADS_REGEX = re.compile(r"^\d{4}([a-z&]+)[\d.]+[a-z.\d]+$", 
                        re.IGNORECASE)
