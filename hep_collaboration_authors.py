@@ -254,7 +254,6 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 continue
             #elif re.match(r"^0000-0", affiliation):
             elif re.search(r"0000-0", affiliation):
-                print affiliation
                 try:
                     orcid = re.search(r'(0000-\d{4}-\d{4}-\d{3}[\dX])',
                                   affiliation).group(1)
