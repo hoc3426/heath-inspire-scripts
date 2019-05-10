@@ -50,8 +50,10 @@ or 100__v:/slac/ or 700__v:/slac/ \
     #atsearch = atsearch_today
     atsearch = atsearch_fermilab
     print atsearch
-    result = perform_request_search(p=atsearch, cc='HEP')
-    result.reverse()
+    result = perform_request_search(p=atsearch, cc='HEP') + \
+             perform_request_search(p=atsearch, cc='Fermilab')
+    #result.reverse()
+    result = set(result)
     result = result[:200]
     return result
 

@@ -99,7 +99,9 @@ def find_records_containing_email():
     search = r'100__m:/\w/ or 700__m:/\w/'
     if SEARCH:
         search = SEARCH
-    result = perform_request_search(p=search, cc='HEP')
+    result  = perform_request_search(p=search, cc='HEP')
+    result += perform_request_search(p=search, cc='Fermilab')
+    result = set(result)
     print "Checking", len(result), "records"
     return sorted(result, reverse=True)
 

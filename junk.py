@@ -44,8 +44,7 @@ def bad_eprint():
         x = x.replace('arXiv.org:arXiv', 'arXiv.org')
         #print x + '\n'
         print x
-bad_eprint()
-quit()
+#bad_eprint()
 
 
 def fermilab_experiments():
@@ -61,8 +60,7 @@ def fermilab_experiments():
         except IndexError:
             url = None
         print "{0}\t{1}".format(exp, url)
-fermilab_experiments()
-quit()
+#fermilab_experiments()
 
 
 def fermilab_orcid():
@@ -78,27 +76,33 @@ def fermilab_orcid():
     search = '035__9:orcid'
     result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
     print 'result orcid', len(result)
-    for recid in result:
-        orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
-        email_fnal = None
-        emails = get_fieldvalues(recid, '371__m') + \
-                 get_fieldvalues(recid, '371__o') + \
-                 get_fieldvalues(recid, '595__m') + \
-                 get_fieldvalues(recid, '595__o')
-        for email in emails:
-            if re.search(r'fnal.gov', email, re.IGNORECASE):
-                x = get_hepnames_recid_from_email(email)
-                if x != recid:
-                    print "CHECK THIS", recid, email, x
-                else:
-                    email_fnal = email
-                    break
-        if email_fnal:
-            output = email_fnal + ',' + orcid
-            print output
-        else:
-            print "No Fermilab email:", recid, orcid
 
+    search = '035__9:inspire 035__9:orcid 693__e:bnl-rhic-star'
+    result = perform_request_search(p=search, cc='HepNames')
+    for recid in result:
+        orcid = inspire = None
+        orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+        inspire = get_hepnames_anyid_from_recid(recid, 'INSPIRE')
+        author = get_fieldvalues(recid, '100__a')[0]
+        #email_fnal = None
+        #emails = get_fieldvalues(recid, '371__m') + \
+        #         get_fieldvalues(recid, '371__o') + \
+        #         get_fieldvalues(recid, '595__m') + \
+        #         get_fieldvalues(recid, '595__o')
+        #for email in emails:
+        #    if re.search(r'fnal.gov', email, re.IGNORECASE):
+        #        x = get_hepnames_recid_from_email(email)
+        #        if x != recid:
+        #            print "CHECK THIS", recid, email, x
+        #        else:
+        #            email_fnal = email
+        #            break
+        #if email_fnal:
+        #    output = email_fnal + ',' + orcid
+        #    print output
+        #else:
+        #    print "No Fermilab email:", recid, orcid
+        print "{0}|{1}|{2} {3}".format(author, inspire, orcid, recid)
 
 fermilab_orcid()
 quit()

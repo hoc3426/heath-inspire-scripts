@@ -60,8 +60,8 @@ VERBOSE = False
 #VERBOSE = True
 DEBUG = False
 #DEBUG = True
-#UPDATE = True
-UPDATE = False
+UPDATE = True
+#UPDATE = False
 
 STARTING_COUNTER = 1
 ENDING_COUNTER = 501
@@ -159,7 +159,8 @@ def create_xml(input_dict):
             #result = perform_request_search(p=search, cc='HEP')
             #if len(result) == 0:
             #    print "Eprint missing:", eprint, doi
-            else:
+            if False:
+            #else:
                 search  =  'find eprint ' + eprint
                 result = perform_request_search(p=search, cc='HEP')
                 search = 'find doi ' + doi

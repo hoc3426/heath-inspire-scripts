@@ -144,7 +144,7 @@ def new_orcids(already_seen):
 
 
     search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
-              or {3}:ORCID:* 980:CORE".format(fields[0],
+              or {3}:ORCID:* 980:core".format(fields[0],
                   fields[1], fields[2], fields[3])
     result = perform_request_search(p=search, cc='HEP')
     for recid, field in [(recid, field) for recid in result \

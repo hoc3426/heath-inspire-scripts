@@ -110,7 +110,7 @@ def create_report(filename='', extid='ORCID'):
                      format('    HEPNames: ', orcid, inspire, author))
             hep_records = show_papers(pid, eid, orcid, inspire)
             if hep_records:
-                output.write('\n    HEP records with wrong IDs\n')
+                output.write("\n    HEP records with other profile's IDs\n")
                 output.write(hep_records)
             #try:
             #    output.write(show_papers(pid, eid))
