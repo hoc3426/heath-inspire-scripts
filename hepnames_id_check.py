@@ -143,10 +143,15 @@ def new_orcids(already_seen):
                     print 'Bad ORCID', recid, orcid
 
 
+    #search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
+    #          or {3}:ORCID:* 980:core".format(fields[0],
+    #              fields[1], fields[2], fields[3])
+    #result = perform_request_search(p=search, cc='HEP')
     search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
-              or {3}:ORCID:* 980:core".format(fields[0],
+              or {3}:ORCID:*".format(fields[0],
                   fields[1], fields[2], fields[3])
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='Fermilab')
+
     for recid, field in [(recid, field) for recid in result \
                                         for field in fields]:
         for orcid in get_fieldvalues(recid, field):

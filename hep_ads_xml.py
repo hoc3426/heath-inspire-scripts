@@ -32,9 +32,9 @@ ARXIV_REGEX = re.compile(r"^[a-z]+\-?[a-z]+\.?[A-Z]*/\d{7}$")
 INSPIRE_EPRINTS = set()
 INSPIRE_ADS_BIBCODE = set()
 INSPIRE_DOIS = set()
-EPRINT_UNION = get_all_field_values('035__a') + \
-               get_all_field_values('035__z') + \
-               get_all_field_values('037__a')
+EPRINT_UNION = set(get_all_field_values('035__a') + \
+                   get_all_field_values('035__z') + \
+                   get_all_field_values('037__a'))
 for item in EPRINT_UNION:
     if item.startswith('oai:arXiv.org:'):
         INSPIRE_EPRINTS.add(item.replace('oai:arXiv.org:', ''))
