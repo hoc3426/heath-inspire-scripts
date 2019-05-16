@@ -42,8 +42,17 @@ def build_correction_dict():
                     DDDD_FORM.match(bad_report))):
             continue
         for fermilab_report in FERMILAB_REPORTS:
-            if not fermilab_report.startswith(bad_report):
-                continue
+ 
+            #if bad_report.startswith(fermilab_report):
+            #    print bad_report, '\t', fermilab_report
+            #continue
+
+            #if not fermilab_report.startswith(bad_report):
+            #    continue
+            if not any((fermilab_report.startswith(bad_report),
+                        bad_report.startswith(fermilab_report))):
+                continue   
+
             search = REF + ':' + bad_report
             bad_report_recids = perform_request_search(p=search, cc='HEP')
             if len(bad_report_recids) == 0:
@@ -79,7 +88,9 @@ def create_xml(recid, correction_dict):
         correct_subfields = []
         for code, value in field_instance[0]:
             if code == 'r' and value.upper() in correction_dict:
+                print 'Was:', value
                 value = correction_dict[value.upper()]
+                print 'Now:', value
                 flag = True
             correct_subfields.append((code, value))
         record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
@@ -94,9 +105,10 @@ def fix_references(counter_max):
 
     counter = 0
     bad_recids, correction_dict = build_correction_dict()
-    print len(bad_recids)
-    for key, value in correction_dict.items():
-        print "{0}\t{1}".format(key, value)
+    print 'Records needing to be fixed:', len(bad_recids)
+    print 'Bad report numbers:', len(correction_dict)
+    #for key, value in correction_dict.items():
+    #    print "{0}\t{1}".format(key, value)
 
     output = ''
     for recid in bad_recids:
