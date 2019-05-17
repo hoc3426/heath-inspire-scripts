@@ -76,7 +76,7 @@ def build_correction_dict():
 def create_xml(recid, correction_dict):
     """Fix the citations of Fermilab reports."""
 
-    tags = ['999C5']
+    tags = [REF]
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
