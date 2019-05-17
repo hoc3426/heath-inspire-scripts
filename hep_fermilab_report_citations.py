@@ -17,6 +17,7 @@ ARCHAIC = re.compile('^FERMILAB.*(THY|EXP)$', re.I)
 YY_FORM = re.compile(r'^[A-Z]+-[A-Z]+-\d\d-\d\d\d.*')
 YYYY_FORM = re.compile(r'^[A-Z]+-[A-Z]+-\d\d\d\d-\d\d.*')
 DDDD_FORM = re.compile(r'^[A-Z]+-(TM|FN|PROPOSAL)-\d\d\d\d.*')
+EXCEPTION = re.compile(r'^FERMILAB-THESIS-200[5-8]-\d\d\d.*')
 
 REF = '999C5r'
 REP = '037__a'
@@ -52,6 +53,11 @@ def build_correction_dict():
             if not any((fermilab_report.startswith(bad_report),
                         bad_report.startswith(fermilab_report))):
                 continue   
+
+            if EXCEPTION.match(bad_report):
+                if not EXCEPTION.match(fermilab_report):
+                    continue
+
 
             search = REF + ':' + bad_report
             bad_report_recids = perform_request_search(p=search, cc='HEP')
