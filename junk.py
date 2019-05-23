@@ -29,6 +29,31 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+def fermilab_tm():
+    for year in range(1968, 2020):
+        search = '999C5r:fermilab-tm-' + str(year) + \
+                 '* and du:2019-05-15->2019-05-19'
+        result_c = perform_request_search(p=search, cc='HEP')
+        if len(result_c) == 0:
+            continue
+        search = 'find r fermilab-tm-' + str(year) + '*'
+        result = perform_request_search(p=search, cc='HEP')
+        print year, result[0], get_fieldvalues(result[0], '245__a')[0][:70]
+        for recid in result_c:
+            print '  ', recid, get_fieldvalues(recid, '245__a')[0][:70]
+fermilab_tm()
+quit()
+
+
+def topcites_by_year():
+    for year in range(1960, 2020):
+        search = 'find topcite 2000+ not t rpp and de ' + str(year)
+        result = perform_request_search(p=search, cc='HEP')
+        print year, len(result)
+
+topcites_by_year()
+quit()
+
 def bad_eprint():
     search = '037__9:arxiv -035__9:arxiv'
     for recid in perform_request_search(p=search, cc='HEP'):

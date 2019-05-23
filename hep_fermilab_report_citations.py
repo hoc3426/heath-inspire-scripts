@@ -23,10 +23,12 @@ REF = '999C5r'
 REP = '037__a'
 
 REPORT_CITATIONS = get_all_field_values(REF)
+#REPORT_CITATIONS = ['FERMILAB-PUB-96-357-']
 FERMILAB_CITATIONS = set([report.upper() for report in REPORT_CITATIONS if
                       FERMILAB.match(report) or FNAL.match(report)])
 
 REPORT_NUMBERS = get_all_field_values(REP)
+#REPORT_NUMBERS = ['FERMILAB-PUB-96-357-E']
 FERMILAB_REPORTS = set([report.upper() for report in REPORT_NUMBERS if
                     (FERMILAB.match(report) or FNAL.match(report)) and not
                     ARCHAIC.match(report)])
@@ -37,13 +39,13 @@ def build_correction_dict():
 
     bad_recids = set()
     correction_dict = {}
-    for bad_report in numpy.setdiff1d(FERMILAB_CITATIONS, FERMILAB_REPORTS):
+    BAD_REPORTS = numpy.setdiff1d(FERMILAB_CITATIONS, FERMILAB_REPORTS)
+    for bad_report in BAD_REPORTS:
         if not any((YY_FORM.match(bad_report),
                     YYYY_FORM.match(bad_report),
                     DDDD_FORM.match(bad_report))):
             continue
         for fermilab_report in FERMILAB_REPORTS:
- 
             #if bad_report.startswith(fermilab_report):
             #    print bad_report, '\t', fermilab_report
             #continue
@@ -68,14 +70,14 @@ def build_correction_dict():
                 report_recid = perform_request_search(p=search, cc='HEP')[0]
             except IndexError:
                 continue
-            search = 'refersto:recid:' + str(report_recid)
-            report_citations = perform_request_search(p=search, cc='HEP')
-            missing_citations = set(bad_report_recids) - set(report_citations)
-            if len(missing_citations) == 0:
-                continue
-            bad_recids = bad_recids | missing_citations
+            #search = 'refersto:recid:' + str(report_recid)
+            #report_citations = perform_request_search(p=search, cc='HEP')
+            #missing_citations = set(bad_report_recids) - set(report_citations)
+            #if len(missing_citations) == 0:
+            #    continue
+            #bad_recids = bad_report_recids | missing_citations
+            bad_recids = bad_report_recids
             correction_dict[bad_report] = fermilab_report
-
     return bad_recids, correction_dict
 
 
