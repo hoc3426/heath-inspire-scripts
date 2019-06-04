@@ -150,7 +150,10 @@ def main(authors, inspire):
         author = author_info[0]
         email = author_info[1]
         email = email.lower()
-        orcid = author_info[2]
+        try:
+            orcid = author_info[2]
+        except IndexError:
+            orcid = None
         if email in emails and email:
             print "Duplicate", email
             continue

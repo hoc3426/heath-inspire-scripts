@@ -87,15 +87,23 @@ def download_source(eprint, download_path = ""):
 def author_first_last(author):
     """Determines the components of the author's name.."""
 
+    qname = re.search(u'\s*\\\\begin{CJK\*}{UTF8}{gkai}\((.*)\)\\\\end{CJK\*}',
+                      author)
+    if qname:
+        author = author.replace(qname.group(0), u'')
+        qname = ':' + qname.group(1)
+    else:
+        qname = ''
     if re.search(r',', author):
         author = re.sub(r'\,\s*', ', ', author)
-        return author
+        return author + qname
     #Anything ending in a period is the firstname block
     if re.search(ur'\. [^\.]+$', author, re.U):
-        return re.sub(ur'(.*\.) ([^\.]+)', r'\2, \1', author, re.U)
+        return re.sub(ur'(.*\.) ([^\.]+)', r'\2, \1', author, re.U) + \
+               qname
     #Anything with only two parts
     if re.search(ur'^\S+ \S+$', author, re.U):
-        return re.sub(ur'(.*) (.*)', r'\2, \1', author, re.U)
+        return re.sub(ur'(.*) (.*)', r'\2, \1', author, re.U) + qname
     #Anything starting with a lower-case letter, e.g. Oscar de la Hoya
     pattern = re.compile(ur' (\w+)', re.U)
     for last_guess in re.findall(pattern, author):
@@ -105,11 +113,11 @@ def author_first_last(author):
         elif last_guess[0].lower() == last_guess[0]:
             firstname = re.sub(last_guess + u'.*', '', author)
         if firstname:
-            return author.replace(firstname, '') + ',' + firstname
+            return author.replace(firstname, '') + ',' + firstname + qname
     match = re.match(u'(.*) (.*)', author, re.U)
     if match:
-        return match.group(2) + u', ' + match.group(1)
-    return author
+        return match.group(2) + u', ' + match.group(1) + qname
+    return author + qname
 
 
 def process_author_name(author):
@@ -140,7 +148,7 @@ def process_author_name(author):
     author = author.replace(r'xxxx', r'\~')
     #print 'MIDWAY1 =', author
     author = translate_latex2unicode(author)
-    if '\\' in author:
+    if '\\' in author and not 'UTF8' in author:
         print 'Problem with', author
     author = author.replace(',', ', ')
     author = author.replace('.', '. ')
@@ -218,6 +226,10 @@ def create_xml(eprint=None, doi=None, author_dict=None):
             subfields.append(('i', inspire))
             author = author.replace(inspire, '')
             author = author.replace('[]', '')
+        if u':' in author:
+            match_obj = re.match(u'(.*):(.*)', author)
+            author = match_obj.group(1)
+            subfields.append(('q', match_obj.group(2)))
         subfields.append(('a', author))
 
         for affiliation in author_dict[key][1]:

@@ -9,7 +9,7 @@ from invenio.bibrecord import print_rec, record_add_field, \
 import numpy
 import re
 
-COUNTER_MAX = 50
+COUNTER_MAX = 100
 FERMILAB = re.compile('^FERMILAB.*', re.I)
 FNAL = re.compile('^FNAL.*', re.I)
 ARCHAIC = re.compile('^FERMILAB.*(THY|EXP)$', re.I)
@@ -76,7 +76,7 @@ def build_correction_dict():
             #if len(missing_citations) == 0:
             #    continue
             #bad_recids = bad_report_recids | missing_citations
-            bad_recids = bad_report_recids
+            bad_recids = bad_recids | set(bad_report_recids)
             correction_dict[bad_report] = fermilab_report
     return bad_recids, correction_dict
 

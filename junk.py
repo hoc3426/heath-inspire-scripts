@@ -29,6 +29,32 @@ from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+
+def create_grid_dict():
+    grid_dict = {}
+    search = '035__9:grid'
+    result = perform_request_search(p=search, cc='Institutions')
+    for recid in result:
+        affiliations = get_fieldvalues(recid, '110__u')
+        affiliations += get_fieldvalues(recid, '110__t')
+        for affiliation in affiliations:
+            grid = get_hepnames_anyid_from_recid(recid, 'GRID')
+            if grid:
+                grid_dict[affiliation] = grid
+    for key in grid_dict:
+        print key, grid_dict[key]
+    import cPickle as pickle
+    DIRECTORY = ''
+    AFFILIATIONS_GRID_FILE = 'authorlist_institutions_grid.p'
+    AFFILIATIONS_GRID_FILE = DIRECTORY + AFFILIATIONS_GRID_FILE
+    pickle.dump(grid_dict, open(AFFILIATIONS_GRID_FILE, "wb"))
+    print 'Institutions now in', AFFILIATIONS_GRID_FILE, len(grid_dict)
+
+create_grid_dict()
+quit()
+
+quit()
+
 def fermilab_tm():
     for year in range(1968, 2020):
         search = '999C5r:fermilab-tm-' + str(year) + \

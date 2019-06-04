@@ -19,6 +19,7 @@ experiments = {
 'BRAHMS':'BNL-RHIC-BRAHMS',
 'CDF':'FNAL-E-0830',
 'CMS':'CERN-LHC-CMS',
+'COSINE-100':'COSINE-100',
 'CUORE':'CUORE',
 'D0':'FNAL-E-0823',
 'Daya Bay':'DAYA-BAY',
@@ -27,6 +28,8 @@ experiments = {
 'Double Chooz':'DOUBLECHOOZ',
 'DUNE':'DUNE',
 'Event Horizon Telescope':'EHT',
+'FAMU':'FAMU',
+'Fermilab Lattice':'LATTICE-FERMILAB',
 'GERDA':'GERDA',
 'IceCube':'ICECUBE',
 'LHCb':'CERN-LHC-LHCB',
@@ -37,10 +40,12 @@ experiments = {
 'MINERvA':'FNAL-E-0938',
 'MiniBooNE':'FNAL-E-0898',
 'MINOS':'FNAL-E-0875',
+'MILC':'LATTICE-MILC',
 'MIPP':'FNAL-E-0907',
 'Mu2e':'FNAL-E-0973',
 'Muon g-2':'FNAL-E-0989',
 'NA61/SHINE':'CERN-NA-061',
+'NEXT':'NEXT',
 'PHENIX':'BNL-RHIC-PHENIX',
 'PHOBOS':'BNL-RHIC-PHOBOS',
 'PROSPECT':'PROSPECT',
@@ -50,6 +55,8 @@ experiments = {
 'T2K':'T2K',
 'Telescope Array':'TELESCOPE-ARRAY',
 'TOTEM':'CERN-LHC-TOTEM',
+'UKQCD':'LATTICE-UKQCD',
+'USQCD':'LATTICE-USQCD',
 'Virgo':'VIRGO'
 }
 
