@@ -31,6 +31,7 @@ experiments = {
 'FAMU':'FAMU',
 'Fermilab Lattice':'LATTICE-FERMILAB',
 'GERDA':'GERDA',
+'HAWC':'HAWC',
 'IceCube':'ICECUBE',
 'LHCb':'CERN-LHC-LHCB',
 'LIGO Scientific':'LIGO',

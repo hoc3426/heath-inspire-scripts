@@ -6,35 +6,43 @@ http://ads.harvard.edu/pubs/arXiv/ADSmatches_updates.xml
 
 """
 
-from invenio.search_engine import perform_request_search
-from invenio.search_engine import get_all_field_values
+from invenio.search_engine import perform_request_search, \
+                                  get_all_field_values, \
+                                  search_unit
 from invenio.bibrecord import print_rec, record_add_field
-from hep_ads_xml_bibcodes import BIBCODE_DICT, TRICKY_JOURNALS, ADS_SEEN
-from hep_ads_xml_badrecs import BADRECS
-from hep_published import JOURNAL_PUBLISHED_DICT
-from hep_ads_xml_input import DIRECTORY
+from hep_ads_xml_bibcodes import BIBCODE_DICT, JOURNAL_DICT
+from hep_ads_xml_input import DOCUMENT, \
+                              CORE_JOURNALS, \
+                              CORE_JOURNALS_DOI, \
+                              OUTPUT_COUNTER_MAX
 
 import xml.etree.ElementTree as ET
-import cPickle as pickle
-import os
-from os.path import exists
 import re
 import random
+import time
+import datetime
+import logging
 
-#from hep_ads_xml_dois import DOIS
+LOGFILE = 'tmp_' + __file__
+LOGFILE = re.sub('.py', '.log', LOGFILE)
+logging.basicConfig(filename=LOGFILE, filemode='w',
+                    format='%(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
-#DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
-
-ADS_REGEX = re.compile(r"^\d{4}([a-z&]+)[\d.]+[a-z.\d]+$", 
+ADS_REGEX = re.compile(r"^\d{4}([a-z&]+)[\d.]+[a-z.\d]+$",
                        re.IGNORECASE)
+ADS_J_REGEX = \
+re.compile(r'(.*[a-zJ][a-z\.]|JHEP|JCAP)([A-EGX]?)\.?(\d+)\:(\d+)\,(\d+)')
 ARXIV_REGEX = re.compile(r"^[a-z]+\-?[a-z]+\.?[A-Z]*/\d{7}$")
+ARXIV_REGEX_NEW = re.compile(r'^\d{4}\.\d{4}\d?$')
+BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
 
 INSPIRE_EPRINTS = set()
-INSPIRE_ADS_BIBCODE = set()
+INSPIRE_BIBCODES = set()
 INSPIRE_DOIS = set()
-EPRINT_UNION = set(get_all_field_values('035__a') + \
-                   get_all_field_values('035__z') + \
-                   get_all_field_values('037__a'))
+EPRINT_UNION = set(get_all_field_values('035__a')) | \
+               set(get_all_field_values('035__z')) | \
+               set(get_all_field_values('037__a'))
 for item in EPRINT_UNION:
     if item.startswith('oai:arXiv.org:'):
         INSPIRE_EPRINTS.add(item.replace('oai:arXiv.org:', ''))
@@ -45,377 +53,331 @@ for item in EPRINT_UNION:
     elif len(item) != 19:
         continue
     if re.match(ADS_REGEX, item):
-        INSPIRE_ADS_BIBCODE.add(item)
+        INSPIRE_BIBCODES.add(item)
 for item in get_all_field_values('0247_a'):
     if item.startswith('10.'):
         INSPIRE_DOIS.add(item)
+INSPIRE_JOURNALS = set(get_all_field_values('711__a'))
+INSPIRE_EPRINT_RECIDS = search_unit('arxiv', f='037__9', m='a')
+INSPIRE_DOI_RECIDS = search_unit('doi', f='0247_2', m='a')
+INSPIRE_IDENTIFIER_RECID_DICT = {}
 
 print 'Eprints', len(INSPIRE_EPRINTS), random.sample(INSPIRE_EPRINTS, 1)
-print 'Bibcodes', len(INSPIRE_ADS_BIBCODE), random.sample(INSPIRE_ADS_BIBCODE, 1)
+print 'Bibcodes', len(INSPIRE_BIBCODES), random.sample(INSPIRE_BIBCODES, 1)
 print 'DOIs', len(INSPIRE_DOIS), random.sample(INSPIRE_DOIS, 1)
+print 'Journals', len(INSPIRE_JOURNALS), random.sample(INSPIRE_JOURNALS, 1)
 
-TEST = False
-#TEST = True
-VERBOSE = False
-#VERBOSE = True
-DEBUG = False
-#DEBUG = True
-UPDATE = True
-#UPDATE = False
+def check_doi_eprint(identifier):
+    "Check to see if we already have a DOI eprint pairing."
 
-STARTING_COUNTER = 1
-ENDING_COUNTER = 501
-YEAR = '2016'
+    if identifier.startswith('10.'):
+        result = search_unit(identifier, f='0247_a', m='a')
+        if len(result) == 1:
+            INSPIRE_IDENTIFIER_RECID_DICT[identifier] = result[0]
+            result = result & INSPIRE_EPRINT_RECIDS
+    elif any((re.match(ARXIV_REGEX, identifier),
+              re.match(ARXIV_REGEX_NEW, identifier))):
+        prefix = ''
+        if re.match(ARXIV_REGEX_NEW, identifier):
+            prefix = 'arXiv:'
+        result = search_unit(prefix + identifier, f='037__a', m='a')
+        if len(result) == 1:
+            INSPIRE_IDENTIFIER_RECID_DICT[identifier] = result[0]
+            result = result & INSPIRE_DOI_RECIDS
+    else:
+        return None
+    if len(result):
+        return True
+    return None
 
-DOCUMENT = DIRECTORY + 'ADSmatches.xml'
-#EPRINTS_DONE_FILE = DIRECTORY + 'hep_ads_xml_eprints_done.p'
-#EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
-EPRINTS_DONE = set()
-
-if TEST:
-    VERBOSE = 1
-    DEBUG = 1
-    DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/test.xml'
-    #DOCUMENT = 'test.xml'
-    #DOCUMENT = 'ADS_astro2.xml'
-    #DOCUMENT = 'ADS_cond.xml'
-    #DOCUMENT = 'ADS_math.xml'
-    #DOCUMENT = 'ADSmatches.xml'
-
-BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
-
-if UPDATE:
-    DOCUMENT = '/afs/cern.ch/project/inspire/TEST/hoc/ADSmatches_updates.xml'
-    STARTING_COUNTER = 1
-
-
-def journal_fix(journal):
+def journal_fix(journal, bibcode=None):
     """
     Puts the journal name into INSPIRE form.
     """
-    if journal == 'PhDT':
+
+    try:
+        return BIBCODE_DICT[re.match(ADS_REGEX, bibcode).group(1)]
+    except (AttributeError, KeyError, NameError):
+        pass
+    if journal in INSPIRE_JOURNALS:
+        return journal
+    try:
+        return JOURNAL_DICT[journal]
+    except KeyError:
         return None
-    elif journal == 'IJGMM':
+
+def core_journal_check(doi, journal=None):
+    """Tests to see if this is one of our core journals."""
+
+    for core_doi in CORE_JOURNALS_DOI:
+        if doi.startswith(core_doi):
+            return True
+    if journal in CORE_JOURNALS:
+        return True
+    return False
+
+def bad_journal_check(journal, bibcode):
+    """
+    Tests to see if this is a journal whose publication note
+    cannot be properly parsed in the ADS xml document.
+    """
+
+    #Recent articles in IJMP have 7 digit article IDs, don't work in ADS dump
+    #{'journal_bibcode': '2019IJMPA..3450061B', 'preprint_id': '1810.13051',
+    #'journal_ref': 'Int.J.Mod.Phys.A.34:0061,2019', 'eprint_bibcode':
+    #'2018arXiv181013051B', 'doi': '10.1142/S0217751X19500611', 'time_stamp':
+    #'2019-6-3'}
+    match_obj = re.match(r'\d{4}IJMP[A-ES]\.\.(\d{7})[A-z]', bibcode)
+    if match_obj:
+        logging.info('Check IJMP: ' + bibcode)
+        return True
+    if '.tmp.' in bibcode:
+        return True
+    if journal in ('PhDT', 'IJGMM'):
+        return True
+    return False
+
+def get_page_letter(bibcode):
+    "Determines the letter preceeding a page number."
+
+    page_letter = ''
+    if re.search(r'\.\.?\d+L\.', bibcode):
+        page_letter = 'L'
+    elif re.search(r'\.\.\d+A\.', bibcode):
+        page_letter = 'A'
+    return page_letter
+
+def extract_metadata(input_dict):
+    """
+    This function creates an article dictionary from ADS input.
+    """
+
+    article_dict = {}
+    eprint = input_dict['preprint_id']
+    bibcode = input_dict['journal_bibcode']
+    journal_ref = input_dict['journal_ref']
+    doi = input_dict['doi']
+    journal = volume = page = year = ''
+
+    journal_ref = journal_ref.replace('Phys.Rev.L.', 'Phys.Rev.Lett.')
+    #Phys.Rev.B.89:094506,2014
+    #Eur.Phys.J.A.55:70,2019
+    #Astroph.J.
+    match_obj = re.match(ADS_J_REGEX, journal_ref)
+    if not match_obj:
+        logging.info('Problem with journal_ref: ' + str(input_dict))
         return None
-    if re.match(r'^[A-Z]\w*\&?\w+$', journal):
-        for key in BIBCODE_DICT:
-            if journal == key:
-                return BIBCODE_DICT[key]
+    journal = match_obj.group(1)
+    volume = match_obj.group(2) + match_obj.group(3)
+    page = match_obj.group(4)
+    year = match_obj.group(5)
+    page = get_page_letter(bibcode) + page
+    journal = journal_fix(journal, bibcode)
+    if not journal:
+        logging.info('Unidentified journal: ' + str(input_dict))
     else:
-        if VERBOSE > 0:
-            print 'BAD JOURNAL', journal
-    return None
+        journal = re.sub(r'::[A-EGX]', '', journal)
+    if not journal or bad_journal_check(journal, bibcode) or \
+       core_journal_check(doi, journal):
+        return None
+
+    article_dict['doi'] = doi
+    if bibcode not in INSPIRE_BIBCODES:
+        article_dict['bibcode'] = bibcode
+    search = 'find j {0},{1},{2}'.format(journal, volume, page)
+    result = perform_request_search(p=search, cc='HEP')
+    journal_recid = 0
+    if len(result) == 0:
+        article_dict['journal'] = journal
+        article_dict['volume'] = volume
+        article_dict['page'] = page
+        article_dict['year'] = year
+    elif len(result) > 1:
+        logging.info('Multiple {0},{1},{2}'.format(journal, volume, page))
+        return None
+    else:
+        journal_recid = result[0]
+
+    if eprint not in INSPIRE_IDENTIFIER_RECID_DICT:
+        logging.info('Problem searching eprint: ' + str(eprint))
+        return None
+    eprint_recid = INSPIRE_IDENTIFIER_RECID_DICT[eprint]
+    if journal_recid not in (0, eprint_recid):
+        logging.info('Mismatch in eprint, JVP: ' + str(input_dict))
+        return None
+    article_dict['recid'] = eprint_recid
+    return article_dict
 
 def create_xml(input_dict):
     """
-    The function create_xml takes an article dictionary from ADS and
-    checks to see if it has information that should be added to INSPIRE.
-    If so, it builds up that information.
+    This function create_xml takes a metadata dictionary.
     """
 
-    need_bibcode   = False
-    need_doi       = False
-    need_pubnote   = False
-    recid_eprint   = 0
-    recid_doi      = 0
-    recid_pubnote  = 0
-
-    #if not YEAR == input_dict['journal_bibcode'][:4]:
-    #    #return None
-    #    pass
-
-    if input_dict['journal_bibcode'] in ADS_SEEN:
+    metadata_dict = extract_metadata(input_dict)
+    if not metadata_dict:
         return None
-
-    if TEST:
-        print "In create_xml"
-    elements = ['doi', 'preprint_id', 'journal_bibcode', 'journal_ref']
-    element_dict = {}
-    pubyear = ''
-    for element in elements:
-        element_dict[element] = ''
-        if element in input_dict:
-            element_dict[element] = input_dict[element]
-        #print element, '=', element_dict[element]
-    eprint        = element_dict['preprint_id']
-    doi           = element_dict['doi']
-    bibcode       = element_dict['journal_bibcode']
-    journal_ref   = element_dict['journal_ref']
-    journal       = ''
-    volume        = ''
-    volume_letter = ''
-    page          = ''
-    page_letter   = ''
-    if DEBUG == 1:
-        print element_dict
-    if eprint:
-        eprint  = re.sub(r'arXiv:([a-z])', r'\1', eprint)
-
-        #if doi in DOIS:
-        if doi in INSPIRE_DOIS:
-            if eprint not in INSPIRE_EPRINTS:
-                print "Eprint missing:", eprint, doi
-            #search  =  'find eprint ' + eprint
-            #result = perform_request_search(p=search, cc='HEP')
-            #if len(result) == 0:
-            #    print "Eprint missing:", eprint, doi
-            if False:
-            #else:
-                search  =  'find eprint ' + eprint
-                result = perform_request_search(p=search, cc='HEP')
-                search = 'find doi ' + doi
-                if len(result) != 1:
-                    print "Check eprint:", eprint, doi
-            return None
-
-        if '-' in eprint and 'astro' not in eprint:
-            return None
-        if eprint in EPRINTS_DONE:
-            if DEBUG:
-                print 'Already done', eprint
-            return None
-        else:
-            EPRINTS_DONE.add(eprint)
-        search  =  'find eprint ' + eprint + ' not 035__9:ads'
-        #print search
-        result = perform_request_search(p=search, cc='HEP')
-        if DEBUG == 1:
-            print search, result
-        if len(result) == 0:
-            return None
-        elif len(result) == 1:
-            recid_eprint = result[0]
-            for badrec in BADRECS:
-                if recid_eprint == badrec:
-                    return None
-        else:
-            print 'Multiple ', search
-            return None
-    else:
-        return None
-    if doi:
-        if re.search(r'10.1103/PhysRev[CD]', doi):
-            return None
-        if re.search(r'10.1016/j.nuclphysb', doi):
-            return None
-        #search  =  '0247_a:' + doi
-        #result = perform_request_search(p=search, cc='HEP')
-        #if DEBUG == 1:
-        #    print search, result
-        #if len(result) == 1:
-        if doi in INSPIRE_DOIS:
-            search  =  '0247_a:' + doi
-            result = perform_request_search(p=search, cc='HEP')
-            recid_doi = result[0]
-            if recid_doi != recid_eprint:
-                print "Check eprint doi mismatch", recid_eprint, recid_doi
-                return None
-        else:
-            need_doi = True
-        #elif len(result) == 0:
-        #    need_doi = True
-        #else:
-        #    print 'Multiple ', search
-        #    return None
-        match_obj = re.search(r'10.1051/epjconf/(\d{4})(\d\d)(\d{5})', doi)
-        if match_obj:
-            journal = 'EPJ Web Conf.'
-            volume  = match_obj.group(2)
-            page    = match_obj.group(3)
-            pubyear = match_obj.group(1)
-        else:
-            pass
-            #match_obj = re.search(r'10.1142\/S0217751X(\d{7})\w', doi)
-            #if match_obj:
-                #page    = match_obj.group(1)
-                ##print 'DOI match', page
-    if bibcode:
-        if not BIBCODERE.match(bibcode):
-            print "Bad bibcode", bibcode, recid_eprint
-            return None
-        search  = '035__a:' + bibcode
-        result = perform_request_search(p=search, cc='HEP')
-        if TEST:
-            print search, result
-        if len(result) == 1:
-            recid_bibcode = result[0]
-            if recid_bibcode != recid_eprint:
-                print "Check eprint bibcode mismatch", recid_eprint, \
-                                                       recid_bibcode
-                return None
-        elif len(result) == 0:
-            need_bibcode = True
-        #2015IJMPA..3050059N
-        match_obj = re.match(r'^(\d{4})IJMP(\w)\.\.(\d{7})\w', bibcode)
-        if match_obj:
-            if TEST:
-                print 'IJMP = ', bibcode
-
-            if not page:
-                return None
-            journal        = 'Int.J.Mod.Phys.'
-            pubyear        = match_obj.group(1)
-            volume_letter  = match_obj.group(2)
-            if TEST:
-                print 'IJMP', journal, pubyear, volume, page
-        match_obj = re.match(r'^\d{4}(\w+\&?\w+)', bibcode)
-        if match_obj:
-            journal = match_obj.group(1)
-            if DEBUG == 1:
-                print journal
-            journal = journal_fix(journal)
-            if DEBUG == 1:
-                print journal
-            if journal:
-                match_obj = re.match(r'(.*)\:\:(\w+)', journal)
-                if match_obj:
-                    journal = match_obj.group(1)
-                    volume_letter = match_obj.group(2)
-        if re.search(r'\.\.?\d+L\.', bibcode):
-            page_letter = 'L'
-        elif re.search(r'\.\.\d+A\.', bibcode):
-            page_letter = 'A'
-        if DEBUG == 1:
-            print 'page_letter = ', page_letter
-    if journal_ref and not volume:
-        #Phys.Rev.A.86:013639,2012
-        #J.Appl.Phys.100:084104,2006
-        match_obj = re.search(r'(.*\w\.)(\d+)\:(\w+)\,(\d{4})', journal_ref)
-        if match_obj:
-            if not volume:
-                volume  = match_obj.group(2)
-            if not page:
-                page    = match_obj.group(3)
-            if not pubyear:
-                pubyear = match_obj.group(4)
-            if not journal:
-                journal = match_obj.group(1)
-                match_obj = re.match(r'^(.*\.)(\w)\.$', journal)
-                if match_obj:
-                    letter   = match_obj.group(2)
-                    if letter in ['A', 'B', 'C', 'D', 'E', 'G', 'X']:
-                        volume_letter = letter
-                        journal  = match_obj.group(1)
-                if DEBUG == 1:
-                    print journal
-                journal = journal_fix(journal)
-                if DEBUG == 1:
-                    print journal
-        if DEBUG == 1:
-            print journal, volume, page, pubyear
-    if journal == 'JHEP' or journal == 'JCAP':
-        volume = pubyear[-2:]  + volume
-    elif journal == 'JINST':
-        # or journal == 'Comptes Rendus Physique':
-        journal = None
-    if journal and volume and page and pubyear:
-        volume  = volume_letter + volume
-        page    = page_letter + page
-        search = 'journal:"' + journal + ',' + volume + ',' + page + '"'
-        result = perform_request_search(p=search, cc='HEP')
-        if DEBUG:
-            print search, result
-        if len(result) == 1:
-            recid_pubnote = result[0]
-            if recid_pubnote != recid_eprint:
-                print "Check eprint pubnote mismatch", recid_eprint, \
-                                                       recid_pubnote
-                return None
-        elif len(result) == 0:
-            need_pubnote = True
-        else:
-            print 'Multiple ', search
-            return None
-        #Can't always trust weird page numbers, check the pub year
-        search = '001:' + str(recid_eprint) + ' 773__y:' + pubyear
-        result = perform_request_search(p=search, cc='HEP')
-        if TEST:
-            print search, result
-        if len(result) == 1:
-            need_pubnote = False
-        if recid_pubnote and not need_bibcode and not need_doi:
-            return None
-
-    if need_pubnote and not need_doi and journal in TRICKY_JOURNALS:
-        need_pubnote = False
-    if need_doi or need_bibcode or need_pubnote:
-        record = {}
-        record_add_field(record, '001', controlfield_value=str(recid_eprint))
+    record = {}
+    try:
+        record_add_field(record, '001',
+                         controlfield_value=str(metadata_dict['recid']))
+    except KeyError:
+        logging.info('Problem with finding recid: ' + str(input_dict))
+    try:
+        journal = metadata_dict['journal']
+        volume = metadata_dict['volume']
+        page = metadata_dict['page']
+        year = metadata_dict['year']
         pubnote = [('p', journal), ('v', volume), ('c', page)]
         if journal == 'ICRC':
-            journal = journal + ' ' + pubyear
+            journal = journal + ' ' + year
             pubnote = [('q', journal), ('v', volume), ('c', page)]
         else:
-            pubnote.append(('y', pubyear))
-        if need_pubnote:
-            record_add_field(record, '773', '', '', subfields=pubnote)
-        if journal in JOURNAL_PUBLISHED_DICT:
-            search = "001:" + str(recid_eprint) + " -980__a:Published"
-            result = perform_request_search(p=search, cc='HEP')
-            if len(result) == 1:
-                collection = [('a', 'Published')]
-                record_add_field(record, '980', '', '', subfields=collection)
-        if need_doi:
-            doi  = [('a', doi), ('2', 'DOI'), ('9', 'ADS')]
-            record_add_field(record, '024', '7', '', subfields=doi)
-        if need_bibcode:
-            bibcode  = [('a', bibcode), ('9', 'ADS')]
-            record_add_field(record, '035', '', '', subfields=bibcode)
-        if TEST:
-            print 'doi, bibcode, pbn', need_doi, need_bibcode, need_pubnote, \
-                                   recid_eprint
-        return print_rec(record)
-    else:
+            pubnote.append(('y', year))
+    except KeyError:
+        logging.info('Problem with extracting j,v,p,y: ' + str(input_dict))
         return None
+    record_add_field(record, '773', '', '', subfields=pubnote)
+    try:
+        doi = [('a', metadata_dict['doi']), ('2', 'DOI'), ('9', 'ADS')]
+    except KeyError:
+        logging.info('Problem with extracting doi: ' + str(input_dict))
+        return None
+    record_add_field(record, '024', '7', '', subfields=doi)
+    try:
+        bibcode = [('a', metadata_dict['bibcode']), ('9', 'ADS')]
+    except KeyError:
+        logging.info('Not adding bibcode: ' + str(input_dict))
+        return None
+    record_add_field(record, '035', '', '', subfields=bibcode)
+    return print_rec(record)
+
+def get_eprint_doi_needed(ads_eprints, ads_dois, doi_to_eprint):
+    """
+       Take in the eprints and DOIs of the ADS document and
+       return the ones needed for INSPIRE.
+    """
+
+    #ads_eprints = set(eprint_dict.keys())
+    #ads_dois = set(doi_to_eprint.keys())
+    eprint_y = ads_eprints & INSPIRE_EPRINTS
+    eprint_n = ads_eprints - INSPIRE_EPRINTS
+    doi_y = ads_dois & INSPIRE_DOIS
+    doi_n = ads_dois - INSPIRE_DOIS
+    #Convert doi_y and doi_n to their corresponding eprint numbers
+    #in order to add them to the eprint sets.
+    doi_y_eprint = set([doi_to_eprint[doi] for doi in doi_y])
+    doi_n_eprint = set([doi_to_eprint[doi] for doi in doi_n])
+
+    eprint_needed = eprint_n & doi_y_eprint
+    doi_needed = eprint_y & doi_n_eprint
+    return (eprint_needed, doi_needed)
+
+def process_ads_xml_file(document):
+    """Looks through the ADS xml file for new information."""
+
+    output_counter = 0
+    eprint_dict = doi_to_eprint = {}
+    ads_eprints = ads_dois = set()
+    output_check_doi_eprint = output_missing_eprint = output_xml = ''
+
+    #tree = ET.parse(document)
+    #root = tree.getroot()
+    for child in ET.parse(document).getroot():
+        if 'doi' not in child.attrib:
+            continue
+        if 'preprint_id' not in child.attrib:
+            continue
+        eprint = child.attrib['preprint_id']
+        doi = child.attrib['doi']
+        if not any((eprint, doi)):
+            continue
+        eprint_dict[eprint] = child
+        doi_to_eprint[doi] = eprint
+        ads_eprints.add(eprint)
+        ads_dois.add(doi)
+
+    (eprint_needed, doi_needed) = \
+    get_eprint_doi_needed(ads_eprints, ads_dois, doi_to_eprint)
+
+    print 'Eprints needed:', len(eprint_needed)
+    for eprint in eprint_needed:
+        child = eprint_dict[eprint]
+        doi = child.attrib['doi']
+        if check_doi_eprint(doi):
+            output_check_doi_eprint += \
+            'Check match: ' + eprint + ' ' + doi + '\n'
+            continue
+        output_missing_eprint += \
+        'Need eprint: ' + eprint + ' ' + doi + '\n'
+        continue
+
+    print 'DOIs not in INSPIRE (could include core journals):', len(doi_needed)
+    for eprint in doi_needed:
+        child = eprint_dict[eprint]
+        if output_counter > OUTPUT_COUNTER_MAX:
+            break
+        doi = child.attrib['doi']
+        if check_doi_eprint(eprint):
+            output_check_doi_eprint += \
+            'Check match: ' + eprint + ' ' + doi + '\n'
+            continue
+        record_update = create_xml(child.attrib)
+        if record_update:
+            try:
+                output_xml += record_update
+                output_counter += 1
+            except TypeError:
+                logging.error('CANNOT print record: ' + str(child.attrib))
+    print 'Number of records to be updated:', output_counter
+    return (output_xml, output_missing_eprint, output_check_doi_eprint)
 
 def main():
-    """Looks through the ADS xml file for new information."""
+    """
+    Go through an ADS xml and print out any information missing
+    from INSPIRE.
+    """
+
+    output_xml, output_missing_eprint, output_check_doi_eprint\
+    = process_ads_xml_file(DOCUMENT)
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_append.out', filename)
-    output = open(filename,'w')
-    output.write('<collection>')
-    tree = ET.parse(DOCUMENT)
-    root = tree.getroot()
-    line_counter   = 1
-    output_counter = 1
-    for child in root:
-        line_counter += 1
-        if line_counter < STARTING_COUNTER:
-            pass
-        else:
-            if output_counter == ENDING_COUNTER:
-                print 'line_counter =', line_counter
-                break
-            if 'doi' in child.attrib:
-                record_update = create_xml(child.attrib)
-                if record_update:
-                    try:
-                        if DEBUG == 1:
-                            print record_update
-                        else:
-                            if not TEST:
-                                output.write(record_update)
-                            output_counter += 1
-                    except:
-                        print 'CANNOT print record', child.attrib
+    output = open(filename, 'w')
+    output.write('<collection>\n')
+    #output.write("{0:25}{1:16}{2:7}{3:12}{4:7}{5:5}\n".format('journal',
+    #                                        'journal_letter',
+    #                                        'volume', 'page_letter',
+    #                                        'page', 'year'))
+    output.write(output_xml)
     output.write('</collection>')
     output.close()
     print filename
 
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_missing_eprint.out', filename)
+    output = open(filename, 'w')
+    output.write(output_missing_eprint)
+    output.close()
+    print filename
+
+
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_check_doi_eprint.out', filename)
+    output = open(filename, 'w')
+    output.write(output_check_doi_eprint)
+    output.close()
+    print filename
+    print LOGFILE
+
 if __name__ == '__main__':
     try:
-        #EPRINTS_DONE = pickle.load(open(EPRINTS_DONE_FILE, "rb"))
-        #print 'Number of eprints 1:', len(EPRINTS_DONE)
+        TIME_1 = time.time()
         main()
-        #if exists(EPRINTS_DONE_FILE):
-        #    BACKUP = EPRINTS_DONE_FILE + '.bak'
-        #    if exists(BACKUP):
-        #        os.remove(BACKUP)
-        #    os.rename(EPRINTS_DONE_FILE, BACKUP)
-        #with open(EPRINTS_DONE_FILE, "wb") as fname:
-        #    pickle.dump(EPRINTS_DONE, fname)
-        print 'Number of eprints examiend today:', len(EPRINTS_DONE)
+        TIME_2 = time.time()
+        TOTAL_TIME = TIME_2 - TIME_1
+        RUN_TIME = 'Run time = ' + str(datetime.timedelta(seconds=TOTAL_TIME))
+        print RUN_TIME
+        logging.info(RUN_TIME)
     except KeyboardInterrupt:
         print 'Exiting'
 
