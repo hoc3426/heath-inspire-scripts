@@ -61,6 +61,7 @@ INSPIRE_JOURNALS = set(get_all_field_values('711__a'))
 INSPIRE_EPRINT_RECIDS = search_unit('arxiv', f='037__9', m='a')
 INSPIRE_DOI_RECIDS = search_unit('doi', f='0247_2', m='a')
 INSPIRE_IDENTIFIER_RECID_DICT = {}
+DELETED = search_unit(p='DELETED', m='a', f='980*')
 
 print 'Eprints', len(INSPIRE_EPRINTS), random.sample(INSPIRE_EPRINTS, 1)
 print 'Bibcodes', len(INSPIRE_BIBCODES), random.sample(INSPIRE_BIBCODES, 1)
@@ -72,6 +73,8 @@ def check_doi_eprint(identifier):
 
     if identifier.startswith('10.'):
         result = search_unit(identifier, f='0247_a', m='a')
+        if result & DELETED:
+            return None
         if len(result) == 1:
             INSPIRE_IDENTIFIER_RECID_DICT[identifier] = result[0]
             result = result & INSPIRE_EPRINT_RECIDS
@@ -81,6 +84,8 @@ def check_doi_eprint(identifier):
         if re.match(ARXIV_REGEX_NEW, identifier):
             prefix = 'arXiv:'
         result = search_unit(prefix + identifier, f='037__a', m='a')
+        if result & DELETED:
+            return None
         if len(result) == 1:
             INSPIRE_IDENTIFIER_RECID_DICT[identifier] = result[0]
             result = result & INSPIRE_DOI_RECIDS
