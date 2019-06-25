@@ -7,10 +7,12 @@ def checkURL(url):
      #print url
      try:
           req = urllib2.urlopen(url)
-
+     except urllib2.URLError:
+         print "Error with getting to: ", url
+         return None
      except IOError, (errno, strerror):
-         print "Error with: ", url
-         #print "I/O error(%s): %s" % (errno, strerror)
+         #print "Error with: ", url
+         print "I/O error(%s): %s" % (errno, strerror)
          return None
      except ValueError:
          print "Error with: ", url

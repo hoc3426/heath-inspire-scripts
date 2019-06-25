@@ -171,6 +171,8 @@ def get_url(recid):
                 url_inspire = url_i
             elif re.search(r'inspirehep.*MUCOOL\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
+            elif re.search(r'inspirehep.*cern\-.*pdf', url_i, re.IGNORECASE):
+                url_inspire = url_i
 
     if url_openaccess:
         url = url_openaccess
