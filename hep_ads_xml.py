@@ -10,11 +10,11 @@ from invenio.search_engine import perform_request_search, \
                                   get_all_field_values, \
                                   search_unit
 from invenio.bibrecord import print_rec, record_add_field
-from hep_ads_xml_bibcodes import BIBCODE_DICT, JOURNAL_DICT
-from hep_ads_xml_input import DOCUMENT, \
+from hep_ads_xml_input import BIBCODE_DICT, JOURNAL_DICT, \
                               CORE_JOURNALS, \
                               CORE_JOURNALS_DOI, \
                               OUTPUT_COUNTER_MAX
+from hep_ads_xml_input_local import DIRECTORY
 
 import xml.etree.ElementTree as ET
 import re
@@ -23,6 +23,8 @@ import time
 import datetime
 import logging
 
+
+DOCUMENT = DIRECTORY + 'ADSmatches.xml'
 LOGFILE = 'tmp_' + __file__
 LOGFILE = re.sub('.py', '.log', LOGFILE)
 logging.basicConfig(filename=LOGFILE, filemode='w',
