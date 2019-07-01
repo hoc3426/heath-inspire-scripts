@@ -101,7 +101,8 @@ def email_lookup():
     quit()
 
 
-def create_xml(author, email, affiliation, experiment, inspire_id, orcid):
+def create_xml(author, email, affiliation, experiment, inspire_id, orcid,
+               native_name):
     '''Create the xml file to upload.'''
 
     common_fields = {}
@@ -126,7 +127,8 @@ def create_xml(author, email, affiliation, experiment, inspire_id, orcid):
         common_tags['035__'] = [('9', 'ORCID'), ('a', orcid)]
     if SOURCE:
         common_tags['670__'] = [('a', SOURCE)]
-
+    if native_name:
+        common_tags['880__'] = [('a', native_name)]
     for key in common_tags:
         tag = key
         record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
@@ -154,6 +156,14 @@ def main(authors, inspire):
             orcid = author_info[2]
         except IndexError:
             orcid = None
+        try:
+            affiliation = author_info[3]
+        except IndexError:
+            affiliation = None
+        try:
+            native_name = author_info[5]
+        except IndexError:
+            native_name = None
         if email in emails and email:
             print "Duplicate", email
             continue
@@ -175,12 +185,13 @@ def main(authors, inspire):
                 print 'or', recid
             continue
         #print 'email =', email
-        affiliation = aff_from_email(email)
+        if not affiliation:
+            affiliation = aff_from_email(email)
         #print 'affiliation =', affiliation
         if False:
         #if affiliation == None:
             try:
-                affiliation = author_info[2]
+                affiliation = author_info[4]
                 affiliation = get_aff(affiliation)
             except IndexError:
                 pass
@@ -194,7 +205,7 @@ def main(authors, inspire):
         inspire_id = 'INSPIRE-00' + str(inspire) + \
                      str(random.randint(1, 9))
         output.write(create_xml(author, email, affiliation,
-                                EXPERIMENT, inspire_id, orcid))
+                                EXPERIMENT, inspire_id, orcid, native_name))
         output.write('\n')
         inspire += 1
     output.close()
