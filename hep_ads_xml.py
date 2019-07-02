@@ -48,12 +48,13 @@ def generate_data(data_set):
     '''Gets data from INSPIRE.'''
 
     if data_set == 'INSPIRE_JOURNALS':
-        return (set(get_all_field_values('711__a')), None)
+        return [set(get_all_field_values('711__a')), None]
     if data_set == 'INSPIRE_EPRINTS':
         source = set(get_all_field_values('035__a')) | \
                  set(get_all_field_values('035__z')) | \
                  set(get_all_field_values('037__a'))
-        inspire_eprints = inspire_bibcodes = set()
+        inspire_eprints = set()
+        inspire_bibcodes = set()
         for item in source:
             if item.startswith('oai:arXiv.org:'):
                 inspire_eprints.add(item.replace('oai:arXiv.org:', ''))
@@ -65,15 +66,15 @@ def generate_data(data_set):
                 continue
             if re.match(ADS_REGEX, item):
                 inspire_bibcodes.add(item)
-        return (inspire_eprints, inspire_bibcodes)
+        return [inspire_eprints, inspire_bibcodes]
     if data_set == 'INSPIRE_DOIS':
         source = get_all_field_values('0247_a')
         inspire_dois = set()
         for item in source:
             if item.startswith('10.'):
                 inspire_dois.add(item)
-        return (inspire_dois, None)
-    return (None, None)
+        return [inspire_dois, None]
+    return [None, None]
 
 def get_data(data_set):
     '''Gets data from a file or INSPIRE and saves it to a file.'''
@@ -321,8 +322,10 @@ def process_ads_xml_file(document):
     """Looks through the ADS xml file for new information."""
 
     output_counter = 0
-    eprint_dict = doi_to_eprint = {}
-    ads_eprints = ads_dois = set()
+    eprint_dict = {}
+    doi_to_eprint = {}
+    ads_eprints = set()
+    ads_dois = set()
     output_check_doi_eprint = output_missing_eprint = output_xml = ''
 
     #tree = ET.parse(document)
@@ -349,8 +352,13 @@ def process_ads_xml_file(document):
         child = eprint_dict[eprint]
         doi = child.attrib['doi']
         if check_doi_eprint(doi):
+            if eprint[0].isdigit():
+                eprint = 'arXiv:' + eprint
             output_check_doi_eprint += \
-            'Check match: ' + eprint + ' ' + doi + '\n'
+''',,,,,,{0},{1}
+,,,,,,,
+,,,,,,,
+'''.format(eprint, doi)
             continue
         output_missing_eprint += \
         'Need eprint: ' + eprint + ' ' + doi + '\n'
@@ -363,8 +371,15 @@ def process_ads_xml_file(document):
             break
         doi = child.attrib['doi']
         if check_doi_eprint(eprint):
+            #output_check_doi_eprint += \
+            #'Check match: ' + eprint + ' ' + doi + '\n'
+            if eprint[0].isdigit():
+                eprint = 'arXiv:' + eprint
             output_check_doi_eprint += \
-            'Check match: ' + eprint + ' ' + doi + '\n'
+''',,,,,,{0},{1}
+,,,,,,,
+,,,,,,,
+'''.format(eprint, doi)
             continue
         record_update = create_xml(child.attrib)
         if record_update:
@@ -407,8 +422,13 @@ def main():
 
 
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_check_doi_eprint.out', filename)
+    filename = re.sub('.py', '_check_doi_eprint.csv', filename)
     output = open(filename, 'w')
+    HEADER = '''Correct,,Currently in INSPIRE,,Currently in arXiv,,\
+Currently in ADS,
+eprint, doi, eprint, doi, eprint, doi, eprint, doi
+'''
+    output.write(HEADER)
     output.write(output_check_doi_eprint)
     output.close()
     print filename
