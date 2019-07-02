@@ -16,6 +16,7 @@ from hep_ads_xml_input import BIBCODE_DICT, JOURNAL_DICT, \
                               OUTPUT_COUNTER_MAX
 from hep_ads_xml_input_local import DIRECTORY
 
+import cPickle as pickle
 import xml.etree.ElementTree as ET
 import re
 import random
@@ -42,24 +43,61 @@ BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
 INSPIRE_EPRINTS = set()
 INSPIRE_BIBCODES = set()
 INSPIRE_DOIS = set()
-EPRINT_UNION = set(get_all_field_values('035__a')) | \
-               set(get_all_field_values('035__z')) | \
-               set(get_all_field_values('037__a'))
-for item in EPRINT_UNION:
-    if item.startswith('oai:arXiv.org:'):
-        INSPIRE_EPRINTS.add(item.replace('oai:arXiv.org:', ''))
-    elif item.startswith('arXiv:'):
-        INSPIRE_EPRINTS.add(item.replace('arXiv:', ''))
-    elif re.match(ARXIV_REGEX, item):
-        INSPIRE_EPRINTS.add(item)
-    elif len(item) != 19:
-        continue
-    if re.match(ADS_REGEX, item):
-        INSPIRE_BIBCODES.add(item)
-for item in get_all_field_values('0247_a'):
-    if item.startswith('10.'):
-        INSPIRE_DOIS.add(item)
-INSPIRE_JOURNALS = set(get_all_field_values('711__a'))
+
+def generate_data(data_set):
+    '''Gets data from INSPIRE.'''
+
+    if data_set == 'INSPIRE_JOURNALS':
+        return (set(get_all_field_values('711__a')), None)
+    if data_set == 'INSPIRE_EPRINTS':
+        source = set(get_all_field_values('035__a')) | \
+                 set(get_all_field_values('035__z')) | \
+                 set(get_all_field_values('037__a'))
+        inspire_eprints = inspire_bibcodes = set()
+        for item in source:
+            if item.startswith('oai:arXiv.org:'):
+                inspire_eprints.add(item.replace('oai:arXiv.org:', ''))
+            elif item.startswith('arXiv:'):
+                inspire_eprints.add(item.replace('arXiv:', ''))
+            elif re.match(ARXIV_REGEX, item):
+                inspire_eprints.add(item)
+            elif len(item) != 19:
+                continue
+            if re.match(ADS_REGEX, item):
+                inspire_bibcodes.add(item)
+        return (inspire_eprints, inspire_bibcodes)
+    if data_set == 'INSPIRE_DOIS':
+        source = get_all_field_values('0247_a')
+        inspire_dois = set()
+        for item in source:
+            if item.startswith('10.'):
+                inspire_dois.add(item)
+        return (inspire_dois, None)
+    return (None, None)
+
+def get_data(data_set):
+    '''Gets data from a file or INSPIRE and saves it to a file.'''
+
+    filename = 'tmp_' + __file__
+    date = '{date:%Y-%m-%d}'.format(date=datetime.date.today())
+    filename = re.sub('.py', '_' + data_set + '_' + date + '.in', filename)
+    try:
+        data_set = pickle.load(open(filename, "rb"))
+    except IOError:
+        data_set = generate_data(data_set)
+        try:
+            with open(filename, "wb") as file_handle:
+                pickle.dump(data_set, file_handle)
+        except pickle.PicklingError:
+            print "Problem creating:", filename
+    except pickle.UnpicklingError:
+        print "Pickle problem for", filename
+    return data_set
+
+INSPIRE_JOURNALS = get_data('INSPIRE_JOURNALS')[0]
+(INSPIRE_EPRINTS, INSPIRE_BIBCODES) = get_data('INSPIRE_EPRINTS')
+INSPIRE_DOIS = get_data('INSPIRE_DOIS')[0]
+
 INSPIRE_EPRINT_RECIDS = search_unit('arxiv', f='037__9', m='a')
 INSPIRE_DOI_RECIDS = search_unit('doi', f='0247_2', m='a')
 INSPIRE_IDENTIFIER_RECID_DICT = {}
