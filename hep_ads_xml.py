@@ -79,7 +79,7 @@ def generate_data(data_set):
 def get_data(data_set):
     '''Gets data from a file or INSPIRE and saves it to a file.'''
 
-    filename = 'tmp_' + __file__
+    filename = DIRECTORY + 'tmp_' + __file__
     date = '{date:%Y-%m-%d}'.format(date=datetime.date.today())
     filename = re.sub('.py', '_' + data_set + '_' + date + '.in', filename)
     try:
@@ -318,6 +318,17 @@ def get_eprint_doi_needed(ads_eprints, ads_dois, doi_to_eprint):
     doi_needed = eprint_y & doi_n_eprint
     return (eprint_needed, doi_needed)
 
+def generate_spreadsheet_line(eprint, doi):
+    """Creates a line that can be printed to a CSV spreadsheet."""
+
+    if eprint[0].isdigit():
+        eprint = 'arXiv:' + eprint
+    line = ''',,,,,,{0},{1}
+,,,,,,,
+,,,,,,,
+'''.format(eprint, doi)
+    return line
+
 def process_ads_xml_file(document):
     """Looks through the ADS xml file for new information."""
 
@@ -352,13 +363,7 @@ def process_ads_xml_file(document):
         child = eprint_dict[eprint]
         doi = child.attrib['doi']
         if check_doi_eprint(doi):
-            if eprint[0].isdigit():
-                eprint = 'arXiv:' + eprint
-            output_check_doi_eprint += \
-''',,,,,,{0},{1}
-,,,,,,,
-,,,,,,,
-'''.format(eprint, doi)
+            output_check_doi_eprint += generate_spreadsheet_line(eprint, doi)
             continue
         output_missing_eprint += \
         'Need eprint: ' + eprint + ' ' + doi + '\n'
@@ -371,15 +376,7 @@ def process_ads_xml_file(document):
             break
         doi = child.attrib['doi']
         if check_doi_eprint(eprint):
-            #output_check_doi_eprint += \
-            #'Check match: ' + eprint + ' ' + doi + '\n'
-            if eprint[0].isdigit():
-                eprint = 'arXiv:' + eprint
-            output_check_doi_eprint += \
-''',,,,,,{0},{1}
-,,,,,,,
-,,,,,,,
-'''.format(eprint, doi)
+            output_check_doi_eprint += generate_spreadsheet_line(eprint, doi)
             continue
         record_update = create_xml(child.attrib)
         if record_update:
@@ -424,11 +421,11 @@ def main():
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_check_doi_eprint.csv', filename)
     output = open(filename, 'w')
-    HEADER = '''Correct,,Currently in INSPIRE,,Currently in arXiv,,\
+    header = '''Correct,,Currently in INSPIRE,,Currently in arXiv,,\
 Currently in ADS,
 eprint, doi, eprint, doi, eprint, doi, eprint, doi
 '''
-    output.write(HEADER)
+    output.write(header)
     output.write(output_check_doi_eprint)
     output.close()
     print filename
