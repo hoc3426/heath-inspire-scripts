@@ -22,6 +22,7 @@ def zenodo_citations():
 
     zenodo_regex = re.compile(r'^doi:10\.5281/zenodo\.\d+$')
     zenodos = []
+    citation_report = ''
     for ref in get_all_field_values('999C5a'):
         if ref.startswith('doi:10.5281/zenodo.'):
             search = '999C5a:' + ref
@@ -42,18 +43,27 @@ def zenodo_citations():
                     continue
                 zenodos.append((len(cites), ref, cites, title))
     for doi in sorted(zenodos, reverse=True):
-        print doi[0], citation(s) to, doi[1]
-        print '  ', doi[3]
         #for recid in doi[2]:
         #    url = 'https://inspirehep.net/record/' + str(recid) + \
         #          '/references'
         #    print '   ', url
         print ' '
+        citation_report += \
+'''{0} citation(s) to {1}
+  {2}
+  https://inspirehep.net/search?p=999C5a:{1}
+
+'''.format(doi[0], doi[1], doi[3])
+    return citation_report
 
 def main():
     '''Run the program.'''
 
-    zenodo_citations()
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '.out', filename)
+    output = open(filename, 'w')
+    output.write(zenodo_citations())
+    output.close()
 
 if __name__ == '__main__':
     try:
