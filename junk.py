@@ -25,10 +25,22 @@ from invenio.search_engine import get_collection_reclist
 
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
-from hep_collaboration_authors import author_first_last
+#from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 
+def conference_papers():
+    search = 'find primarch hep-ph or hep-ex and tc '
+    for year in range(2000, 2020):
+        search_c = search + ' c and date ' + str(year)
+        search_p = search + ' p and date ' + str(year)
+        result_c = len(perform_request_search(p=search_c, cc='HEP'))
+        result_p = len(perform_request_search(p=search_p, cc='HEP'))
+
+        print "{0}\t{1}\t{2}".format(year, result_p, result_c)
+
+#conference_papers()
+#quit()
 
 def create_grid_dict():
     grid_dict = {}
@@ -50,10 +62,9 @@ def create_grid_dict():
     pickle.dump(grid_dict, open(AFFILIATIONS_GRID_FILE, "wb"))
     print 'Institutions now in', AFFILIATIONS_GRID_FILE, len(grid_dict)
 
-create_grid_dict()
-quit()
+#create_grid_dict()
+#quit()
 
-quit()
 
 def fermilab_tm():
     for year in range(1968, 2020):
@@ -67,8 +78,8 @@ def fermilab_tm():
         print year, result[0], get_fieldvalues(result[0], '245__a')[0][:70]
         for recid in result_c:
             print '  ', recid, get_fieldvalues(recid, '245__a')[0][:70]
-fermilab_tm()
-quit()
+#fermilab_tm()
+#quit()
 
 
 def topcites_by_year():
@@ -77,8 +88,8 @@ def topcites_by_year():
         result = perform_request_search(p=search, cc='HEP')
         print year, len(result)
 
-topcites_by_year()
-quit()
+#topcites_by_year()
+#quit()
 
 def bad_eprint():
     search = '037__9:arxiv -035__9:arxiv'
@@ -155,44 +166,54 @@ def fermilab_orcid():
         #    print "No Fermilab email:", recid, orcid
         print "{0}|{1}|{2} {3}".format(author, inspire, orcid, recid)
 
-fermilab_orcid()
+#fermilab_orcid()
+#quit()
+
+def convert_zenodo_url_to_doi():
+    #https://zenodo.org/record/3257749#.XSzbl8hKhPY
+    zenodo_url_regex = re.compile(r'\$\$uhttps://zenodo.org/record/(\d+)(#\.[A-z0-9]+)?')
+    zenodo_doi_url_regex = re.compile(r'https://doi.org/\s*10.5281/\s*zenodo.(\d+)')
+    zenodo_doi_regex = re.compile(r'\$\$adoi:10.5281/zenodo\.\d+')
+    search = '999C5u:"https://zenodo.org/record/*"'
+    lines = ''
+    for recid in perform_request_search(p=search, cc='HEP'):
+        lines += print_record(recid, ot=['999C5'], format='hm')
+    for line in lines.split('\n'):
+        if (re.search(zenodo_url_regex, line) or \
+            re.search(zenodo_doi_url_regex, line)) and not \
+            re.search(zenodo_doi_regex, line):
+            line = re.sub(zenodo_url_regex, r'$$adoi:10.5281/zenodo.\1', line)
+            line = re.sub(zenodo_doi_url_regex, r'$$adoi:10.5281/zenodo.\1', line)
+        print line
+#convert_zenodo_url_to_doi()
+#quit()
+
+def zenodo_citations():
+    zenodo_regex = re.compile(r'^doi:10\.5281/zenodo\.\d+$')
+    zenodos = []
+    for ref in get_all_field_values('999C5a'):
+        if ref.startswith('doi:10.5281/zenodo.'):
+            search = '999C5a:' + ref
+            cites =  perform_request_search(p=search, cc='HEP')
+            if len(cites):
+                if not re.match(zenodo_regex, ref):
+                    print 'Problem with DOI extraction:', search, cites
+                    continue
+                url = 'https://doi.org/api/handles/' + ref.replace('doi:', '')
+                try:
+                    checkURL(url)
+                except ValueError:
+                    print 'Problem with DOI:', search, cites
+                    continue
+                zenodos.append((len(cites), ref, cites))
+    for doi in sorted(zenodos, reverse=True):
+        print doi[0], doi[1]
+        for recid in doi[2]:
+            url = 'https://inspirehep.net/record/' + str(recid) + '/references'
+            print '   ', url
+zenodo_citations()
 quit()
 
-search = '999C5u:"https://zenodo.org/record/*"'
-for recid in perform_request_search(p=search, cc='HEP'):
-    print print_record(recid, ot=['999C5'], format='hm')
-quit()
-
-zenodo_regex = re.compile(r'^doi:10\.5281/zenodo\.\d+$')
-zenodos = []
-zenodo = perform_request_search(p='999C5:/zenodo/', cc='HEP')
-zenodo2 = perform_request_search(p='999C5a:"doi:10.5281/zenodo.*"', cc='HEP')
-for doi in intbitset(zenodo)-intbitset(zenodo2):
-    url = 'https://inspirehep.net/record/' + str(doi) + '/references'
-    print url
-
-
-for ref in get_all_field_values('999C5a'):
-    if ref.startswith('doi:10.5281/zenodo.'):
-        search = '999C5a:' + ref         
-        cites =  perform_request_search(p=search, cc='HEP')
-        if len(cites):
-            if not re.match(zenodo_regex, ref):
-                print 'Problem with DOI extraction:', search, cites
-                continue
-            url = 'https://doi.org/api/handles/' + ref.replace('doi:', '')
-            try:
-                checkURL(url)
-            except ValueError:
-                print 'Problem with DOI:', search, cites
-                continue
-            zenodos.append((len(cites), ref, cites))
-for doi in sorted(zenodos, reverse=True):
-    print doi[0], doi[1]
-    for recid in doi[2]:
-        url = 'https://inspirehep.net/record/' + str(recid) + '/references'
-        print '   ', url
-quit()
 
 
 with open('tmp.1000') as fp:

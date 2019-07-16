@@ -72,7 +72,7 @@ def get_result(search, number_only=False):
 
     if number_of_records > 250:
         jrec_number = 251
-        while jrec_number < number_of_records:
+        while jrec_number <= number_of_records:
             url_split = url + '&jrec=' + str(jrec_number)
             soup = search_inspire(url_split)
             for recid in soup.findAll('controlfield'):
