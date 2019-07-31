@@ -15,7 +15,7 @@ def job_stats():
     grand_total = 0
     print "{0:16s} {1:5s} {2:5s} {3:5s}".format('search', 'open', 
                                                 'closed', 'total')
-    for month in range(1,4):
+    for month in range(4, 7):
         if month < 10:
             month = '0' +  str(month)
         search = 'dadd:2019-' + str(month)
@@ -32,8 +32,8 @@ def eprints():
     fermilab = get_collection_reclist('Fermilab')
     print '{0:4s} {1:3s} {2:3s} {3:3s}'.format('Date', 'All', 'FNA',
                                                    '%')
-    date_range = ['1901', '1902', '1903']
-    date_range = range(1, 20)
+    date_range = ['1904', '1905', '1906']
+    #date_range = range(1, 20)
     for yymm in date_range:
         yymm = str(yymm)
         if len(yymm) == 1:
@@ -58,6 +58,7 @@ def eprints():
     print "Total =", total
 
 eprints()
+#job_stats()
 quit()
 
 
