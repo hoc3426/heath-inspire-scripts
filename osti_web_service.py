@@ -13,6 +13,7 @@ import sys
 import datetime
 import pytz
 import os
+import requests
 
 from urllib2 import Request, urlopen
 import PyPDF2
@@ -41,11 +42,31 @@ TEST = True
 TEST = False
 RECIDS = False
 ENDING_COUNTER = 20
+SCOAP3_API = True
 
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='Fermilab'))
 
 CMS = intbitset(perform_request_search(p="037__z:fermilab*", cc='Fermilab'))
+
+
+def check_scoap3(doi):
+    scoap3_url = 'https://repo.scoap3.org/api/records/?q=doi:'
+    scoap3_downloadurl = 'https://repo.scoap3.org/api/files/'
+    data = requests.get(url='%s"%s"' % (scoap3_url, doi)).json()
+    got_file = False
+    if data['hits']['total'] == 1:
+        if '_files' in data['hits']['hits'][0]['metadata']:
+            for file in data['hits']['hits'][0]['metadata']['_files']:
+                    if file['filetype'] == 'pdf' and not got_file:
+                        try:
+                            bucket = file['bucket']
+                            key = file['key']
+                            got_file = True
+                        except:
+                            pass
+    if got_file:
+        return '%s%s/%s' % (scoap3_downloadurl, bucket, key)
 
 
 def create_osti_id_pdf(recid, osti_id):
@@ -154,6 +175,8 @@ def get_url(recid):
     if 'DOI' in (element.upper() for element in
                  get_fieldvalues(recid, '0247_2')):
         has_doi = True
+        doi = get_fieldvalues(recid, '0247_a')[0]
+
 
     if not has_doi:
         accepted = False
@@ -205,6 +228,13 @@ def get_url(recid):
         #else:
         #    print "Problem with", url
         #    return [None, accepted]
+    elif SCOAP3_API and has_doi and not url:
+        scoap3_doc = check_scoap3(doi)
+        if scoap3_doc:
+            accepted = True
+            return [scoap3_doc, accepted]
+        else:
+            return [None, False]
     else:
         return [None, False]
 
