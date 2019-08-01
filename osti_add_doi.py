@@ -29,10 +29,9 @@ OUTPUT = open(FILENAME,'w')
 
 def bad_url(url):
     curl = 'curl --output /dev/null --silent --head --fail '
-    if os.system(curl + url) == 0:
-        return False
-    else:
+    if os.system(curl + url) != 0:
         return True
+    return False
  
 for recid in RESULT:
     if COUNTER > COUNTER_END:
