@@ -100,8 +100,9 @@ def main():
             for report in report_numbers_bad:
                 if re.match(r'.*-' +  division + r'\b.*', report):
                     division_bad += 1
-            print division, calculate_output(division_good,
-                                             division_good + division_bad)
+            print "{0:10s} {1:10s}".format(division, 
+                  calculate_output(division_good, 
+                                   division_good + division_bad))
 
 
 if __name__ == '__main__':
