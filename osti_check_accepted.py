@@ -14,6 +14,21 @@ from osti_web_service import get_url, get_osti_id, \
 from osti_check_accepted_dois import DOIS, TOTAL, YEARS
 
 JOURNALS = []
+REPORTS_BAD = []
+REPORTS_GOOD = []
+
+def get_eprint_report(recid):
+    """Get the eprint number and Fermilab report number."""
+
+    eprint = report = None
+    report_numbers = get_fieldvalues(recid, "037__a") + \
+                     get_fieldvalues(recid, "037__z")
+    for report_number in report_numbers:
+        if report_number.startswith('arXiv'):
+            eprint = report_number
+        if  report_number.startswith('FERMILAB'):
+            report = report_number
+    return [eprint, report]
 
 def check_record_status(recid):
     """Checks to see if a PDF has already been sent
@@ -31,7 +46,8 @@ def check_record_status(recid):
 
     if not PDF_CHECK:
         return False
-    print "Checking accepted status", recid
+    if VERBOSE:
+        print "Checking accepted status", recid
     accepted_status = get_url(recid)
     if True in accepted_status:
         return True
@@ -66,12 +82,7 @@ def check_doi(doi):
                 print 'http://inspirehep.net/record/' + str(recid) + '\n'
                 return False
 
-            eprint = None
-            report_numbers = get_fieldvalues(recid, "037__a")
-            for report_number in report_numbers:
-                if report_number.startswith('arXiv'):
-                    eprint = report_number
-                    break
+            [eprint, report] = get_eprint_report(recid)
             if eprint or VERBOSE:
                 print '* Fermilab report number needed on:'
                 if eprint:
@@ -107,9 +118,12 @@ def check_accepted(input_list, input_total):
                 counter += 1
                 if get_osti_id(element):
                     counter_osti += 1
+                REPORTS_GOOD.append(get_eprint_report(element)[1])
+            else:
+                REPORTS_BAD.append(get_eprint_report(element)[1])
     counter += open_access
     counter_osti += open_access
-    return [counter, counter_osti, input_total]
+    return [counter, counter_osti, input_total, REPORTS_GOOD, REPORTS_BAD]
     #print 'Number of records: ', calc_output(counter, input_total)
     #print 'Number -> OSTI:    ', calc_output(counter_osti, input_total)
 
@@ -126,6 +140,8 @@ def main():
                                                  result[year][2])
         print 'Number -> OSTI:    ', calc_output(result[year][1],
                                                  result[year][2])
+        print 'Good reports: Bad reports =', len(result[year][3]),\
+                                             len(result[year][4])
     JOURNALS.sort()
     for key in Counter(JOURNALS):
         print '{0:26s} {1:2d}'.format(key, Counter(JOURNALS)[key])
