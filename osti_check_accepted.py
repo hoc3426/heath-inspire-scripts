@@ -7,172 +7,107 @@ import sys
 from Counter import Counter
 
 from invenio.search_engine import perform_request_search, \
-                                  get_fieldvalues
-
-from osti_web_service import get_url, get_osti_id, \
-     check_already_sent
+                                  get_all_field_values, \
+                                  get_fieldvalues, \
+                                  search_unit
+from osti_web_service import get_osti_id, check_already_sent
 from osti_check_accepted_dois import DOIS, TOTAL, YEARS
 
-JOURNALS = []
-REPORTS_BAD = []
-REPORTS_GOOD = []
+DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'ND', 
+             'PPD', 'T', 'TD']
 
-def get_eprint_report(recid):
-    """Get the eprint number and Fermilab report number."""
+def get_fermilab_report(recid):
+    """Get the Fermilab report number."""
 
-    eprint = report = None
+    report = None
     report_numbers = get_fieldvalues(recid, "037__a") + \
                      get_fieldvalues(recid, "037__z")
     for report_number in report_numbers:
-        if report_number.startswith('arXiv'):
-            eprint = report_number
         if  report_number.startswith('FERMILAB'):
             report = report_number
-    return [eprint, report]
+    return report
 
-def check_record_status(recid):
-    """Checks to see if a PDF has already been sent
-       or if we have an accepted manuscript.
-    """
 
-    if check_already_sent(recid):
-        return True
+def recid_from_doi(doi):
+    """Find if we have a DOI."""
 
     try:
-        JOURNALS.append(get_fieldvalues(recid, '773__p')[0])
+        return search_unit(p=doi, f='0247*', m='a')[0]
     except IndexError:
-        print 'No journal on:\nhttp://inspirehep.net/record/' + \
-               str(recid)
+        return None
 
-    if not PDF_CHECK:
-        return False
-    if VERBOSE:
-        print "Checking accepted status", recid
-    accepted_status = get_url(recid)
-    if True in accepted_status:
-        return True
-    elif None in accepted_status:
-        if VERBOSE:
-            print 'No url on:\nhttp://inspirehep.net/record/' + str(recid)
-        return False
-    else:
-        if VERBOSE:
-            print recid, accepted_status
-        return False
-
-def check_doi(doi):
-    """Checks to see if we have the DOI in INSPIRE."""
-
-    search = "0247_a:" + doi + " 037:fermilab*"
-    result = perform_request_search(p=search, cc='Fermilab')
-    if len(result) == 1:
-        return result[0]
-    else:
-        search = "0247_a:" + doi
-        result = perform_request_search(p=search, cc='HEP')
-        if len(result) == 1:
-            recid = result[0]
-            if 'Published' not in get_fieldvalues(recid, "980__a"):
-                print '** Record not marked as published:'
-                print 'http://inspirehep.net/record/' + str(recid) + '\n'
-            affiliations = get_fieldvalues(recid, "100__u") \
-                         + get_fieldvalues(recid, "700__u")
-            if "Fermilab" not in affiliations:
-                print '** Fermilab affiliation needed on:'
-                print 'http://inspirehep.net/record/' + str(recid) + '\n'
-                return False
-
-            [eprint, report] = get_eprint_report(recid)
-            if eprint or VERBOSE:
-                print '* Fermilab report number needed on:'
-                if eprint:
-                    print eprint
-                print 'http://inspirehep.net/record/' + str(recid) + '\n'
-            return False
-        else:
-            print "** Don't have DOI " + doi
-            return False
-
-def calc_output(counter, total):
+def calculate_output(numerator, denominator):
     """Calculates a percentage."""
 
-    percentage = 100*float(counter)/float(total)
-    output = str(counter) + '/' + str(total) + \
+    if denominator == 0:
+        percentage = 0
+    else:
+        percentage = 100*float(numerator)/float(denominator)
+    output = str(numerator) + '/' + str(denominator) + \
              ' (' + "%.2f" % percentage + '%)'
     return output
 
-def check_accepted(input_list, input_total):
-    """Checks a list of DOIs or recids to see our accepted rate."""
+def examine(doi):
+    """
+    Checks the status of a record to see if it has a DOI
+    and if it does, if it has a Fermilab report number.
+    """
 
-    counter = 0
-    counter_osti = 0
-    total = len(input_list)
-    open_access = input_total - total
-    #print total
-    for element in input_list:
-        if re.match(r'^10\..*', element):
-            element = check_doi(element)
-        if str(element).isdigit():
-            result = check_record_status(element)
-            if result:
-                counter += 1
-                if get_osti_id(element):
-                    counter_osti += 1
-                REPORTS_GOOD.append(get_eprint_report(element)[1])
-            else:
-                REPORTS_BAD.append(get_eprint_report(element)[1])
-    counter += open_access
-    counter_osti += open_access
-    return [counter, counter_osti, input_total, REPORTS_GOOD, REPORTS_BAD]
-    #print 'Number of records: ', calc_output(counter, input_total)
-    #print 'Number -> OSTI:    ', calc_output(counter_osti, input_total)
+    recid = recid_from_doi(doi)
+    if not recid:
+        print 'Need DOI'
+        print '  https://doi.org/{0}'.format(doi)
+        return (False, None)
+    report = get_fermilab_report(recid)
+    if not report:
+        print 'Need report'
+        print '  https://inspirehep.net/record/{0}'.format(recid)
+        return (False, None)
+    if check_already_sent(recid):
+        return (True, report)
+    else:
+        return (False, report)
+
+def process_dois(dois):
+    """Go through a list of DOIs and check our holdings."""
+
+    report_numbers_good = set()
+    report_numbers_bad = set()
+    for doi in dois:
+        (sent_to_osti, report) = examine(doi)
+        if not report:
+            continue
+        if sent_to_osti:
+            report_numbers_good.add(report)
+        else:
+            report_numbers_bad.add(report)
+    return (report_numbers_good, report_numbers_bad)
+
 
 def main():
     """Examines compliance by fiscal year."""
 
-    result = {}
     for year in YEARS:
-        print 'Year:', year
-        result[year] = check_accepted(DOIS[year], TOTAL[year])
-    for year in YEARS:
+        (report_numbers_good, report_numbers_bad) = process_dois(DOIS[year])
         print 'Fiscal Year:', year
-        print 'Number of records: ', calc_output(result[year][0],
-                                                 result[year][2])
-        print 'Number -> OSTI:    ', calc_output(result[year][1],
-                                                 result[year][2])
-        print 'Good reports: Bad reports =', len(result[year][3]),\
-                                             len(result[year][4])
-    JOURNALS.sort()
-    for key in Counter(JOURNALS):
-        print '{0:26s} {1:2d}'.format(key, Counter(JOURNALS)[key])
+        print 'Sent to OSTI:', calculate_output(len(report_numbers_good),
+                                                TOTAL[year])
+        for division in DIVISIONS:
+            division_good = division_bad = 0
+            for report in report_numbers_good:
+                if re.match(r'.*-' +  division + r'\b.*', report):
+                    division_good += 1
+            for report in report_numbers_bad:
+                if re.match(r'.*-' +  division + r'\b.*', report):
+                    division_bad += 1
+            print division, calculate_output(division_good,
+                                             division_good + division_bad)
+
 
 if __name__ == '__main__':
 
-    PDF_CHECK = False
-    VERBOSE = False
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'pvy:')
-    except getopt.error:
-        print 'error: you tried to use an unknown option'
-        sys.exit(0)
-
-    for option, argument in OPTIONS:
-        if option == '-p':
-            PDF_CHECK = True
-        if option == '-v':
-            VERBOSE = True
-        if option == '-y':
-            try:
-                YEARS = [int(argument)]
-            except ValueError:
-                print argument, 'is not a year'
-                quit()
-    try:
-        RECID = ARGUMENTS[0]
-        check_accepted([RECID], 1)
-    except IndexError:
-        try:
-            main()
-        except KeyboardInterrupt:
-            print 'Exiting'
+        main()
+    except KeyboardInterrupt:
+        print 'Exiting'
 

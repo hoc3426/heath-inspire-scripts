@@ -37,6 +37,7 @@ TYPE_DICT = {
 }
 
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
+DIRECTORY = '/home/hoc/osti/'
 
 ACCEPTED_SEARCH = '8564_z:openaccess or 8564_z:postprint or \
 8564_y:"article from scoap3" or 8564_y:"Fulltext from Publisher" \
