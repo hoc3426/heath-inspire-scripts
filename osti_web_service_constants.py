@@ -2,6 +2,7 @@
 Input for the osti_web_service.py script.
 """
 
+from osti_web_service_constants_local import DIRECTORY
 
 OSTI_URL = 'https://www.osti.gov/elink/docs/2411dtd.htm'
 XML_PREAMBLE  = '<?xml version="1.0" encoding="UTF-8" ?>'
@@ -35,9 +36,6 @@ TYPE_DICT = {
 'TM':'TR',
 'VLHCPUB':'TR'
 }
-
-DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/osti/'
-DIRECTORY = '/home/hoc/osti/'
 
 ACCEPTED_SEARCH = '8564_z:openaccess or 8564_z:postprint or \
 8564_y:"article from scoap3" or 8564_y:"Fulltext from Publisher" \
