@@ -1,20 +1,31 @@
 #!/usr/bin/python
 """Check that we have an accepted manuscript."""
 
-import getopt
+import logging
 import re
-import sys
 from Counter import Counter
 
-from invenio.search_engine import perform_request_search, \
-                                  get_all_field_values, \
-                                  get_fieldvalues, \
-                                  search_unit
-from osti_web_service import get_osti_id, check_already_sent
+from invenio.search_engine import get_fieldvalues, search_unit
+from osti_web_service import check_already_sent
 from osti_check_accepted_dois import DOIS, TOTAL, YEARS
 
-DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'ND', 
+DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'ND',
              'PPD', 'T', 'TD']
+JOURNALS = []
+LOGFILE = 'tmp_' + __file__
+LOGFILE = re.sub('.py', '.log', LOGFILE)
+logging.basicConfig(filename=LOGFILE, filemode='w',
+                    format='%(message)s',
+                    level=logging.INFO)
+
+def get_journal(recid):
+    """Get the journal."""
+
+    try:
+        JOURNALS.append(get_fieldvalues(recid, '773__p')[0])
+    except IndexError:
+        logging.info('No journal on:')
+        logging.info('  http://inspirehep.net/record/' + str(recid))
 
 def get_fermilab_report(recid):
     """Get the Fermilab report number."""
@@ -45,6 +56,8 @@ def calculate_output(numerator, denominator):
         percentage = 100*float(numerator)/float(denominator)
     output = str(numerator) + '/' + str(denominator) + \
              ' (' + "%.2f" % percentage + '%)'
+    fraction = str(numerator) + '/' + str(denominator)
+    output = '{0:>8s} ({1:>6.2f}%)'.format(fraction, percentage)
     return output
 
 def examine(doi):
@@ -55,13 +68,14 @@ def examine(doi):
 
     recid = recid_from_doi(doi)
     if not recid:
-        print 'Need DOI'
-        print '  https://doi.org/{0}'.format(doi)
+        logging.info('Need DOI')
+        logging.info('  https://doi.org/{0}'.format(doi))
         return (False, None)
+    get_journal(recid)
     report = get_fermilab_report(recid)
     if not report:
-        print 'Need report'
-        print '  https://inspirehep.net/record/{0}'.format(recid)
+        logging.info('Need report')
+        logging.info('  https://inspirehep.net/record/{0}'.format(recid))
         return (False, None)
     if check_already_sent(recid):
         return (True, report)
@@ -100,9 +114,16 @@ def main():
             for report in report_numbers_bad:
                 if re.match(r'.*-' +  division + r'\b.*', report):
                     division_bad += 1
-            print "{0:10s} {1:10s}".format(division, 
-                  calculate_output(division_good, 
+            print "  {0:10s} {1:>20s}".format(division,
+                  calculate_output(division_good,
                                    division_good + division_bad))
+
+    JOURNALS.sort()
+    for key in Counter(JOURNALS).most_common():
+        logging.info('{0:30s} {1:>4d}'.format(key[0], key[1]))
+#Counter(JOURNALS)[key]))
+
+    print LOGFILE
 
 
 if __name__ == '__main__':
