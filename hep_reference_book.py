@@ -40,6 +40,7 @@ BOOKS = [
 ['Carey', 'The Optics Of Charged Particle Beams', '9783718605453', '257245'],
 ['Szekeres', 'A Course in Modern Mathematical Physics', '9780521829601', '669271'],
 ['Thomas', 'The Structure of the Nucleon', '9783527402977', '559956', '2001'],
+['Thomas', 'New Starting Point for Nuclear Physics', 'CERN-TH-3368', '179234', '1982'],
 ['Kovchegov', 'Quantum chromodynamics at high energy', '9780521112574', '1217905', '2012']]
 
 BOOKS = [BOOKS[23]]

@@ -28,6 +28,21 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
 #from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
+from osti_web_service import check_already_sent
+
+def accepted_sent_check():
+    ACCEPTED_SEARCH='8564_z:openaccess or 8564_z:postprint or \
+8564_y:"article from scoap3" or \
+8564_y:"Fulltext from Publisher" 0247_2:doi 035__9:osti'
+    print ACCEPTED_SEARCH
+    result = perform_request_search(p=ACCEPTED_SEARCH,cc='Fermilab')
+    #print result
+    print len(result)
+    for recid in result:
+        if not check_already_sent(recid):
+            print 'or recid {0} \\'.format(recid)
+accepted_sent_check()
+quit()        
 
 def conference_papers():
     search = 'find primarch hep-ph or hep-ex and tc '

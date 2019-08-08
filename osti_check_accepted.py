@@ -7,7 +7,7 @@ from Counter import Counter
 
 from invenio.search_engine import get_fieldvalues, search_unit
 from osti_web_service import check_already_sent
-from osti_check_accepted_dois import DOIS, TOTAL, YEARS
+from osti_check_accepted_dois import DOIS, YEARS
 
 DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'ND',
              'PPD', 'T', 'TD']
@@ -80,6 +80,8 @@ def examine(doi):
     if check_already_sent(recid):
         return (True, report)
     else:
+        logging.info('Need accepted version')
+        logging.info('  https://inspirehep.net/record/{0}'.format(recid))
         return (False, report)
 
 def process_dois(dois):
@@ -102,10 +104,11 @@ def main():
     """Examines compliance by fiscal year."""
 
     for year in YEARS:
+        logging.info(year)
         (report_numbers_good, report_numbers_bad) = process_dois(DOIS[year])
         print 'Fiscal Year:', year
         print 'Sent to OSTI:', calculate_output(len(report_numbers_good),
-                                                TOTAL[year])
+                                                len(DOIS[year]))
         for division in DIVISIONS:
             division_good = division_bad = 0
             for report in report_numbers_good:
