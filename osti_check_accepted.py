@@ -50,14 +50,12 @@ def recid_from_doi(doi):
 def calculate_output(numerator, denominator):
     """Calculates a percentage."""
 
-    if denominator == 0:
-        percentage = 0
-    else:
-        percentage = 100*float(numerator)/float(denominator)
-    output = str(numerator) + '/' + str(denominator) + \
-             ' (' + "%.2f" % percentage + '%)'
     fraction = str(numerator) + '/' + str(denominator)
-    output = '{0:>8s} ({1:>6.2f}%)'.format(fraction, percentage)
+    if denominator:
+        percentage = 100*float(numerator)/float(denominator)
+        output = '{0:>8s} ({1:>6.2f}%)'.format(fraction, percentage)
+    else:
+        output = '{0:>8s} ({1:>7})'.format(fraction, 'N/A')
     return output
 
 def examine(doi):
@@ -120,6 +118,16 @@ def main():
             print "  {0:10s} {1:>20s}".format(division,
                   calculate_output(division_good,
                                    division_good + division_bad))
+        labwide_good = labwide_bad = 0
+        for report in report_numbers_good:
+            if re.match(r'.*-\d+$', report):
+                labwide_good += 1
+        for report in report_numbers_bad:
+            if re.match(r'.*-\d+$', report):
+                labwide_bad += 1
+        print "  {0:10s} {1:>20s}".format('No div.',
+              calculate_output(labwide_good,
+                               labwide_good + labwide_bad))
 
     JOURNALS.sort()
     for key in Counter(JOURNALS).most_common():
