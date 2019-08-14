@@ -53,9 +53,12 @@ def calculate_output(numerator, denominator):
     fraction = str(numerator) + '/' + str(denominator)
     if denominator:
         percentage = 100*float(numerator)/float(denominator)
-        output = '{0:>8s} ({1:>6.2f}%)'.format(fraction, percentage)
+        flag = ' '
+        if percentage < 85:
+            flag = '*'
+        output = '{0:>8s} ({1:>6.2f}%){2}'.format(fraction, percentage, flag)
     else:
-        output = '{0:>8s} ({1:>7})'.format(fraction, 'N/A')
+        output = '{0:>8s} ({1:>7}) '.format(fraction, 'N/A')
     return output
 
 def examine(doi):
