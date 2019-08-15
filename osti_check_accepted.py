@@ -9,8 +9,11 @@ from invenio.search_engine import get_fieldvalues, search_unit
 from osti_web_service import check_already_sent
 from osti_check_accepted_dois import DOIS, YEARS
 
-DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'ND',
+DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'LBNF', 'ND',
              'PPD', 'T', 'TD']
+DIVISIONS = ['(AD|APC)', 'CD', 'DI', 'LBNF', 'ND',
+             '(A|AE|CMS|E|PPD|T)', 'TD']
+
 JOURNALS = []
 LOGFILE = 'tmp_' + __file__
 LOGFILE = re.sub('.py', '.log', LOGFILE)
@@ -118,19 +121,22 @@ def main():
             for report in report_numbers_bad:
                 if re.match(r'.*-' +  division + r'\b.*', report):
                     division_bad += 1
-            print "  {0:10s} {1:>20s}".format(division,
+            print "  {0:25s} {1:>20s}".format(division,
                   calculate_output(division_good,
                                    division_good + division_bad))
         labwide_good = labwide_bad = 0
+        labwide_good_reports = []
         for report in report_numbers_good:
             if re.match(r'.*-\d+$', report):
                 labwide_good += 1
+                labwide_good_reports.append(report)
         for report in report_numbers_bad:
             if re.match(r'.*-\d+$', report):
                 labwide_bad += 1
-        print "  {0:10s} {1:>20s}".format('No div.',
+        print "  {0:25s} {1:>20s}".format('No div.',
               calculate_output(labwide_good,
                                labwide_good + labwide_bad))
+        #print labwide_good_reports
 
     JOURNALS.sort()
     for key in Counter(JOURNALS).most_common():

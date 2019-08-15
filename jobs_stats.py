@@ -9,7 +9,31 @@ regions = ('Africa', 'Asia', 'Australasia', 'Europe', 'Middle East', \
                'North America', 'South America')
 fields = ('astro-ph','gr-qc','hep-ex','hep-lat','hep-ph','hep-th', \
                'nucl-ex','nucl-th','physics.acc-ph','physics.ins-det')
+ANY = \
+'"programming language" or "computer programming" or "computing language".\
+" or software'
+ANY = ''
+LANGUAGES = ['perl', 'python', 'c++', 'fortran', 'java',
+             ANY]
 
+def job_languages():
+    grand_total = 0
+    print "{0:>5s} {1:>8s} {2:>8s} {3:>8s} {4:>8s} {5:>8s} {6:>8s}".\
+          format('Year', 'Perl', 'Python', 'C++', 'Fortran', 'Java', 'any')
+
+    for year in range(2003, 2020):
+        total = {}
+        for language in LANGUAGES:
+            search = language + ' ' + 'dadd:' + str(year)
+            #print search
+            x = perform_request_search(p=search, cc='Jobs')
+            y = perform_request_search(p=search, cc='Jobs Hidden')
+            total[language] = len(x+y)
+        print "{0:>5d} {1:8d} {2:8d} {3:8d} {4:8d} {5:8d} {6:8d}".format(year,
+            total['perl'], total['python'], total['c++'],
+            total['fortran'], total['java'], total[ANY])
+job_languages()
+quit()
 
 def job_stats():
     grand_total = 0
