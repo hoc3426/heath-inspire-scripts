@@ -278,6 +278,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 continue
 
             affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
+            affiliation_key = re.sub(r'\s*(.+\S)\s*', r'\1', affiliation_key)
             try:
                 for inst in AFFILIATIONS_DONE[affiliation_key]:
                     inst = re.sub(r'^\s+', '', inst)
