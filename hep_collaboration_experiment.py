@@ -13,6 +13,7 @@ experiments = {
 'ArgoNeuT':'FNAL-T-0962',
 'ATLAS':'CERN-LHC-ATLAS',
 'BaBar':'SLAC-PEP2-BABAR',
+'Baikal-GVD':'BAIKAL-GVD',
 'Belle':'KEK-BF-BELLE',
 'BESIII':'BEPC-BES-III',
 'Borexino':'BOREXINO',

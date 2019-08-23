@@ -30,6 +30,8 @@ try:
     AFFILIATIONS_DONE = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))
 except EOFError:
     print "Error opening:", AFFILIATIONS_DONE_FILE
+except IOError:
+    AFFILIATIONS_DONE = {}
 
 def download_source(eprint, download_path = ""):
     """Download a tar file from arXiv and choose the right file."""
