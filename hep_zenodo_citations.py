@@ -8,7 +8,7 @@ from invenio.search_engine import perform_request_search, \
 
 ZENODO_REGEX = re.compile(r'^doi:10\.5281/zenodo\.\d+$')
 
-def get_title(url):
+def get_metadata(url):
     '''Find the title of a Zenodo work.'''
 
     try:
@@ -16,7 +16,14 @@ def get_title(url):
     except URLError:
         return ValueError('Error opening: ' + url)
     title = str(webpage).split('<title>')[1].split('</title>')[0]
-    return title
+    try:
+        author = \
+        re.search(r'<meta name="citation_author" content="(.*)" />',
+                  str(webpage)).group(1) + ' : '
+    except AttributeError:
+        author = ''
+
+    return author + title
 
 def zenodo_citations():
     '''Search for Zenodo DOI citations and tally them.'''
@@ -37,7 +44,7 @@ def zenodo_citations():
                 url = 'https://zenodo.org/record/' + \
                       ref.replace('doi:10.5281/zenodo.', '')
                 try:
-                    title = get_title(url)
+                    title = get_metadata(url)
                 except ValueError:
                     print 'Problem with DOI:', search, cites, '\n'
                     continue
@@ -48,12 +55,13 @@ def zenodo_citations():
         #          '/references'
         #    print '   ', url
         #print ' '
+        doi_url = 'https://doi.org/' + doi[1].replace('doi:', '')
         citation_report += \
-'''{0} citation(s) to {1}
+'''{0} citations to {3}
   {2}
   https://inspirehep.net/search?p=999C5a:{1}
 
-'''.format(doi[0], doi[1], doi[3])
+'''.format(doi[0], doi[1], doi[3], doi_url)
     return citation_report
 
 def main():
