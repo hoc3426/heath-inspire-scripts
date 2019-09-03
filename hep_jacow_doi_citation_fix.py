@@ -27,9 +27,13 @@ def get_jacow_dois():
         if doi.startswith('10.18429/JACoW-'):
             jacow_dois.add(doi)
     return jacow_dois
+
 JACOW_DOIS = get_jacow_dois()
 
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)[A-Z]{1,8}\d{1,8}')
+URL_REGEX = re.compile(
+r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
+re.IGNORECASE)
 
 JACOW_CONFERENCES = ["ABDW", "APAC", "BIW", "COOL", "CYCLOTRONS",
 "DIPAC", "ECRIS", "EPAC", "ERL", "FEL", "HB", "HIAT", "IBIC",
@@ -56,7 +60,16 @@ def create_jacow_doi(conf, year, talk):
 def extract_jacow_doi(ref):
     """Takes a reference and looks to see if a JACoW talk is cited."""
 
-    conf = talk = year = None
+    conf = year = talk = None
+
+    match_obj = URL_REGEX.match(ref)
+    if match_obj:
+        conf = match_obj.group(2)
+        year = re.sub(r'\D', '', conf)
+        conf = re.sub(r'\d', '', conf)
+        talk = match_obj.group(3).upper()
+        return create_jacow_doi(conf, year, talk)
+
     for jacow_conf in JACOW_CONFERENCES:
         if jacow_conf in ref:
             conf = jacow_conf
@@ -88,7 +101,7 @@ def create_xml(recid, tags):
         correct_subfields = []
         flag_instance = False
         for code, value in field_instance[0]:
-            if code == 'm':
+            if code in ('m', 'u'):
                 doi = extract_jacow_doi(value)
                 if doi:
                     if ('a', doi) in correct_subfields:
