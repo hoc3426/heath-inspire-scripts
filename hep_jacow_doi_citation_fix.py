@@ -14,21 +14,14 @@
      $$adoi:10.18429/JACoW-IPAC2017-TUOCB3
 """
 
+from datetime import datetime
 import re
 from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
 SEARCH = 'find r fermilab and fc b and date 2019'
-
-def get_jacow_dois():
-    jacow_dois = set()
-    for doi in get_all_field_values('0247_a'):
-        if doi.startswith('10.18429/JACoW-'):
-            jacow_dois.add(doi)
-    return jacow_dois
-
-JACOW_DOIS = get_jacow_dois()
+#SEARCH = '001:1628674'
 
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)[A-Z]{1,8}\d{1,8}')
 URL_REGEX = re.compile(
@@ -41,6 +34,18 @@ JACOW_CONFERENCES = ["ABDW", "APAC", "BIW", "COOL", "CYCLOTRONS",
 "RuPAC", "SAP", "SRF"]
 JACOW_CONFERENCES = sorted(JACOW_CONFERENCES, key=len, reverse=True)
 
+def get_jacow_dois():
+    """Return all the JACoW DOIs INSPIRE has."""
+
+    jacow_dois = set()
+    for doi in get_all_field_values('0247_a'):
+        if doi.startswith('10.18429/JACoW-'):
+            jacow_dois.add(doi)
+    return jacow_dois
+
+JACOW_DOIS = get_jacow_dois()
+CURRENT_YEAR = datetime.now().year
+
 def create_jacow_doi(conf, year, talk):
     """Takes candidate for e.g. IPAC2016 and returns normalized form."""
 
@@ -50,7 +55,7 @@ def create_jacow_doi(conf, year, talk):
         year = '19' + year
     elif len(year) == 2:
         year = '20' + year
-    if int(year) not in range(1959, 2020):
+    if int(year) not in range(1959, CURRENT_YEAR + 1):
         return None
     doi = '10.18429/JACoW-' + conf + year + '-' + talk
     if doi in JACOW_DOIS:
@@ -101,10 +106,11 @@ def create_xml(recid, tags):
         correct_subfields = []
         flag_instance = False
         for code, value in field_instance[0]:
-            if code in ('m', 'u'):
+            if code in ('m', 'u', 'x'):
                 doi = extract_jacow_doi(value)
                 if doi:
-                    if ('a', doi) in correct_subfields:
+                    if ('a', '***' + doi) in correct_subfields or \
+                       ('a', doi) in correct_subfields:
                         flag_instance = False
                     else:
                         correct_subfields.append(('a', '***' + doi))
@@ -113,7 +119,7 @@ def create_xml(recid, tags):
                 flag_instance = False
             else:
                 correct_subfields.append((code, value))
-                flag_instance = True
+                #flag_instance = True
         flag_instances.append(flag_instance)
         record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
             subfields=correct_subfields)
@@ -122,6 +128,10 @@ def create_xml(recid, tags):
     return None
 
 def main():
+    """
+    Run through a search to find potential JACoW citations
+    and convert them to DOIs.
+    """
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
