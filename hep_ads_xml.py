@@ -348,7 +348,9 @@ def process_ads_xml_file(document):
             continue
         eprint = child.attrib['preprint_id']
         doi = child.attrib['doi']
-        if not any((eprint, doi)):
+        if not doi:
+            continue
+        if not eprint:
             continue
         eprint_dict[eprint] = child
         doi_to_eprint[doi] = eprint
