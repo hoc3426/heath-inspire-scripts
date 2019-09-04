@@ -20,8 +20,7 @@ from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
-SEARCH = 'find r fermilab and fc b and date 2019'
-#SEARCH = '001:1628674'
+from hep_jacow_doi_citation_fix_input import SEARCH
 
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)[A-Z]{1,8}\d{1,8}')
 URL_REGEX = re.compile(
