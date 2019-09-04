@@ -108,11 +108,10 @@ def create_xml(recid, tags):
             if code in ('m', 'u', 'x'):
                 doi = extract_jacow_doi(value)
                 if doi:
-                    if ('a', '***' + doi) in correct_subfields or \
-                       ('a', doi) in correct_subfields:
+                    if ('a', doi) in correct_subfields:
                         flag_instance = False
                     else:
-                        correct_subfields.append(('a', '***' + doi))
+                        correct_subfields.append(('a', doi))
                         flag_instance = True
             if (code, value) in correct_subfields:
                 flag_instance = False
