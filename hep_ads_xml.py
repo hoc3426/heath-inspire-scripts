@@ -288,7 +288,9 @@ def create_xml(input_dict):
     except KeyError:
         logging.info('Problem with extracting doi: ' + str(input_dict))
         return None
-    record_add_field(record, '024', '7', '', subfields=doi)
+    #Sometimes doi can be just '' in ADS xml dump.
+    if metadata_dict['doi']:
+        record_add_field(record, '024', '7', '', subfields=doi)
     try:
         bibcode = [('a', metadata_dict['bibcode']), ('9', 'ADS')]
     except KeyError:
@@ -348,9 +350,7 @@ def process_ads_xml_file(document):
             continue
         eprint = child.attrib['preprint_id']
         doi = child.attrib['doi']
-        if not doi:
-            continue
-        if not eprint:
+        if not any((eprint, doi)):
             continue
         eprint_dict[eprint] = child
         doi_to_eprint[doi] = eprint
