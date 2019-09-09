@@ -45,6 +45,23 @@ def get_jacow_dois():
 JACOW_DOIS = get_jacow_dois()
 CURRENT_YEAR = datetime.now().year
 
+def jacow_citation_statistics():
+    """Show the tally of citations for JACoW papers."""
+
+    citation_dict = {}
+    for citation_count in range(0, 50):
+        search = '0247_9:jacow cited:' + str(citation_count)
+        result = perform_request_search(p=search, cc='HEP')
+        citation_dict[citation_count] = len(result)
+
+    print datetime.now()
+    total = 0
+    for key, value in citation_dict.items():
+        total += key*value
+        if value:
+            print "{0:3d} {1:6d}".format(key, value)
+    print 'Total', total
+
 def create_jacow_doi(conf, year, talk):
     """Takes candidate for e.g. IPAC2016 and returns normalized form."""
 
@@ -147,6 +164,7 @@ def main():
     print 'Number of records examined:', len(result)
     print 'Number of records updated:', counter
     print filename
+    jacow_citation_statistics()
 
 if __name__ == '__main__':
     try:
