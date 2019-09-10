@@ -18,7 +18,7 @@ SEARCH = r'035__9:osti du:2019 -0247:doi -037:arXiv -773__p:/\w/'
 RESULT_HEP = perform_request_search(p=SEARCH, cc='HEP')
 RESULT_FERMILAB = perform_request_search(p=SEARCH, cc='Fermilab')
 RESULT = intbitset(RESULT_HEP) | intbitset(RESULT_FERMILAB)
-RESULT = [1253262]
+#RESULT = [1253262]
 print "Number of records:", len(RESULT)
 RESULT = reversed(RESULT)
 OSTI_IDS = set()
