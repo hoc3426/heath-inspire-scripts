@@ -53,6 +53,7 @@ def create_xml(osti_id, inspire_id):
 
     osti_id = str(osti_id)
     recid = str(inspire_id)
+    recid = recid.replace('oai:inspirehep.net:', '')
     search = "001:" + recid
     result = perform_request_search(p=search, cc='Fermilab')
     if len(result) != 1:

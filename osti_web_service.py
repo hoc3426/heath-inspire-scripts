@@ -551,7 +551,8 @@ def create_xml(recid, records):
     if product_type == 'CO':
         ET.SubElement(record, 'conference_information').text = \
         get_conference(recid)
-    ET.SubElement(record, 'other_identifying_nos').text = str(recid)
+    ET.SubElement(record, 'other_identifying_nos').text = \
+        'oai:inspirehep.net:' + str(recid)
     ET.SubElement(record, 'publication_date').text = \
         get_date(recid, product_type)
     ET.SubElement(record, 'language').text = \
