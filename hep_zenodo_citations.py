@@ -12,13 +12,26 @@ class Repository(object):
     print an output of the most highly cited records.
     """
 
-    def __init__(self, regex):
-        self.regex = re.compile(regex)
+    def __init__(self, regex_string):
+        self.regex = self.get_regex(regex_string)
+        self.regex_base = self.get_regex_base(regex_string)
         self.citations = self.get_citations()
 
     @classmethod
+    def get_regex(cls, regex_string):
+        """Get the regex for the class."""
+        return re.compile(r'^' + regex_string + r'$')
+
+    @classmethod
+    def get_regex_base(cls, regex_string):
+        """Get the DOI base regex for the class."""
+        doi_base = r'doi:10\\.\d{4,5}\/\w+'
+        base = re.search(doi_base, regex_string).group()
+        return re.compile(r'^' + base + '.*')
+
+    @classmethod
     def get_ref_metadata(cls, ref):
-        """Get the metadata for a particular record."""
+        """Get the metadata for a particular reference."""
         return 'No metadata for ' + ref
 
     def get_citations(self):
@@ -28,14 +41,14 @@ class Repository(object):
         citations = ''
         #for ref in get_all_field_values('999C5a'):
         for ref in ['doi:10.5281/zenodo.11020',
-                    'doi:10.5281/zenodo.45906']:
-            if self.regex.match(ref):
+                    'doi:10.5281/zenodo.45906', 'doi:10.5281/zenodo.']:
+            if self.regex_base.match(ref):
                 search = '999C5a:' + ref
                 cites = perform_request_search(p=search, cc='HEP')
                 if len(cites):
-                    #if not self.regex.match(ref):
-                    #    print 'Problem with DOI extraction:', search, cites
-                    #    continue
+                    if not self.regex.match(ref):
+                        print 'Problem with DOI extraction:', search, cites
+                        continue
                     try:
                         metadata = self.get_ref_metadata(ref)
                     except ValueError:
@@ -57,7 +70,7 @@ class Zenodo(Repository):
     """Set up the Zenodo subclass."""
 
     def __init__(self):
-        super(Zenodo, self).__init__(r'^doi:10\.5281/zenodo\.\d+$')
+        super(Zenodo, self).__init__(r'doi:10\.5281/zenodo\.\d+')
 
     def get_ref_metadata(self, ref):
         '''Find the author and title of a Zenodo work.'''
