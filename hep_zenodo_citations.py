@@ -12,14 +12,14 @@ class Repository(object):
     print an output of the most highly cited records.
     """
 
-    def __init__(self, regex, ref):
+    def __init__(self, regex):
         self.regex = re.compile(regex)
         self.citations = self.get_citations()
-        self.metadata = self.get_ref_metadata(ref)
- 
-    def get_ref_metadata(self, ref):
+
+    @classmethod
+    def get_ref_metadata(cls, ref):
         """Get the metadata for a particular record."""
-        self.metadata = ref
+        return 'No metadata for ' + ref
 
     def get_citations(self):
         """Find all the citations of records in this repository."""
@@ -45,11 +45,11 @@ class Repository(object):
         for doi in sorted(citations_list, reverse=True):
             doi_url = 'https://doi.org/' + doi[1].replace('doi:', '')
             citations += \
-    '''{0} citations to {3}
-      {2}
-      https://inspirehep.net/search?p=999C5a:{1}
+'''{0} citations to {3}
+    {2}
+    https://inspirehep.net/search?p=999C5a:{1}
 
-    '''.format(doi[0], doi[1], doi[3], doi_url)
+'''.format(doi[0], doi[1], doi[3], doi_url)
         return citations
 
 
@@ -57,7 +57,7 @@ class Zenodo(Repository):
     """Set up the Zenodo subclass."""
 
     def __init__(self):
-        super(Zenodo, self).__init__(r'^doi:10\.5281/zenodo\.\d+$', '')
+        super(Zenodo, self).__init__(r'^doi:10\.5281/zenodo\.\d+$')
 
     def get_ref_metadata(self, ref):
         '''Find the author and title of a Zenodo work.'''
@@ -76,9 +76,7 @@ class Zenodo(Repository):
                       str(webpage)).group(1) + ' : '
         except AttributeError:
             author = ''
-        print author, title
-        self.metadata = author + title
-        
+        return author + title
 
 def main():
     '''Run the program.'''
