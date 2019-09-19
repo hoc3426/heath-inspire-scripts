@@ -39,9 +39,7 @@ class Repository(object):
 
         citations_list = []
         citations = ''
-        #for ref in get_all_field_values('999C5a'):
-        for ref in ['doi:10.5281/zenodo.11020',
-                    'doi:10.5281/zenodo.45906', 'doi:10.5281/zenodo.']:
+        for ref in get_all_field_values('999C5a'):
             if self.regex_base.match(ref):
                 search = '999C5a:' + ref
                 cites = perform_request_search(p=search, cc='HEP')
@@ -77,7 +75,6 @@ class Zenodo(Repository):
 
         url = 'https://zenodo.org/record/' + \
                    ref.replace('doi:10.5281/zenodo.', '')
-        print url
         try:
             webpage = urlopen(url).read()
         except URLError:
