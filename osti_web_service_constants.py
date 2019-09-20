@@ -12,6 +12,7 @@ XML_PREAMBLE += '<!DOCTYPE records SYSTEM "' + OSTI_URL + '">'
 TYPE_DICT = {
 'ANNUAL':'PD',
 'BACHELORS':'TD',
+'BOOK':'B',
 'CONF':'CO',
 'CRADA':'TR',
 'D0-EN':'TR',
