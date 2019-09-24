@@ -4,7 +4,7 @@ import re
 from urllib2 import urlopen, URLError
 
 from invenio.search_engine import perform_request_search, \
-                                  get_all_field_values
+                                  get_all_field_values, get_fieldvalues
 
 class Repository(object):
     """
@@ -15,6 +15,7 @@ class Repository(object):
     def __init__(self, regex_string):
         self.regex = self.get_regex(regex_string)
         self.regex_base = self.get_regex_base(regex_string)
+        self.dois = self.get_inspire_dois(self.regex)
         self.citations = self.get_citations()
 
     @classmethod
@@ -26,13 +27,45 @@ class Repository(object):
     def get_regex_base(cls, regex_string):
         """Get the DOI base regex for the class."""
         doi_base = r'doi:10\\.\d{4,5}\/\w+'
-        base = re.search(doi_base, regex_string).group()
+        try:
+            base = re.search(doi_base, regex_string).group()
+        except AttributeError:
+            doi_base = r'doi:10\\.\d{4,5}'
+            base = re.search(doi_base, regex_string).group()
         return re.compile(r'^' + base + '.*')
 
     @classmethod
-    def get_ref_metadata(cls, ref):
-        """Get the metadata for a particular reference."""
-        return 'No metadata for ' + ref
+    def get_inspire_dois(cls, regex):
+        """Get all the DOIs in INSPIRE."""
+        dois = set()
+        for doi in get_all_field_values('0247_a'):
+            doi = 'doi:' + doi
+            if regex.match(doi):
+                dois.add(doi)
+        return dois
+
+    @classmethod
+    def get_ref_metadata_inspire(cls, ref, dois):
+        """Get the metadata for a particular reference from INSPIRE."""
+        if ref not in dois:
+            return None
+        ref = ref.replace('doi:', '')
+        recid = perform_request_search(p='0247_a:' + ref, cc='HEP') + \
+                perform_request_search(p='0247_a:' + ref, cc='Fermilab')
+        try:
+            recid = recid[0]
+            title = get_fieldvalues(recid, '245__a')[0]
+            author = get_fieldvalues(recid, '100__a')[0]
+            return """This DOI is in INSPIRE
+    {0} : {1}""".format(author, title)
+        except IndexError:
+            return 'DOI should be in HEP but is not: ' + ref
+
+    @classmethod
+    def get_ref_metadata_repository(cls, ref):
+        """Get the metadata for a particular reference from the repository."""
+
+        return 'Metadata unknown: ' + ref
 
     def get_citations(self):
         """Find all the citations of records in this repository."""
@@ -48,7 +81,9 @@ class Repository(object):
                         print 'Problem with DOI extraction:', search, cites
                         continue
                     try:
-                        metadata = self.get_ref_metadata(ref)
+                        metadata = self.get_ref_metadata_inspire(ref, self.dois)
+                        if not metadata:
+                            metadata = self.get_ref_metadata_repository(ref)
                     except ValueError:
                         print 'Problem with DOI:', search, cites, '\n'
                         continue
@@ -63,6 +98,13 @@ class Repository(object):
 '''.format(doi[0], doi[1], doi[3], doi_url)
         return citations
 
+class OSTI(Repository):
+    """Set up the OSTI subclass."""
+
+    def __init__(self):
+        super(OSTI, self).__init__(r'doi:10\.2172/\d+')
+
+
 
 class Zenodo(Repository):
     """Set up the Zenodo subclass."""
@@ -70,7 +112,7 @@ class Zenodo(Repository):
     def __init__(self):
         super(Zenodo, self).__init__(r'doi:10\.5281/zenodo\.\d+')
 
-    def get_ref_metadata(self, ref):
+    def get_ref_metadata_repository(self, ref):
         '''Find the author and title of a Zenodo work.'''
 
         url = 'https://zenodo.org/record/' + \
@@ -83,10 +125,10 @@ class Zenodo(Repository):
         try:
             author = \
             re.search(r'<meta name="citation_author" content="(.*)" />',
-                      str(webpage)).group(1) + ' : '
+                      str(webpage)).group(1)
         except AttributeError:
             author = ''
-        return author + title
+        return author + ' : ' + title
 
 def main():
     '''Run the program.'''
@@ -94,6 +136,9 @@ def main():
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '.out', filename)
     output = open(filename, 'w')
+    osti_output = OSTI()
+    output.write(osti_output.citations)
+    output.write('\n--------------\n\n')
     zenodo_output = Zenodo()
     output.write(zenodo_output.citations)
     output.close()
