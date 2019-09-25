@@ -136,6 +136,9 @@ def main():
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '.out', filename)
     output = open(filename, 'w')
+    jacow_output = Repository(r'doi:10\.18429/JACoW\-\w+\d{4}-[A-Z\d]+\d+')
+    output.write(jacow_output.citations)
+    output.write('\n--------------\n\n')
     osti_output = OSTI()
     output.write(osti_output.citations)
     output.write('\n--------------\n\n')
