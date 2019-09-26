@@ -28,6 +28,7 @@
 """
 
 from datetime import datetime
+import os
 import re
 from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
@@ -75,6 +76,16 @@ def jacow_citation_statistics():
             print "{0:3d} {1:6d}".format(key, value)
     print 'Total', total
 
+def good_doi(doi):
+    '''Check to see if a url is valid.'''
+
+    bare_doi = doi.replace('doi:', '')
+    url = 'https://doi.org/api/handles/' + bare_doi
+    curl = 'curl --output /dev/null --silent --head --fail '
+    if os.system(curl + url) == 0:
+        return True
+    return False
+
 def create_jacow_doi(conf, year, talk):
     """Takes candidate for e.g. IPAC2016 and returns normalized form."""
 
@@ -88,6 +99,8 @@ def create_jacow_doi(conf, year, talk):
         return None
     doi = 'doi:10.18429/JACoW-' + conf + year + '-' + talk
     if doi in JACOW_DOIS:
+        return doi
+    if good_doi(doi):
         return doi
     return None
 
