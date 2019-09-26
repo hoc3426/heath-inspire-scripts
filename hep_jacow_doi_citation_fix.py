@@ -1,5 +1,5 @@
 """
-   Script to resolve implicit citation of JACoW DOIs, e.g.
+   Resolve implicit citation of JACoW DOIs, e.g.
    text:
      $$mpresented at the IPAC'19, Melbourne, Australia, May,
      paper TUPGW091, this conference
@@ -12,6 +12,19 @@
    becomes:
      $$uhttp://accelconf.web.cern.ch/AccelConf/IPAC2017/papers/tuocb3.pdf
      $$adoi:10.18429/JACoW-IPAC2017-TUOCB3
+
+  Fix for malformed DOIs, e.g.
+  ref:
+    999C5a:doi:10.18429/JACoW-IBIC18-WEPC06
+    999C5a:doi:10.18429/JACoW-IPAC2017MOPVA060
+    999C5a:doi:10.18429/JACoW-IPAC2018-MOZ-GBD1
+    999C5a:doi:10.18429/JACoW-NAPAC2016-MOPOB69.pdf
+  becomes
+    999C5a:doi:10.18429/JACoW-IBIC2018-WEPC06
+    999C5a:doi:10.18429/JACoW-IPAC2017-MOPVA060
+    999C5a:doi:10.18429/JACoW-IPAC2018-MOZGBD1
+    999C5a:doi:10.18429/JACoW-NAPAC2016-MOPOB69
+
 """
 
 from datetime import datetime
@@ -39,7 +52,7 @@ def get_jacow_dois():
     jacow_dois = set()
     for doi in get_all_field_values('0247_a'):
         if doi.startswith('10.18429/JACoW-'):
-            jacow_dois.add(doi)
+            jacow_dois.add('doi:' + doi)
     return jacow_dois
 
 JACOW_DOIS = get_jacow_dois()
@@ -73,10 +86,22 @@ def create_jacow_doi(conf, year, talk):
         year = '20' + year
     if int(year) not in range(1959, CURRENT_YEAR + 1):
         return None
-    doi = '10.18429/JACoW-' + conf + year + '-' + talk
+    doi = 'doi:10.18429/JACoW-' + conf + year + '-' + talk
     if doi in JACOW_DOIS:
-        return 'doi:' + doi
+        return doi
     return None
+
+def fix_jacow_doi(doi):
+    '''
+    999C5a:doi:10.18429/JACoW-IBIC18-WEPC06
+    999C5a:doi:10.18429/JACoW-IPAC2017MOPVA060
+    999C5a:doi:10.18429/JACoW-IPAC2018-MOZ-GBD1
+    999C5a:doi:10.18429/JACoW-NAPAC2016-MOPOB69.pdf
+    '''
+
+    doi = re.sub(r'doi:10.18429/JAC[oO]W-?', '', doi)
+    doi = re.sub(r'^([A-z]+)(\d+)\-?(\w+)\-?(\w+).*', r'\1 \2 \3\4', doi)
+    return extract_jacow_doi(doi)
 
 def extract_jacow_doi(ref):
     """Takes a reference and looks to see if a JACoW talk is cited."""
@@ -122,6 +147,13 @@ def create_xml(recid, tags):
         correct_subfields = []
         flag_instance = False
         for code, value in field_instance[0]:
+            if code == 'a' and value.startswith('doi:10.18429/JAC'):
+                if value not in JACOW_DOIS:
+                    doi = fix_jacow_doi(value)
+                    if doi:
+                        print 'WAS:', value
+                        value = doi
+                        print 'NOW:', value
             if code in ('m', 'u', 'x'):
                 doi = extract_jacow_doi(value)
                 if doi:
@@ -153,6 +185,7 @@ def main():
     output = open(filename, 'w')
     output.write('<collection>\n')
     counter = 0
+    SEARCH = '999C5a:JAC* or 65017a:accelerators' 
     result = perform_request_search(p=SEARCH, cc='HEP')
     for recid in result:
         xml = create_xml(recid, ['999C5'])
