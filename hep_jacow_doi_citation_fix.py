@@ -33,7 +33,7 @@ from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
-from hep_jacow_doi_citation_fix_input import SEARCH
+#from hep_jacow_doi_citation_fix_input import SEARCH
 
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)[A-Z]{1,8}\d{1,8}')
 URL_REGEX = re.compile(
@@ -151,9 +151,8 @@ def create_xml(recid, tags):
                 if value not in JACOW_DOIS:
                     doi = fix_jacow_doi(value)
                     if doi:
-                        print 'WAS:', value
                         value = doi
-                        print 'NOW:', value
+                        flag_instance = True
             if code in ('m', 'u', 'x'):
                 doi = extract_jacow_doi(value)
                 if doi:
@@ -185,8 +184,8 @@ def main():
     output = open(filename, 'w')
     output.write('<collection>\n')
     counter = 0
-    SEARCH = '999C5a:JAC* or 65017a:accelerators' 
-    result = perform_request_search(p=SEARCH, cc='HEP')
+    search = '999C5a:doi:10.18429/JAC* or 65017a:accelerators'
+    result = perform_request_search(p=search, cc='HEP')
     for recid in result:
         xml = create_xml(recid, ['999C5'])
         if xml:
