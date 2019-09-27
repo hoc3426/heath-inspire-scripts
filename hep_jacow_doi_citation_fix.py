@@ -36,7 +36,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
 #from hep_jacow_doi_citation_fix_input import SEARCH
 
-TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)[A-Z]{1,8}\d{1,8}')
+TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)\d?[A-Z]{1,8}\d{1,8}', re.IGNORECASE)
 URL_REGEX = re.compile(
 r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
 re.IGNORECASE)
@@ -153,11 +153,12 @@ def extract_jacow_doi(ref):
         return create_jacow_doi(conf, year, talk)
     return None
 
-def create_xml(recid, tags):
+def create_xml(recid):
     """
     Replaces an email with an INSPIRE ID and an ORCID where possible
     """
 
+    tags = ['999C5']
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
@@ -210,7 +211,7 @@ def main():
     search = '999C5a:doi:10.18429/JAC* or 65017a:accelerators'
     result = perform_request_search(p=search, cc='HEP')
     for recid in result:
-        xml = create_xml(recid, ['999C5'])
+        xml = create_xml(recid)
         if xml:
             output.write(xml)
             counter += 1
