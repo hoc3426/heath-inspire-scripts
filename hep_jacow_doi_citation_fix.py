@@ -41,11 +41,19 @@ URL_REGEX = re.compile(
 r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
 re.IGNORECASE)
 
-JACOW_CONFERENCES = ["ABDW", "APAC", "BIW", "COOL", "CYCLOTRONS",
-"DIPAC", "ECRIS", "EPAC", "ERL", "FEL", "HB", "HIAT", "IBIC",
-"ICALEPCS", "ICAP", "IPAC", "LINAC", "MEDSI", "NAPAC", "PAC", "PCaPAC",
-"RuPAC", "SAP", "SRF"]
+JACOW_CONFERENCES = ['ABDW', 'APAC', 'BIW', 'COOL', 'CYCLOTRONS',
+'DIPAC', 'ECRIS', 'EPAC', 'ERL', 'FEL', 'HB', 'HIAT', 'IBIC',
+'ICALEPCS', 'ICAP', 'IPAC', 'LINAC', 'MEDSI', 'NAPAC', 'PAC', 'PCaPAC',
+'RuPAC', 'SAP', 'SRF']
 JACOW_CONFERENCES = sorted(JACOW_CONFERENCES, key=len, reverse=True)
+
+def jacow_case(ref):
+    """Convert to the proper case form of all JACoW IDs."""
+
+    ref = ref.upper()
+    for special in ('JACoW', 'PCaPAC', 'RuPAC', 'doi'):
+        ref = ref.replace(special.upper(), special)
+    return ref
 
 def get_jacow_dois():
     """Return all the JACoW DOIs INSPIRE has."""
@@ -98,6 +106,7 @@ def create_jacow_doi(conf, year, talk):
     if int(year) not in range(1959, CURRENT_YEAR + 1):
         return None
     doi = 'doi:10.18429/JACoW-' + conf + year + '-' + talk
+    doi = jacow_case(doi)
     if doi in JACOW_DOIS:
         return doi
     if good_doi(doi):
@@ -112,6 +121,7 @@ def fix_jacow_doi(doi):
     999C5a:doi:10.18429/JACoW-NAPAC2016-MOPOB69.pdf
     '''
 
+    doi = jacow_case(doi)
     doi = re.sub(r'doi:10.18429/JAC[oO]W-?', '', doi)
     doi = re.sub(r'^([A-z]+)(\d+)\-?(\w+)\-?(\w+).*', r'\1 \2 \3\4', doi)
     return extract_jacow_doi(doi)
