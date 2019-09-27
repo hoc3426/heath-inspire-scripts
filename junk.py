@@ -41,8 +41,8 @@ def accepted_sent_check():
     for recid in result:
         if not check_already_sent(recid):
             print 'or recid {0} \\'.format(recid)
-accepted_sent_check()
-quit()        
+#accepted_sent_check()
+#quit()        
 
 def conference_papers():
     search = 'find primarch hep-ph or hep-ex and tc '
@@ -141,6 +141,7 @@ def fermilab_experiments():
 
 
 def fermilab_orcid():
+    '''
     hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
     print 'hiddenm', len(hidden_m)
     hidden_o = search_unit('*@fnal.gov', f='595__o', m='a')
@@ -153,36 +154,40 @@ def fermilab_orcid():
     search = '035__9:orcid'
     result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
     print 'result orcid', len(result)
+    '''
 
-    search = '035__9:inspire 035__9:orcid 693__e:bnl-rhic-star'
+    search = '035__9:inspire 035__9:orcid 693__e:fnal-e-973'
+    search = '693__e:fnal-e-0973'
     result = perform_request_search(p=search, cc='HepNames')
     for recid in result:
-        orcid = inspire = None
+        orcid = inspire = current_email = None
         orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
         inspire = get_hepnames_anyid_from_recid(recid, 'INSPIRE')
         author = get_fieldvalues(recid, '100__a')[0]
-        #email_fnal = None
-        #emails = get_fieldvalues(recid, '371__m') + \
-        #         get_fieldvalues(recid, '371__o') + \
-        #         get_fieldvalues(recid, '595__m') + \
-        #         get_fieldvalues(recid, '595__o')
-        #for email in emails:
-        #    if re.search(r'fnal.gov', email, re.IGNORECASE):
-        #        x = get_hepnames_recid_from_email(email)
-        #        if x != recid:
-        #            print "CHECK THIS", recid, email, x
-        #        else:
-        #            email_fnal = email
-        #            break
-        #if email_fnal:
-        #    output = email_fnal + ',' + orcid
-        #    print output
-        #else:
-        #    print "No Fermilab email:", recid, orcid
-        print "{0}|{1}|{2} {3}".format(author, inspire, orcid, recid)
+        email_fnal = None
+        try:
+            email_current = get_fieldvalues(recid, '371__m')[0]
+        except:
+            email_current = None
+        emails = get_fieldvalues(recid, '371__m') + \
+                 get_fieldvalues(recid, '371__o') + \
+                 get_fieldvalues(recid, '595__m') + \
+                 get_fieldvalues(recid, '595__o')
+        for email in emails:
+            if re.search(r'fnal.gov', email, re.IGNORECASE):
+                x = get_hepnames_recid_from_email(email)
+                if x != recid:
+                    print "CHECK THIS", recid, email, x
+                else:
+                    email_fnal = email
+                    break
+        if email_fnal:
+            email_current = email_fnal
+        print "{0}|{1}|{2}|{3}|{4}".format(author, inspire, orcid, 
+                                           email_current, recid)
 
-#fermilab_orcid()
-#quit()
+fermilab_orcid()
+quit()
 
 def convert_zenodo_url_to_doi():
     #https://zenodo.org/record/3257749#.XSzbl8hKhPY
