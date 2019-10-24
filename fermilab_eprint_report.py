@@ -30,7 +30,7 @@ def get_eprint(recid):
     if not report_fermilab:
         return None
     bfo = BibFormatObject(recid)
-    eprint = bfe_arxiv.get_arxiv(bfo, category = "no")
+    eprint = bfe_arxiv.get_arxiv(bfo, category="no")
     if VERBOSE:
         print eprint
     if eprint:
@@ -52,6 +52,10 @@ def get_eprint(recid):
             try:
                 if item['y'].lower() == 'fulltext':
                     url = item['u']
+                if item['y'].lower() == 'poster':
+                    url = None
+                if item['y'].lower() == 'slides':
+                    url = None
             except KeyError:
                 pass
             try:
@@ -78,7 +82,7 @@ def main():
         elif len(result) == 0:
             pass
         else:
-            print "Something funny here ", report , len(result)
+            print "Something funny here ", report, len(result)
 
 
 def conf_searches():
