@@ -39,14 +39,13 @@ from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
-#from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES
+from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES
 
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)\d?[A-Z]{1,8}\d{1,8}', re.IGNORECASE)
 URL_REGEX = re.compile(
 r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
 re.IGNORECASE)
 REPORT_REGEX = re.compile(r'([A-z]+)\-(\d{4})\-(\w+)')
-SEARCH = '999C5a:doi:10.18429/JAC* or 65017a:accelerators'
 
 JACOW_CONFERENCES = sorted(JACOW_CONFERENCES, key=len, reverse=True)
 
