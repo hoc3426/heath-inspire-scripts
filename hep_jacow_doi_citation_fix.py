@@ -111,6 +111,9 @@ def create_jacow_doi(conf, year, talk):
     doi = jacow_case(doi)
     if doi in JACOW_DOIS:
         return doi
+    for jacow_doi in JACOW_DOIS:
+        if jacow_doi in doi:
+            return jacow_doi
     if good_doi(doi):
         return doi
     return None
