@@ -12,6 +12,9 @@
    becomes:
      $$uhttp://accelconf.web.cern.ch/AccelConf/IPAC2017/papers/tuocb3.pdf
      $$adoi:10.18429/JACoW-IPAC2017-TUOCB3
+   report:
+     $$rIPAC-2017-TUPVA116
+     $$adoi:10.18429/JACoW-IPAC2017-TUPVA116
 
   Fix for malformed DOIs, e.g.
   ref:
@@ -28,23 +31,23 @@
 """
 
 from datetime import datetime
+import getopt
 import os
 import re
+import sys
 from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
-#from hep_jacow_doi_citation_fix_input import SEARCH
+#from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES
 
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)\d?[A-Z]{1,8}\d{1,8}', re.IGNORECASE)
 URL_REGEX = re.compile(
 r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
 re.IGNORECASE)
+REPORT_REGEX = re.compile(r'([A-z]+)\-(\d{4})\-(\w+)')
+SEARCH = '999C5a:doi:10.18429/JAC* or 65017a:accelerators'
 
-JACOW_CONFERENCES = ['ABDW', 'APAC', 'BIW', 'COOL', 'CYCLOTRONS',
-'DIPAC', 'ECRIS', 'EPAC', 'ERL', 'FEL', 'HB', 'HIAT', 'IBIC',
-'ICALEPCS', 'ICAP', 'IPAC', 'LINAC', 'MEDSI', 'NAPAC', 'PAC', 'PCaPAC',
-'RuPAC', 'SAP', 'SRF']
 JACOW_CONFERENCES = sorted(JACOW_CONFERENCES, key=len, reverse=True)
 
 def jacow_case(ref):
@@ -139,6 +142,13 @@ def extract_jacow_doi(ref):
         talk = match_obj.group(3).upper()
         return create_jacow_doi(conf, year, talk)
 
+    match_obj = REPORT_REGEX.match(ref)
+    if match_obj:
+        conf = match_obj.group(1)
+        year = match_obj.group(2)
+        talk = match_obj.group(3).upper()
+        return create_jacow_doi(conf, year, talk)
+
     for jacow_conf in JACOW_CONFERENCES:
         if jacow_conf in ref:
             conf = jacow_conf
@@ -177,7 +187,7 @@ def create_xml(recid):
                     if doi:
                         value = doi
                         flag_instance = True
-            if code in ('m', 'u', 'x'):
+            if code in ('m', 'u', 'x', 'r'):
                 doi = extract_jacow_doi(value)
                 if doi:
                     if ('a', doi) in correct_subfields:
@@ -208,8 +218,7 @@ def main():
     output = open(filename, 'w')
     output.write('<collection>\n')
     counter = 0
-    search = '999C5a:doi:10.18429/JAC* or 65017a:accelerators'
-    result = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=SEARCH, cc='HEP')
     for recid in result:
         xml = create_xml(recid)
         if xml:
@@ -223,6 +232,15 @@ def main():
     jacow_citation_statistics()
 
 if __name__ == '__main__':
+
+    try:
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        sys.exit(0)
+    for option, argument in OPTIONS:
+        if option == '-r':
+            SEARCH = '001:' + argument
     try:
         main()
     except KeyboardInterrupt:
