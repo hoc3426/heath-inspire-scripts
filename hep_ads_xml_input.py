@@ -2,7 +2,7 @@ DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 #DIRECTORY = '/home/hoc/'
 DOCUMENT = 'ADSmatches.xml'
 DOCUMENT = DIRECTORY + DOCUMENT
-OUTPUT_COUNTER_MAX = 10
+OUTPUT_COUNTER_MAX = 20000000000000
 
 CORE_JOURNALS = ('Adv.High Energy Phys.',
 'Atom.Data Nucl.Data Tabl.',

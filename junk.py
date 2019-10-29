@@ -30,6 +30,24 @@ from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 
+def citation_primarch(recid):
+  for primarch in ['cond-mat*', 
+                   'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph',
+                   'hep-th', 'math-ph', 'math*', 'nucl-ex', 'nucl-th',
+                   'quant-ph',
+'astro-ph or 037__c:astro-ph.he or 037__c:astro-ph.co or 037__c:astro-ph.GA \
+or 037__c:astro-ph.EP or 037__c:astro-ph.IM or 037__c:astro-ph.sr']:
+    search = '037__c:' + primarch
+    search += ' refersto:recid:' + str(recid)
+    number = len(perform_request_search(p=search, cc='HEP'))
+    if 'astro' in primarch:
+        primarch = 'astro-ph'
+    primarch = primarch.replace('*', '')
+    print "{0:10} {1:5d}".format(primarch, number)
+citation_primarch(451647)
+quit()
+
+
 def accepted_sent_check():
     ACCEPTED_SEARCH='8564_z:openaccess or 8564_z:postprint or \
 8564_y:"article from scoap3" or \
