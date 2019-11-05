@@ -29,6 +29,61 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
 from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 from osti_web_service import check_already_sent
+from datetime import datetime
+
+def microboone_notes():
+  with open('tmp_microboone.in') as fp:
+    for line in fp.readlines():
+        common_fields = {}
+        common_tags = {}
+        match_obj = re.search(r'^(\S+)\s+(\S+)\s+(.*)', line)
+        try:
+            date = match_obj.group(1)
+        except AttributeError:
+            break
+        date = datetime.strptime(date, '%m/%d/%y').strftime('%Y-%m-%d')
+        report = match_obj.group(2)
+        freport = 'FERMILAB-' + report
+        title = match_obj.group(3)
+        url = 'https://microboone.fnal.gov/wp-content/uploads/'
+        url += report + '.pdf'
+        common_tags['037__'] = [('a', report), ('z', freport)]
+        common_tags['245__'] = [('a', title)]
+        common_tags['269__'] = [('c', date)]     
+        common_tags['65017'] = [('2', 'INSPIRE'), ('a', 'Instrumentation'),
+                                ('a', 'Experiment-HEP')]
+        common_tags['693__'] = [('e', 'FNAL-E-0974')]
+        common_tags['710__'] = [('g', 'MicroBooNE')]
+        common_tags['8564_'] = [('u', url), ('y', 'Fulltext')]
+        common_tags['FFT__'] = [('a', url), ('f', 'pdf'), ('n', freport),
+                                ('t', 'INSPIRE-PUBLIC')]
+        for tag in common_tags:
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
+        tag = '980__'
+        for collection in ['HEP', 'CORE', 'NOTE', 'Fermilab']:
+            common_tags[tag] = [('a', collection)]
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], 
+                         subfields=common_tags[tag])
+
+        print print_rec(common_fields)
+microboone_notes()
+quit()
+
+def bad_aff():
+    x=get_all_field_values('110__t')
+    baddies = []
+    for d in x:
+       if 'hys' in d and 'ept' in d:
+         result = \
+         perform_request_search(p='110__t:"' + d + '"', cc='Institutions')
+         if len(result):
+             baddies.append(d)
+    baddies.sort()
+    for ab in baddies:
+        print ab
+bad_aff()
+quit()
 
 def citation_primarch(recid):
   for primarch in ['cond-mat*', 
