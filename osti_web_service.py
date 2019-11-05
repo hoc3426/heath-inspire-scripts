@@ -169,7 +169,8 @@ def get_url(recid):
                 url_arxiv = url_i
             if re.search(r'inspirehep.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
-            elif re.search(r'inspirehep.*MICROBOONE\-.*pdf', url_i, re.IGNORECASE):
+            elif re.search(r'inspirehep.*MICROBOONE\-.*pdf', url_i,
+                           re.IGNORECASE):
                 url_inspire = url_i
             elif re.search(r'inspirehep.*MUCOOL\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
@@ -356,7 +357,8 @@ def get_author_first(recid):
 
 def get_author_number(recid):
     """Gets number of authors."""
-    author_list = get_fieldvalues(recid, "700__a")
+    author_list = get_fieldvalues(recid, "100__a") + \
+                  get_fieldvalues(recid, "700__a")
     try:
         return len(author_list)
     except IndexError:
@@ -522,7 +524,9 @@ def create_xml(recid, records):
     if corporate_author:
         author = ET.SubElement(record, 'author')
         author.text = corporate_author
-
+    elif author_number == 0:
+        author = ET.SubElement(record, 'author')
+        author.text = collaborations
     elif author_number > 20:
         author = ET.SubElement(record, 'author')
         author_first = get_author_first(recid)
