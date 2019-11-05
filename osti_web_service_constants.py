@@ -26,6 +26,7 @@ TYPE_DICT = {
 'MASTERS':'TD',
 'MISC':'TR',
 'MONTHLY':'PD',
+'MICROBOONE':'TR',
 'MUCOOL':'TR',
 'PLAN':'PD',
 'POSTER':'CO',
