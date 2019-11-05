@@ -169,6 +169,8 @@ def get_url(recid):
                 url_arxiv = url_i
             if re.search(r'inspirehep.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
+            elif re.search(r'inspirehep.*MICROBOONE\-.*pdf', url_i, re.IGNORECASE):
+                url_inspire = url_i
             elif re.search(r'inspirehep.*MUCOOL\-.*pdf', url_i, re.IGNORECASE):
                 url_inspire = url_i
             elif re.search(r'inspirehep.*cern\-.*pdf', url_i, re.IGNORECASE):
