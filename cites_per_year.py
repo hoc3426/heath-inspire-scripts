@@ -12,7 +12,7 @@ from invenio.search_engine import perform_request_search
 def set_defaults():
     '''Set defaults.'''
 
-    return 'r', 'FERMILAB', '1970', '2020'
+    return 'r', 'FERMILAB', 1970, 2020
 
 def main(key, value, start, end):
     '''Add up all citations over a period.'''
@@ -58,9 +58,15 @@ if __name__ == '__main__':
         if option == '-v':
             VALUE = argument
         if option == '-s':
-            START = argument
+            try:
+                START = int(argument)
+            except ValueError:
+                print 'Non-integer for start year:', argument
         if option == '-e':
-            END = argument
+            try:
+                END = int(argument)
+            except ValueError:
+                print 'Non-integer for end year:', argument
 
     try:
         main(key=KEY, value=VALUE, start=START, end=END)
