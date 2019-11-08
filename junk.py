@@ -31,20 +31,32 @@ from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
 
-def cites_per_year():
-  aff = 'Fermilab'
-  search = 'find aff ' + aff
-  result = perform_request_search(p=search, cc='HEP')
-  print 'The', len(result), 'papers of', aff
-  big_total = 0
-  for year in range(1970, 2020):
+def cites_per_year(key, value, start='1970', end='2020'):
+
+    from invenio.bibrank_citation_searcher import get_citation_dict
+    citation_dict = get_citation_dict('citationdict')
+
+    search = 'find {0} {1} and topcite 1+'.format(key, value)
+    entity_papers = intbitset(perform_request_search(p=search, cc='HEP'))
+    print 'The {0} papers of {1}'.format(len(entity_papers), value)
+
+    all_papers = {}
+    years = range(start, end)
+    for year in years:
+        search = 'earliestdate:' + str(year)
+        all_papers[year] = intbitset(perform_request_search(p=search,
+                                                          cc='HEP'))
+    citations_year = {}
     total = 0
-    for recid in result:
-        search = 'referstox:recid:' + str(recid) + ' earliestdate:' + str(year)
-        total += len(perform_request_search(p=search, cc='HEP'))
-    big_total += total
-    print "{0:6d} {1:6d} {2:6d}".format(year, total, big_total)
-  print "{0:6s} {1:6d}".format('Total', big_total)
+    for year in years:
+        citations_year[year] = 0
+        for entity_paper in entity_papers:
+            citations_year[year] += len(citation_dict[entity_paper] &
+                                      all_papers[year])
+        total += citations_year[year]
+        print '{0:6d} {1:6d} {2:6d}'.format(year, citations_year[year], total)
+
+
 cites_per_year()
 quit()
 

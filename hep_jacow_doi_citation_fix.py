@@ -41,7 +41,8 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
 from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES
 
-TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR)\d?[A-Z]{1,8}\d{1,8}', re.IGNORECASE)
+TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR|SA|SU)\d?[A-Z]{1,8}\d{1,8}',
+                        re.IGNORECASE)
 URL_REGEX = re.compile(
 r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
 re.IGNORECASE)
