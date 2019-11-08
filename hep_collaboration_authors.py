@@ -39,6 +39,7 @@ def download_source(eprint, download_path = ""):
     #import gzip
     import tarfile
     import urllib
+    EPRINT_BASE_URL = 'http://arxiv.org/e-print/'
     if VERBOSE:
         print eprint
     download_path = DIRECTORY + "collaboration/"
@@ -46,7 +47,11 @@ def download_source(eprint, download_path = ""):
     filename = eprint.replace('/', '-')
     filename_dum = download_path + filename + ".dum"
     if not os.path.exists(filename_dum):
-        urllib.urlretrieve('http://arxiv.org/e-print/' + eprint, filename_dum)
+        try:
+            urllib.urlretrieve(EPRINT_BASE_URL + eprint, filename_dum)
+        except IOError:
+            print('Cannot access {0}'.format(EPRINT_BASE_URL + eprint))
+            return None
     try:
         #print '%20s  %s' % (filename_dum, tarfile.is_tarfile(filename_dum))
         try:

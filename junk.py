@@ -31,6 +31,46 @@ from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
 
+def cites_per_year():
+  aff = 'Fermilab'
+  search = 'find aff ' + aff
+  result = perform_request_search(p=search, cc='HEP')
+  print 'The', len(result), 'papers of', aff
+  big_total = 0
+  for year in range(1970, 2020):
+    total = 0
+    for recid in result:
+        search = 'referstox:recid:' + str(recid) + ' earliestdate:' + str(year)
+        total += len(perform_request_search(p=search, cc='HEP'))
+    big_total += total
+    print "{0:6d} {1:6d} {2:6d}".format(year, total, big_total)
+  print "{0:6s} {1:6d}".format('Total', big_total)
+cites_per_year()
+quit()
+
+
+def authors():
+  with open('tmp_1.out') as fp:
+    dict_1 = {}
+    counter = 0
+    for line in fp.readlines():
+      dict_1[counter] = line
+      counter += 1
+  COUNTER_MAX = counter
+  with open('tmp_2.out') as fp:
+    dict_2 = {}
+    counter = 0
+    for line in fp.readlines():
+      dict_2[counter] = line
+      counter += 1
+  for counter in range(1, COUNTER_MAX):
+    if dict_1[counter] != dict_2[counter]:
+      print dict_1[counter][:40]
+      print dict_2[counter][:40]
+      print ' '
+authors()
+quit()
+
 def microboone_notes():
   with open('tmp_microboone.in') as fp:
     for line in fp.readlines():

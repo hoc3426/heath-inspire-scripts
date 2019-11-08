@@ -24,14 +24,14 @@ def find_authors():
             authors.append(bai)
     return authors
 
-authors = find_authors()
+#authors = find_authors()
 topcited_authors = []
 for author in authors:
     search = 'refersto:(exactauthor:' + author + ' authorcount:1->20 neutrino -title:rpp)'
     #print search
     result = perform_request_search(p=search,cc='HEP')
     citations = len(result)
-    if citations > 999:
+    if citations > 99:
         topcited_authors.append((citations, author))
 topcited_authors.sort(reverse=True)
 
