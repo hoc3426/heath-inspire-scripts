@@ -57,8 +57,8 @@ def cites_per_year(key, value, start='1970', end='2020'):
         print '{0:6d} {1:6d} {2:6d}'.format(year, citations_year[year], total)
 
 
-cites_per_year()
-quit()
+#cites_per_year()
+#quit()
 
 
 def authors():
@@ -80,8 +80,8 @@ def authors():
       print dict_1[counter][:40]
       print dict_2[counter][:40]
       print ' '
-authors()
-quit()
+#authors()
+#quit()
 
 def microboone_notes():
   with open('tmp_microboone.in') as fp:
@@ -118,7 +118,8 @@ def microboone_notes():
             record_add_field(common_fields, tag[0:3], tag[3], tag[4], 
                          subfields=common_tags[tag])
 
-        print print_rec(common_fields)
+        #print print_rec(common_fields)
+        print "wget {0}".format(url)
 microboone_notes()
 quit()
 

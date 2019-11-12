@@ -210,7 +210,7 @@ def create_xml(recid):
         return print_rec(correct_record)
     return None
 
-def main():
+def main(options):
     """
     Run through a search to find potential JACoW citations
     and convert them to DOIs.
@@ -232,6 +232,8 @@ def main():
     print 'Number of records examined:', len(result)
     print 'Number of records updated:', counter
     print filename
+    if options:
+        return
     jacow_citation_statistics()
 
 if __name__ == '__main__':
@@ -245,7 +247,7 @@ if __name__ == '__main__':
         if option == '-r':
             SEARCH = '001:' + argument
     try:
-        main()
+        main(OPTIONS)
     except KeyboardInterrupt:
         print 'Exiting'
 

@@ -18,6 +18,8 @@ def main(key, value, start, end):
     '''Add up all citations over a period.'''
 
     search = 'find {0} {1} and topcite 1+'.format(key, value)
+    if key == 'exp':
+        search = 'find {0} {1}* and topcite 1+'.format(key, value)
     entity_papers = intbitset(perform_request_search(p=search, cc='HEP'))
     citation_list = get_cited_by_list(entity_papers)
     citation_dict = dict((cite[0], intbitset(cite[1])) 
@@ -38,7 +40,7 @@ def main(key, value, start, end):
             citations_year[year] += len(citation_dict[entity_paper] &
                                       all_papers[year])
         total += citations_year[year]
-        print '{0:6d} {1:6d} {2:6d}'.format(year, citations_year[year], total)
+        print '{0:6d}\t{1:6d}\t{2:6d}'.format(year, citations_year[year], total)
 
 
 
