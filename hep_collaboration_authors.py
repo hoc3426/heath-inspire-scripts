@@ -216,7 +216,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
     for key in author_dict:
         subfields = []
         author = author_dict[key][0]
-
+        #print author_dict
         match_obj = re.search(orcid_regex, author)
         if match_obj:
             orcid = match_obj.group(1)
@@ -275,6 +275,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 continue
             #elif re.match(r"^0000-0", affiliation):
             elif re.search(r"0000-0", affiliation):
+                print 'XXX', affiliation
                 for aff in affiliation.split():
                     aff = re.sub(r'[^\d^\-^X]', '', aff)
                     orcid = re.search(orcid_regex, aff)
@@ -283,14 +284,21 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                         if ('j', 'ORCID:' + orcid) not in subfields:
                             subfields.append(('j', 'ORCID:' + orcid))
                         affiliation = re.sub(orcid, '', affiliation)
-                        subfields.append(('v', affiliation))
-                        break
+                        affiliation = re.sub(r'\s+$', '', affiliation)
+
+                        print 'YYY', affiliation
+
+
+                        #subfields.append(('v', affiliation))
+                        #break
                 if not orcid:
                     print "ORCID problem:", affiliation
-                continue
+                #Removed this to process aff that contained ORCID
+                #continue
             elif re.match(r"^INSPIRE-", affiliation):
                 subfields.append(('i', affiliation))
-                continue
+                #Removed this to process aff that contained ORCID
+                #continue
 
             affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
             affiliation_key = re.sub(r'\s*(.+\S)\s*', r'\1', affiliation_key)
