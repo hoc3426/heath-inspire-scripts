@@ -300,12 +300,16 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 #Removed this to process aff that contained ORCID
                 #continue
 
+            affiliation = affiliation.replace('[]', '')
+            if not affiliation:
+                continue
             affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
             affiliation_key = re.sub(r'\s*(.+\S)\s*', r'\1', affiliation_key)
             try:
                 for inst in AFFILIATIONS_DONE[affiliation_key]:
                     inst = re.sub(r'^\s+', '', inst)
-                    subfields.append(('u', inst))
+                    if inst:
+                        subfields.append(('u', inst))
             except KeyError:
                 if False:
                     print "AFF in: ", affiliation, "*"
@@ -318,10 +322,12 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                           "Time taken", time_taken
                 for inst in inspire_affiliation:
                     inst = re.sub(r'^\s+', '', inst)
-                    subfields.append(('u', inst))
+                    if inst:
+                        subfields.append(('u', inst))
                 if not TEST:
                     AFFILIATIONS_DONE[affiliation_key] = inspire_affiliation
-            subfields.append(('v', affiliation))
+            if affiliation:
+                subfields.append(('v', affiliation))
         record_add_field(record, tag[0:3], tag[3], tag[4], \
                          subfields=subfields)
         tag = '700__'

@@ -19,6 +19,7 @@ from invenio.search_engine import perform_request_search,\
 from hep_ads_xml_input import ARXIV_REGEX, ARXIV_REGEX_NEW
 
 INPUT_FILE = 'tmp_hep_ads_xml_missing_eprint.out'
+MAX_COUNT = 10
 URL_BASE = 'http://export.arxiv.org/api/query?id_list='
 
 def parse_metadata_from_arxiv(data):
@@ -64,9 +65,7 @@ def get_metadata_from_inspire(id_string):
 
     result = perform_request_search(p=search, cc='HEP')
     if len(result) != 1:
-        print 'Problem with', search
         return None
-
 
     record = {}
     recid = result[0]
@@ -77,49 +76,60 @@ def get_metadata_from_inspire(id_string):
 def compare_arxiv_inspire(arxiv, inspire):
     '''Compare arXiv and INSPIRE metadata.'''
 
-    print arxiv, inspire
     eprint_record = get_metadata_from_arxiv(arxiv)
-    print 'A:', eprint_record['246__a'].lower()
+    eprint_title = eprint_record['246__a'].lower()
     inspire_record = get_metadata_from_inspire(inspire)
     try:
-        print 'I:', inspire_record['245__a'].lower()
+        inspire_title = inspire_record['245__a'].lower()
     except TypeError:
-        print 'NO INFORMATION:', arxiv, inspire
-    print ' '
+        inspire_title = \
+        '** NO INFORMATION IN INSPIRE for {0}'.format(inspire)
+    inspire_title_base = re.sub(r'[\W_]', '', inspire_title)
+    eprint_title_base = re.sub(r'[\W_]', '', eprint_title)
+    if inspire_title_base == eprint_title_base:
+        return '{0} {1}\n{2}\n\n'.format(arxiv, 
+                inspire, 'Titles are an exact match.')
+    return '{0} {1}\nA: {2}\nI: {3}\n\n'.format(arxiv, inspire,
+           eprint_title.capitalize(), inspire_title.capitalize())
 
-def main(eprint='hep-th/9711200'):
+def main(max_count=10):
     '''Get metadata for an eprint.'''
+
+    print 'max_count =', max_count
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_append.out', filename)
+    output = open(filename, 'w')
 
     with open(INPUT_FILE) as file_h:
         for cnt, line in enumerate(file_h):
             match_obj = re.match(r'Need eprint: (\S+) (\S+)', line)
             eprint = match_obj.group(1)
             doi = match_obj.group(2)
-            compare_arxiv_inspire(arxiv=eprint, inspire=doi)
+            output.write(compare_arxiv_inspire(arxiv=eprint,
+                                               inspire=doi))
             sleep(3)
-            if cnt > 20:
-                quit()
+            if cnt > max_count:
+                break
+
+    output.close()
+    print filename
 
 if __name__ == '__main__':
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], '-e:')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'c:')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
 
     EPRINT = None
     for option, argument in OPTIONS:
-        if option == '-e':
-            EPRINT = argument
-            if not ARXIV_REGEX.match(EPRINT) and \
-               not ARXIV_REGEX_NEW.match(EPRINT):
-                print '{0} is not a valid eprint number'.format(EPRINT)
+        if option == '-c':
+            MAX_COUNT = argument
+            if not MAX_COUNT.isdigit():
+                print '{0} is not a number'.format(MAX_COUNT)
                 quit()
     try:
-        if EPRINT:
-            main(EPRINT)
-        else:
-            main()
+        main(int(MAX_COUNT))
     except KeyboardInterrupt:
         print 'Exiting'
