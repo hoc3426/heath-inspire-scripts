@@ -31,6 +31,40 @@ from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
 
+
+def counter_list(journals):
+    from Counter import Counter
+    import operator
+    journals.sort()
+    counted_all_refs=Counter(journals)
+    sorted_count = sorted(counted_all_refs.items(),
+                          key=operator.itemgetter(1))
+    for recid_count, count in sorted_count:
+        print('{0:30s} {1:3d}'.format(recid_count, count))
+
+def doi_ending():
+    dois = []
+    for doi in get_all_field_values('0247_a'):
+        if not doi:
+            continue
+        #dois.append(doi[-1:])
+        if not re.match('\w', doi[-1:]):
+            search = '0247_a:"{0}"'.format(doi)
+            result = perform_request_search(p=search, cc='HEP')
+            if result:
+                print result, search
+    #counter_list(dois)
+doi_ending()
+quit()
+        
+def aff_fix(search):
+    for recid in perform_request_search(p=search, cc='HEP'):
+        print print_record(recid, ot=['100', '700'], format='hm')
+aff_fix('700__u:testinggpiccofootnote')
+quit()
+
+
+
 def cites_per_year(key, value, start='1970', end='2020'):
 
     from invenio.bibrank_citation_searcher import get_citation_dict
@@ -411,7 +445,7 @@ for doi in sorted(zenodos, reverse=True):
 quit()
 
 for recid in perform_request_search(p=
-'fin a ramgoolam and af NITheP, Matieland', cc='HEP'):
+'700__u:testinggpiccofootnote', cc='HEP'):
     print print_record(recid, ot=['100', '700'], format='hm')
 quit()
 

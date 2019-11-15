@@ -1,8 +1,19 @@
+import re
+
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 #DIRECTORY = '/home/hoc/'
 DOCUMENT = 'ADSmatches.xml'
 DOCUMENT = DIRECTORY + DOCUMENT
 OUTPUT_COUNTER_MAX = 20000000000000
+
+ADS_REGEX = re.compile(r"^\d{4}([a-z&]+)[\d.]+[a-z.\d]+$",
+                       re.IGNORECASE)
+ADS_J_REGEX = \
+re.compile(r'(.*[a-zJ][a-z\.]|JHEP|JCAP)([A-EGX]?)\.?(\d+)\:(\d+)\,(\d+)')
+ARXIV_REGEX = re.compile(r"^[a-z]+\-?[a-z]+\.?[A-Z]*/\d{7}$")
+ARXIV_REGEX_NEW = re.compile(r'^\d{4}\.\d{4}\d?$')
+BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
+
 
 CORE_JOURNALS = ('Adv.High Energy Phys.',
 'Atom.Data Nucl.Data Tabl.',

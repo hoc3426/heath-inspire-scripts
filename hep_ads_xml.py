@@ -13,7 +13,9 @@ from invenio.bibrecord import print_rec, record_add_field
 from hep_ads_xml_input import BIBCODE_DICT, JOURNAL_DICT, \
                               CORE_JOURNALS, \
                               CORE_JOURNALS_DOI, \
-                              OUTPUT_COUNTER_MAX
+                              OUTPUT_COUNTER_MAX, \
+                              ADS_REGEX, ADS_J_REGEX, ARXIV_REGEX, \
+                              ARXIV_REGEX_NEW
 from hep_ads_xml_input_local import DIRECTORY
 
 import cPickle as pickle
@@ -31,14 +33,6 @@ LOGFILE = re.sub('.py', '.log', LOGFILE)
 logging.basicConfig(filename=LOGFILE, filemode='w',
                     format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
-
-ADS_REGEX = re.compile(r"^\d{4}([a-z&]+)[\d.]+[a-z.\d]+$",
-                       re.IGNORECASE)
-ADS_J_REGEX = \
-re.compile(r'(.*[a-zJ][a-z\.]|JHEP|JCAP)([A-EGX]?)\.?(\d+)\:(\d+)\,(\d+)')
-ARXIV_REGEX = re.compile(r"^[a-z]+\-?[a-z]+\.?[A-Z]*/\d{7}$")
-ARXIV_REGEX_NEW = re.compile(r'^\d{4}\.\d{4}\d?$')
-BIBCODERE = re.compile(r'^(\d{4}[.&0-9A-Za-z]{15})$')
 
 INSPIRE_EPRINTS = set()
 INSPIRE_BIBCODES = set()
