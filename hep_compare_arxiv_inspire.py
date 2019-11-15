@@ -87,8 +87,9 @@ def compare_arxiv_inspire(arxiv, inspire):
     inspire_title_base = re.sub(r'[\W_]', '', inspire_title)
     eprint_title_base = re.sub(r'[\W_]', '', eprint_title)
     if inspire_title_base == eprint_title_base:
-        return '{0} {1}\n{2}\n\n'.format(arxiv, 
-                inspire, 'Titles are an exact match.')
+        #return '{0} {1}\n{2}\n\n'.format(arxiv, 
+        #        inspire, 'Titles are an exact match.')
+        return None
     return '{0} {1}\nA: {2}\nI: {3}\n\n'.format(arxiv, inspire,
            eprint_title.capitalize(), inspire_title.capitalize())
 
@@ -105,8 +106,9 @@ def main(max_count=10):
             match_obj = re.match(r'Need eprint: (\S+) (\S+)', line)
             eprint = match_obj.group(1)
             doi = match_obj.group(2)
-            output.write(compare_arxiv_inspire(arxiv=eprint,
-                                               inspire=doi))
+            diff = compare_arxiv_inspire(arxiv=eprint, inspire=doi)
+            if diff:
+                output.write(diff)
             sleep(3)
             if cnt > max_count:
                 break
