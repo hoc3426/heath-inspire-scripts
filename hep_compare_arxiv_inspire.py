@@ -1,0 +1,125 @@
+'''
+A script to get information from arXiv.
+Based on
+https://static.arxiv.org/static/arxiv.marxdown/0.1/help/api/
+examples/python_arXiv_parsing_example.txt
+
+'''
+
+import feedparser
+import getopt
+import re
+from time import sleep
+import sys
+import urllib
+
+from invenio.search_engine import perform_request_search,\
+                                  get_fieldvalues
+
+from hep_ads_xml_input import ARXIV_REGEX, ARXIV_REGEX_NEW
+
+INPUT_FILE = 'tmp_hep_ads_xml_missing_eprint.out'
+URL_BASE = 'http://export.arxiv.org/api/query?id_list='
+
+def parse_metadata_from_arxiv(data):
+    '''Parse the output of a request.'''
+
+    feed = feedparser.parse(data)
+    record = {}
+    for entry in feed.entries:
+        record['eprint'] = re.sub(r'v\d+$', '', entry.id.split('/abs/')[-1])
+        record['269__c'] = entry.published.split('T')[0]
+        record['246__a'] = entry.title
+        try:
+            record['500__a'] = entry.arxiv_comment
+        except AttributeError:
+            record['500__a'] = ''
+        record['primarch'] = entry.arxiv_primary_category['term']
+        record['520__a'] = entry.summary
+        try:
+            record['0247_a'] = entry.arxiv_doi
+        except AttributeError:
+            record['0247_a'] = ''
+    for key, value in record.items():
+        record[key] = re.sub(r'\s+', ' ', value)
+    return record
+
+def get_metadata_from_arxiv(eprint):
+    '''Send a request to arXiv.'''
+
+    url = URL_BASE + eprint
+    data = urllib.urlopen(url).read()
+    return parse_metadata_from_arxiv(data)
+
+def get_metadata_from_inspire(id_string):
+    '''Get metadata from an INSPIRE record'''
+
+    if ARXIV_REGEX.match(id_string) or \
+       ARXIV_REGEX_NEW.match(id_string):
+        search = 'find eprint ' + id_string
+    elif re.match(r'^10\.\d+/', id_string):
+        search = 'find doi ' + id_string
+    elif id_string.isdigit():
+        search = 'find recid ' + id_string
+
+    result = perform_request_search(p=search, cc='HEP')
+    if len(result) != 1:
+        print 'Problem with', search
+        return None
+
+
+    record = {}
+    recid = result[0]
+    title = get_fieldvalues(recid, '245__a')[0]
+    record['245__a'] = title
+    return record
+
+def compare_arxiv_inspire(arxiv, inspire):
+    '''Compare arXiv and INSPIRE metadata.'''
+
+    print arxiv, inspire
+    eprint_record = get_metadata_from_arxiv(arxiv)
+    print 'A:', eprint_record['246__a'].lower()
+    inspire_record = get_metadata_from_inspire(inspire)
+    try:
+        print 'I:', inspire_record['245__a'].lower()
+    except TypeError:
+        print 'NO INFORMATION:', arxiv, inspire
+    print ' '
+
+def main(eprint='hep-th/9711200'):
+    '''Get metadata for an eprint.'''
+
+    with open(INPUT_FILE) as file_h:
+        for cnt, line in enumerate(file_h):
+            match_obj = re.match(r'Need eprint: (\S+) (\S+)', line)
+            eprint = match_obj.group(1)
+            doi = match_obj.group(2)
+            compare_arxiv_inspire(arxiv=eprint, inspire=doi)
+            sleep(3)
+            if cnt > 20:
+                quit()
+
+if __name__ == '__main__':
+
+    try:
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], '-e:')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        sys.exit(0)
+
+    EPRINT = None
+    for option, argument in OPTIONS:
+        if option == '-e':
+            EPRINT = argument
+            if not ARXIV_REGEX.match(EPRINT) and \
+               not ARXIV_REGEX_NEW.match(EPRINT):
+                print '{0} is not a valid eprint number'.format(EPRINT)
+                quit()
+    try:
+        if EPRINT:
+            main(EPRINT)
+        else:
+            main()
+    except KeyboardInterrupt:
+        print 'Exiting'
