@@ -275,7 +275,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 continue
             #elif re.match(r"^0000-0", affiliation):
             elif re.search(r"0000-0", affiliation):
-                print 'XXX', affiliation
+                #print 'XXX', affiliation
                 for aff in affiliation.split():
                     aff = re.sub(r'[^\d^\-^X]', '', aff)
                     orcid = re.search(orcid_regex, aff)
@@ -286,7 +286,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                         affiliation = re.sub(orcid, '', affiliation)
                         affiliation = re.sub(r'\s+$', '', affiliation)
 
-                        print 'YYY', affiliation
+                        #print 'YYY', affiliation
 
 
                         #subfields.append(('v', affiliation))
