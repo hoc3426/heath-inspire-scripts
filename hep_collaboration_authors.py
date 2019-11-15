@@ -217,12 +217,13 @@ def create_xml(eprint=None, doi=None, author_dict=None):
         subfields = []
         author = author_dict[key][0]
 
-        match_obj = re.search(r'(0000-\d{4}-\d{4}-\d{3}[\dX])', author)
+        match_obj = re.search(orcid_regex, author)
         if match_obj:
             orcid = match_obj.group(1)
             if not re.match(orcid_regex, orcid):
-                print 'Problem with', orcid
-            subfields.append(('j', 'ORCID:' + orcid))
+                print '1 Problem with', orcid
+            if ('j', 'ORCID:' + orcid) not in subfields:
+                subfields.append(('j', 'ORCID:' + orcid))
             author = author.replace(orcid, '')
             author = author.replace('[]', '')
         match_obj = re.search(r'(INSPIRE-\d{8})', author)
@@ -262,7 +263,8 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                     subfields.append(('m', 'email:' + email))
                 else:
                     print "Email problem:", email
-                if  re.match(orcid_regex, orcid):
+                if re.match(orcid_regex, orcid) and \
+                   ('j', 'ORCID:' + orcid) not in subfields:
                     subfields.append(('j', 'ORCID:' + orcid))
                 else:
                     print "ORCID problem:", orcid
@@ -273,11 +275,17 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 continue
             #elif re.match(r"^0000-0", affiliation):
             elif re.search(r"0000-0", affiliation):
-                try:
-                    orcid = re.search(r'(0000-\d{4}-\d{4}-\d{3}[\dX])',
-                                  affiliation).group(1)
-                    subfields.append(('j', 'ORCID:' + orcid))
-                except AttributeError:
+                for aff in affiliation.split():
+                    aff = re.sub(r'[^\d^\-^X]', '', aff)
+                    orcid = re.search(orcid_regex, aff)
+                    if orcid:
+                        orcid = orcid.group(0)
+                        if ('j', 'ORCID:' + orcid) not in subfields:
+                            subfields.append(('j', 'ORCID:' + orcid))
+                        affiliation = re.sub(orcid, '', affiliation)
+                        subfields.append(('v', affiliation))
+                        break
+                if not orcid:
                     print "ORCID problem:", affiliation
                 continue
             elif re.match(r"^INSPIRE-", affiliation):
