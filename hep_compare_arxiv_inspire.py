@@ -13,8 +13,12 @@ from time import sleep
 import sys
 import urllib
 
-from invenio.search_engine import perform_request_search,\
-                                  get_fieldvalues
+from invenio.bibrecord import print_rec,\
+                              record_add_field
+
+from invenio.search_engine import get_fieldvalues,\
+                                  perform_request_search,\
+                                  search_unit,
 
 from hep_ads_xml_input import ARXIV_REGEX, ARXIV_REGEX_NEW
 
@@ -22,8 +26,20 @@ INPUT_FILE = 'tmp_hep_ads_xml_missing_eprint.out'
 MAX_COUNT = 10
 URL_BASE = 'http://export.arxiv.org/api/query?id_list='
 
-def parse_metadata_from_arxiv(data):
-    '''Parse the output of a request.'''
+def create_xml(input_dict):
+
+    record = {}
+    for tag in input_dict:
+        subfields = [(9, 'arXiv'), ('a', input_dict[tag])]
+        record_add_field(record, tag[0:3], tag[3], tag[4],
+                         subfields=subfield)
+    return print_rec(record)
+
+def get_metadata_from_arxiv(eprint):
+    '''Send metadata from arXiv.'''
+
+    url = URL_BASE + eprint
+    data = urllib.urlopen(url).read()
 
     feed = feedparser.parse(data)
     record = {}
@@ -45,30 +61,35 @@ def parse_metadata_from_arxiv(data):
         record[key] = re.sub(r'\s+', ' ', value)
     return record
 
-def get_metadata_from_arxiv(eprint):
-    '''Send a request to arXiv.'''
+def get_recid_from_inspire(id_string):
 
-    url = URL_BASE + eprint
-    data = urllib.urlopen(url).read()
-    return parse_metadata_from_arxiv(data)
+    if ARXIV_REGEX.match(id_string):
+        field = '037__a:'
+    elif ARXIV_REGEX_NEW.match(id_string):
+        field = '037__a:'
+        id_string = 'arXiv:' + id_string
+    elif re.match(r'^10\.\d+/', id_string):
+        field = '0247_a'
+    elif id_string.isdigit():
+        field = '001'
+    search = field + ':"' + id_string + '"'
+    result = perform_request_search(p=search, cc='HEP')
+    if len(result) == 1:
+        return (result[0], 'HEP')
+    if len(result) > 1:
+        print 'Duplicate: {0} {1}'.format(id_string, result)
+        quit()
+    result = search_unit(p=id_string, f=field, m='a')    
+    if len(result) == 1:
+        recid = result[0]
+        return (recid, get_fieldvalues(recid, '980__a'))
+
 
 def get_metadata_from_inspire(id_string):
     '''Get metadata from an INSPIRE record'''
 
-    if ARXIV_REGEX.match(id_string) or \
-       ARXIV_REGEX_NEW.match(id_string):
-        search = 'find eprint ' + id_string
-    elif re.match(r'^10\.\d+/', id_string):
-        search = 'find doi ' + id_string
-    elif id_string.isdigit():
-        search = 'find recid ' + id_string
-
-    result = perform_request_search(p=search, cc='HEP')
-    if len(result) != 1:
-        return None
-
     record = {}
-    recid = result[0]
+    recid = get_recid_from_inspire(id_string)
     title = get_fieldvalues(recid, '245__a')[0]
     record['245__a'] = title
     return record
