@@ -73,6 +73,8 @@ def get_metadata_from_arxiv(eprint):
         record['246__a'] = entry.title
         record['primarch'] = entry.arxiv_primary_category['term']
         for category in [tag['term'] for tag in entry.tags]:
+            if re.search('\d', category):
+                continue
             record['65017a' + category] = category
         try:
             record['500__a'] = entry.arxiv_comment
