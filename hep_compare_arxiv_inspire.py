@@ -11,6 +11,7 @@ import getopt
 import logging
 import re
 import sys
+import textwrap
 from time import sleep
 import urllib
 
@@ -36,11 +37,19 @@ def create_xml(recid, input_dict):
 
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
+
+    eprint = input_dict['eprint']
+    input_dict['035__a'] = 'oai:arXiv.org:' + eprint
+    input_dict['037__a'] = eprint
+    if ARXIV_REGEX_NEW.match(eprint):
+        input_dict['037__a'] = 'arXiv:' + eprint
+
     for tag in input_dict:
-        if tag == 'eprint':
-            eprint = tag['eprint']tag = '035__a'
-            input_dict[tag] = 'oai:arXiv.org:' + tag['eprint']
+        if tag == 'eprint' or tag == 'primarch':
+            continue
         subfields = [(9, 'arXiv'), ('a', input_dict[tag])]
+        if tag == '037__a':
+            subfields.append(('c', input_dict['primarch']))
         record_add_field(record, tag[0:3], tag[3], tag[4],
                          subfields=subfields)
     return print_rec(record)
@@ -58,18 +67,23 @@ def get_metadata_from_arxiv(eprint):
         record['eprint'] = eprint
         record['269__c'] = entry.published.split('T')[0]
         record['246__a'] = entry.title
+        record['65017a'] = entry.category
         try:
             record['500__a'] = entry.arxiv_comment
         except AttributeError:
-            record['500__a'] = ''
+            pass
         record['primarch'] = entry.arxiv_primary_category['term']
-        record['520__a'] = entry.summary
+        try:
+            record['520__a'] = entry.summary
+        except AttributeError:
+            pass
         try:
             record['0247_a'] = entry.arxiv_doi
         except AttributeError:
-            record['0247_a'] = ''
+            pass
     for key, value in record.items():
-        record[key] = re.sub(r'\s+', ' ', value)
+        record[key] = textwrap.fill(re.sub(r'\s+', ' ', value))
+
     return record
 
 def get_recid_from_inspire(id_string):
@@ -90,16 +104,12 @@ def get_recid_from_inspire(id_string):
     else:
         logging.info('Unknown ID: ' + id_string)
         return False
-    #search = field + ':"' + id_string + '"'
-    #result = perform_request_search(p=search, cc='HEP')
-    #if len(result) == 1:
-    #    return result[0]
     result = search_unit(p=id_string, f=field, m='a')
     if len(result) > 1:
         print 'Duplicate: {0} {1}'.format(id_string, result)
         quit()
     if len(result) == 1:
-        return result[0]
+        return str(result[0])
     return None
 
 def get_metadata_from_inspire(id_string):
@@ -146,25 +156,38 @@ def main(max_count=10):
     filename = re.sub('.py', '_append.out', filename)
     output = open(filename, 'w')
 
+    filename_check = 'tmp_' + __file__
+    filename_check = re.sub('.py', '_check_append.out', filename_check)
+    output_check = open(filename_check, 'w')
+
+
     with open(INPUT_FILE) as file_h:
         for cnt, line in enumerate(file_h):
             match_obj = re.match(r'Need eprint: (\S+) (\S+)', line)
             eprint = match_obj.group(1)
             doi = match_obj.group(2)
             recid = get_recid_from_inspire(eprint)
-            if recid or recid == False:
+            if recid:
+                logging.info('We have this eprint: ' + eprint + recid)
+                continue
+            elif recid == False:
+                logging.info('Malformed eprint: ' + eprint)
                 continue
             recid = get_recid_from_inspire(doi)
             if not recid:
+                logging.info('We do not have this DOI:' + doi)
                 continue
             diff = compare_arxiv_inspire(eprint, recid)
             if diff[0]:
                 output.write(create_xml(recid, diff[1]))
+            else:
+                output_check.write(create_xml(recid, diff[1]))
             if cnt > max_count:
                 break
 
     output.close()
     print filename
+    print filename_check
     print LOGFILE
 
 if __name__ == '__main__':
