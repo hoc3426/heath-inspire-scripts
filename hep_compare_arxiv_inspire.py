@@ -47,7 +47,11 @@ def create_xml(recid, input_dict):
     for tag in input_dict:
         if tag == 'eprint' or tag == 'primarch':
             continue
-        subfields = [(9, 'arXiv'), ('a', input_dict[tag])]
+        if tag.startswith('65017a'):
+            class_number = 2
+        else:
+            class_number = 9
+        subfields = [(class_number, 'arXiv'), ('a', input_dict[tag])]
         if tag == '037__a':
             subfields.append(('c', input_dict['primarch']))
         record_add_field(record, tag[0:3], tag[3], tag[4],
@@ -67,12 +71,13 @@ def get_metadata_from_arxiv(eprint):
         record['eprint'] = eprint
         record['269__c'] = entry.published.split('T')[0]
         record['246__a'] = entry.title
-        record['65017a'] = entry.category
+        record['primarch'] = entry.arxiv_primary_category['term']
+        for category in [tag['term'] for tag in entry.tags]:
+            record['65017a' + category] = category
         try:
             record['500__a'] = entry.arxiv_comment
         except AttributeError:
             pass
-        record['primarch'] = entry.arxiv_primary_category['term']
         try:
             record['520__a'] = entry.summary
         except AttributeError:
@@ -82,7 +87,8 @@ def get_metadata_from_arxiv(eprint):
         except AttributeError:
             pass
     for key, value in record.items():
-        record[key] = textwrap.fill(re.sub(r'\s+', ' ', value))
+        if isinstance(value, str):
+            record[key] = textwrap.fill(re.sub(r'\s+', ' ', value))
 
     return record
 
