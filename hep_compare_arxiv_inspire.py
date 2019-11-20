@@ -104,9 +104,9 @@ def get_recid_from_inspire(id_string):
 
     id_string = str(id_string)
     if ARXIV_REGEX.match(id_string):
-        field = '037__a:'
+        field = '037__a'
     elif ARXIV_REGEX_NEW.match(id_string):
-        field = '037__a:'
+        field = '037__a'
         id_string = 'arXiv:' + id_string
     elif DOI_REGEX.match(id_string):
         field = '0247_a'
