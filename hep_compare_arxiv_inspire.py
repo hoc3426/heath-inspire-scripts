@@ -45,13 +45,16 @@ def create_xml(recid, input_dict):
         input_dict['037__a'] = 'arXiv:' + eprint
 
     for tag in input_dict:
-        if tag == 'eprint' or tag == 'primarch':
+        if tag in ('eprint', 'primarch', '0247_a'):
             continue
         if tag.startswith('65017a'):
             class_number = 2
         else:
             class_number = 9
-        subfields = [(class_number, 'arXiv'), ('a', input_dict[tag])]
+        subfields = []
+        if tag != '269__c':
+            subfields.append((class_number, 'arXiv'))
+        subfields.append((tag[5], input_dict[tag]))
         if tag == '037__a':
             subfields.append(('c', input_dict['primarch']))
         record_add_field(record, tag[0:3], tag[3], tag[4],
@@ -73,7 +76,7 @@ def get_metadata_from_arxiv(eprint):
         record['246__a'] = entry.title
         record['primarch'] = entry.arxiv_primary_category['term']
         for category in [tag['term'] for tag in entry.tags]:
-            if re.search('\d', category):
+            if re.search(r'\d', category):
                 continue
             record['65017a' + category] = category
         try:
@@ -163,11 +166,12 @@ def main(max_count=10):
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_append.out', filename)
     output = open(filename, 'w')
+    output.write('<collection>')
 
     filename_check = 'tmp_' + __file__
     filename_check = re.sub('.py', '_check_append.out', filename_check)
     output_check = open(filename_check, 'w')
-
+    output_check.write('<collection>')
 
     with open(INPUT_FILE) as file_h:
         for cnt, line in enumerate(file_h):
@@ -193,6 +197,9 @@ def main(max_count=10):
             if cnt > max_count:
                 break
 
+    output_check.write('</collection>')
+    output_check.close()
+    output.write('</collection>')
     output.close()
     print filename
     print filename_check
