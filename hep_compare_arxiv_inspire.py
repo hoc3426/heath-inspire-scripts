@@ -20,6 +20,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.search_engine import get_fieldvalues, search_unit
 
 from hep_ads_xml_input import ARXIV_REGEX, ARXIV_REGEX_NEW
+from hep_compare_arxiv_inspire_input import IGNORE_EPRINTS
 
 LOGFILE = 'tmp_' + __file__
 LOGFILE = re.sub('.py', '.log', LOGFILE)
@@ -31,6 +32,12 @@ INPUT_FILE = 'tmp_hep_ads_xml_missing_eprint.out'
 MAX_COUNT = 10
 URL_BASE = 'http://export.arxiv.org/api/query?id_list='
 DOI_REGEX = re.compile(r'^10.\d{4,9}/\S+$')
+
+def clean_eprint(eprint):
+    '''Remove possible prefix from eprint.'''
+
+    regex = re.compile('^arxiv:', re.I)
+    return regex.sub('', eprint)
 
 def create_xml(recid, input_dict):
     '''Create marcxml file from.'''
@@ -103,6 +110,7 @@ def get_recid_from_inspire(id_string):
     '''
 
     id_string = str(id_string)
+    id_string = clean_eprint(id_string)
     if ARXIV_REGEX.match(id_string):
         field = '037__a'
     elif ARXIV_REGEX_NEW.match(id_string):
@@ -178,6 +186,9 @@ def main(max_count=10):
             match_obj = re.match(r'Need eprint: (\S+) (\S+)', line)
             eprint = match_obj.group(1)
             doi = match_obj.group(2)
+            eprint = clean_eprint(eprint)
+            if eprint in IGNORE_EPRINTS:
+                continue
             recid = get_recid_from_inspire(eprint)
             if recid:
                 logging.info('We have this eprint: ' + eprint + recid)
