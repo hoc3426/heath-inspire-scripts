@@ -182,7 +182,8 @@ def main(max_count=10):
     output_check.write('<collection>')
 
     with open(INPUT_FILE) as file_h:
-        for cnt, line in enumerate(file_h):
+        counter = 0
+        for line in file_h:
             match_obj = re.match(r'Need eprint: (\S+) (\S+)', line)
             eprint = match_obj.group(1)
             doi = match_obj.group(2)
@@ -203,9 +204,11 @@ def main(max_count=10):
             diff = compare_arxiv_inspire(eprint, recid)
             if diff[0]:
                 output.write(create_xml(recid, diff[1]))
+                counter += 1
             else:
                 output_check.write(create_xml(recid, diff[1]))
-            if cnt > max_count:
+                counter += 1
+            if counter > max_count:
                 break
 
     output_check.write('</collection>')
