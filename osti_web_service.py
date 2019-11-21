@@ -139,7 +139,8 @@ def get_url(recid):
     for item in BibFormatObject(int(recid)).fields('8564_'):
         if item.has_key('y'):
             if item['y'] in ['Article from SCOAP3',
-                             'Fulltext from Publisher']:
+                             'Fulltext from Publisher',
+                             'Fulltext from publisher']:
                 url_openaccess = item['u']
                 accepted = True
         if item.has_key('z') and not url_openaccess:
