@@ -140,6 +140,15 @@ def get_metadata_from_inspire(id_string):
     record['245__a'] = title
     return record
 
+def base_title(title):
+    '''Create a version of the title suitable for comparison.'''
+
+    title = title.lower()
+    title = re.sub(r'^(the|a) ', '', title)
+    title = re.sub(r'\b(the|a)\b', '', title)
+    title = re.sub(r'[\W_]', '', title)
+    return title
+
 def compare_arxiv_inspire(eprint, recid):
     '''
     Compare arXiv and INSPIRE metadata and return metadata.
@@ -148,20 +157,20 @@ def compare_arxiv_inspire(eprint, recid):
     '''
 
     eprint_record = get_metadata_from_arxiv(eprint)
-    eprint_title = eprint_record['246__a'].lower()
+    eprint_title = eprint_record['246__a']
     inspire_record = get_metadata_from_inspire(recid)
     try:
-        inspire_title = inspire_record['245__a'].lower()
+        inspire_title = inspire_record['245__a']
     except TypeError:
         inspire_title = \
         '** NO INFORMATION IN INSPIRE for {0}'.format(recid)
-    inspire_title_base = re.sub(r'[\W_]', '', inspire_title)
-    eprint_title_base = re.sub(r'[\W_]', '', eprint_title)
+    inspire_title_base = base_title(inspire_title)
+    eprint_title_base = base_title(eprint_title)
     if inspire_title_base == eprint_title_base:
         title_match = True
     else:
         title_match = False
-        message = 'Title mismatch\n{0} {1}\nA: {2}\nI: {3}\n\n'.\
+        message = '\nTitle mismatch\n{0} {1}\nA: {2}\nI: {3}\n\n'.\
            format(eprint, recid,
            eprint_title.capitalize(), inspire_title.capitalize())
         logging.info(message)
