@@ -20,7 +20,7 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.search_engine import get_fieldvalues, search_unit
 
 from hep_ads_xml_input import ARXIV_REGEX, ARXIV_REGEX_NEW
-from hep_compare_arxiv_inspire_input import IGNORE_EPRINTS
+from hep_compare_arxiv_inspire_input import IGNORE_EPRINTS, UK_TO_US
 
 LOGFILE = 'tmp_' + __file__
 LOGFILE = re.sub('.py', '.log', LOGFILE)
@@ -148,6 +148,8 @@ def base_title(title):
     title = title.lower()
     title = re.sub(r'^(the|a) ', '', title)
     title = re.sub(r'\b(the|a)\b', '', title)
+    for key in UK_TO_US:
+        title = re.sub(r'\b' + key + r'\b', UK_TO_US[key], title)
     title = re.sub(r'[\W_]', '', title)
     return title
 
