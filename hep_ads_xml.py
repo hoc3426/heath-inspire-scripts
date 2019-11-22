@@ -407,7 +407,7 @@ def main():
     print filename
 
     filename = 'tmp_' + __file__
-    filename = re.sub('.py', '_missing_eprint.out', filename)
+    filename = re.sub('.py', '_missing_eprint.in', filename)
     output = open(filename, 'w')
     output.write(output_missing_eprint)
     output.close()

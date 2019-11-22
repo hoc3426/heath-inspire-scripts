@@ -28,7 +28,7 @@ logging.basicConfig(filename=LOGFILE, filemode='w',
                     format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
-INPUT_FILE = 'tmp_hep_ads_xml_missing_eprint.out'
+INPUT_FILE = 'tmp_hep_ads_xml_missing_eprint.in'
 MAX_COUNT = 10
 URL_BASE = 'http://export.arxiv.org/api/query?id_list='
 DOI_REGEX = re.compile(r'^10.\d{4,9}/\S+$')
