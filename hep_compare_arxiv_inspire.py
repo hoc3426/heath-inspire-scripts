@@ -205,7 +205,7 @@ def main(max_count=10):
                 continue
             recid = get_recid_from_inspire(eprint)
             if recid:
-                logging.info('We have this eprint: ' + eprint + recid)
+                logging.info('We have this eprint: ' + eprint + ' ' + recid)
                 continue
             elif recid == False:
                 logging.info('Malformed eprint: ' + eprint)
