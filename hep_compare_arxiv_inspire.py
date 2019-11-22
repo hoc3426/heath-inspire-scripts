@@ -33,6 +33,8 @@ MAX_COUNT = 10
 URL_BASE = 'http://export.arxiv.org/api/query?id_list='
 DOI_REGEX = re.compile(r'^10.\d{4,9}/\S+$')
 
+DELETED = search_unit(p='DELETED', m='a', f='980*')
+
 def clean_eprint(eprint):
     '''Remove possible prefix from eprint.'''
 
@@ -123,7 +125,7 @@ def get_recid_from_inspire(id_string):
     else:
         logging.info('Unknown ID: ' + id_string)
         return False
-    result = search_unit(p=id_string, f=field, m='a')
+    result = search_unit(p=id_string, f=field, m='a') - DELETED
     if len(result) > 1:
         print 'Duplicate: {0} {1}'.format(id_string, result)
         quit()
