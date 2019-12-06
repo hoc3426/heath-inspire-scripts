@@ -30,7 +30,7 @@ from osti_web_service_constants import TYPE_DICT, DIRECTORY, \
         ACCEPTED_SEARCH, DADD_SEARCH, THESIS_SEARCH, \
         DOE_SUBJECT_CATEGORIES_DICT, \
         DOE_FERMILAB_DICT, DOE_AFF_DICT, \
-        INSPIRE_AFF_DICT, SEARCH
+        INSPIRE_AFF_DICT, SEARCH, ENDING_COUNTER
 
 CHICAGO_TIMEZONE = pytz.timezone('America/Chicago')
 
@@ -40,7 +40,6 @@ VERBOSE = False
 TEST = True
 TEST = False
 RECIDS = False
-ENDING_COUNTER = 20
 
 CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
                                        cc='Fermilab'))

@@ -23,6 +23,11 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 VERBOSE = False
 #VERBOSE = True
 
+EMAIL_REGEX = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
+
+
 DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
 AFFILIATIONS_DONE_FILE = 'hep_author_collaboration_affiliations_done.p'
 AFFILIATIONS_DONE_FILE = DIRECTORY + AFFILIATIONS_DONE_FILE
@@ -210,17 +215,17 @@ def create_xml(eprint=None, doi=None, author_dict=None):
     record = {}
     record_add_field(record, '001', controlfield_value=str(recid))
     tag = '100__'
-    email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
-    orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
-    inspire_regex = re.compile(r'^INSPIRE-\d{8}$')
+    #EMAIL_REGEX = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
+    #ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+    #INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
     for key in author_dict:
         subfields = []
         author = author_dict[key][0]
         #print author_dict
-        match_obj = re.search(orcid_regex, author)
+        match_obj = re.search(ORCID_REGEX, author)
         if match_obj:
             orcid = match_obj.group(1)
-            if not re.match(orcid_regex, orcid):
+            if not re.match(ORCID_REGEX, orcid):
                 print '1 Problem with', orcid
             if ('j', 'ORCID:' + orcid) not in subfields:
                 subfields.append(('j', 'ORCID:' + orcid))
@@ -229,7 +234,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
         match_obj = re.search(r'(INSPIRE-\d{8})', author)
         if match_obj:
             inspire = match_obj.group(1)
-            if not re.match(inspire_regex, inspire):
+            if not re.match(INSPIRE_REGEX, inspire):
                 print 'Problem with', inspire
             subfields.append(('i', inspire))
             author = author.replace(inspire, '')
@@ -259,11 +264,11 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 affiliation = affiliation.replace(r'. ', r'.')
                 email = re.search(r"(\S+\@\S+)", affiliation).group(1)
                 orcid = re.search(r"(0000-\S+)", affiliation).group(1)
-                if re.match(email_regex, email):
+                if re.match(EMAIL_REGEX, email):
                     subfields.append(('m', 'email:' + email))
                 else:
                     print "Email problem:", email
-                if re.match(orcid_regex, orcid) and \
+                if re.match(ORCID_REGEX, orcid) and \
                    ('j', 'ORCID:' + orcid) not in subfields:
                     subfields.append(('j', 'ORCID:' + orcid))
                 else:
@@ -278,7 +283,7 @@ def create_xml(eprint=None, doi=None, author_dict=None):
                 #print 'XXX', affiliation
                 for aff in affiliation.split():
                     aff = re.sub(r'[^\d^\-^X]', '', aff)
-                    orcid = re.search(orcid_regex, aff)
+                    orcid = re.search(ORCID_REGEX, aff)
                     if orcid:
                         orcid = orcid.group(0)
                         if ('j', 'ORCID:' + orcid) not in subfields:

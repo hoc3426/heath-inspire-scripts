@@ -19,7 +19,7 @@ from hepnames_add_from_list_email_to_aff import *
 from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
                                            EXPERIMENT, SOURCE, INSPIRE
 
-from hep_collaboration_authors import process_author_name 
+from hep_collaboration_authors import process_author_name, ORCID_REGEX 
 
 #EXPERIMENT = 'FNAL-E-0974'
 #EXPERIMENT = 'AUGER'
@@ -155,6 +155,9 @@ def main(authors, inspire):
         try:
             orcid = author_info[2]
         except IndexError:
+            orcid = None
+        if not ORCID_REGEX.match(orcid):
+            affiliation = orcid
             orcid = None
         try:
             affiliation = author_info[3]

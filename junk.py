@@ -54,14 +54,10 @@ def doi_ending():
             if result:
                 print result, search
     #counter_list(dois)
-doi_ending()
-quit()
         
 def aff_fix(search):
     for recid in perform_request_search(p=search, cc='HEP'):
         print print_record(recid, ot=['100', '700'], format='hm')
-aff_fix('700__u:testinggpiccofootnote')
-quit()
 
 
 
@@ -117,44 +113,106 @@ def authors():
 #authors()
 #quit()
 
-def microboone_notes():
-  with open('tmp_microboone.in') as fp:
+def experiment_notes():
+  EXPERIMENT = 'FNAL-E-0974'
+  COLLABORATION = 'MicroBooNE'
+  FILE = 'tmp_microboone.in'
+  URL_BASE = 'https://microboone.fnal.gov/wp-content/uploads/'
+  REGEX = re.compile(r'^(\S+)\s+(\S+)\s+(.*)')
+  COLLECTIONS = ['HEP', 'CORE', 'NOTE', 'Fermilab']
+
+  EXPERIMENT = 'FNAL-E-0973'
+  COLLABORATION = 'Mu2e'
+  FILE = 'tmp_mu2e.in'
+  URL_BASE = 'https://mu2e-docdb.fnal.gov/cgi-bin/sso/ShowDocument?docid='
+  REGEX = re.compile(r'^([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+([^\t]+)\t+')
+  DATE_REGEX = '%d-%b-%y'
+  COLLECTIONS = ['Fermilab']
+  #Date	Speaker	Home Institution	Venue	Title	Length (min)	Type		Doc-db (pwd)	Doc-db(cert)	Conference Web page
+
+  AFF_DICT = {
+'ANL':'Argonne',
+'Berkeley':'UC, Berkeley',
+'Caltech':'Caltech',
+'FNAL':'Fermilab',
+'Frascati':'Frascati',
+'HZDR':'HZDR, Dresden',
+'LBNL':'LBL, Berkeley',
+'LNF':'Frascati',
+'Manchester':'Manchester U.',
+'Minn':'Minnesota U.',
+'Pisa':'Pisa U.',
+'Purdue':'Purdue U.',
+'SouthAlabama':'South Alabama U.',
+'SunYatSen':'SYSU, Guangzhou',
+'Uminn':'Minnesota U.',
+'UMN':'Minnesota U.',
+'UVA':'Virginia U.',
+'Yale':'Yale U.',
+'York':'York Coll., N.Y.'
+}
+
+  with open(FILE) as fp:
     for line in fp.readlines():
         common_fields = {}
         common_tags = {}
-        match_obj = re.search(r'^(\S+)\s+(\S+)\s+(.*)', line)
+        match_obj = REGEX.search(line)
         try:
             date = match_obj.group(1)
         except AttributeError:
             break
-        date = datetime.strptime(date, '%m/%d/%y').strftime('%Y-%m-%d')
+        #print date
+        try:
+            date = datetime.strptime(date, DATE_REGEX).strftime('%Y-%m-%d')
+        except ValueError:
+            continue
         report = match_obj.group(2)
         freport = 'FERMILAB-' + report
-        title = match_obj.group(3)
-        url = 'https://microboone.fnal.gov/wp-content/uploads/'
-        url += report + '.pdf'
-        common_tags['037__'] = [('a', report), ('z', freport)]
+        author = match_obj.group(2) + ', ' + match_obj.group(3)
+        affiliation = match_obj.group(4)
+        title = match_obj.group(6)
+        url = match_obj.group(10)
+        if not url.isdigit():
+            url = match_obj.group(9)
+        if not url.isdigit():
+            url = None
+        if url:
+            url = URL_BASE + url
+        #url += report + '.pdf'
+        #common_tags['037__'] = [('a', report), ('z', freport)]
+        try:
+            affiliation = AFF_DICT[affiliation]
+            common_tags['100__'] = [('a', author), ('u', affiliation)]
+        except KeyError:
+            common_tags['100__'] = [('a', author), ('v', affiliation)]
         common_tags['245__'] = [('a', title)]
         common_tags['269__'] = [('c', date)]     
         common_tags['65017'] = [('2', 'INSPIRE'), ('a', 'Instrumentation'),
                                 ('a', 'Experiment-HEP')]
-        common_tags['693__'] = [('e', 'FNAL-E-0974')]
-        common_tags['710__'] = [('g', 'MicroBooNE')]
-        common_tags['8564_'] = [('u', url), ('y', 'Fulltext')]
-        common_tags['FFT__'] = [('a', url), ('f', 'pdf'), ('n', freport),
-                                ('t', 'INSPIRE-PUBLIC')]
+        common_tags['693__'] = [('e', EXPERIMENT)]
+        common_tags['710__'] = [('g', COLLABORATION)]
+        if url:
+            url_text = COLLABORATION + ' Server'
+            common_tags['8564_'] = [('u', url), ('y', url_text)]
+            url = url.replace('ShowDocument', 'RetrieveFile')
+            #common_tags['FFT__'] = [('a', url), ('f', 'pdf'),
+            #                        ('n', match_obj.group(2)),
+            #                        ('t', 'INSPIRE-PUBLIC')]
+            common_tags['FFT__'] = [('a', url),
+                                    ('n', match_obj.group(2)),
+                                    ('t', 'INSPIRE-PUBLIC')]
         for tag in common_tags:
             record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
                 subfields=common_tags[tag])
         tag = '980__'
-        for collection in ['HEP', 'CORE', 'NOTE', 'Fermilab']:
+        for collection in COLLECTIONS:
             common_tags[tag] = [('a', collection)]
             record_add_field(common_fields, tag[0:3], tag[3], tag[4], 
                          subfields=common_tags[tag])
 
-        #print print_rec(common_fields)
-        print "wget {0}".format(url)
-microboone_notes()
+        print print_rec(common_fields)
+        #print "wget {0}".format(url)
+experiment_notes()
 quit()
 
 def bad_aff():

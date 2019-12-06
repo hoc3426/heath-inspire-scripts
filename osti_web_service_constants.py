@@ -8,6 +8,7 @@ OSTI_URL = 'https://www.osti.gov/elink/docs/2411dtd.htm'
 XML_PREAMBLE  = '<?xml version="1.0" encoding="UTF-8" ?>'
 XML_PREAMBLE += '<!DOCTYPE records SYSTEM "' + OSTI_URL + '">'
 
+ENDING_COUNTER = 200
 
 TYPE_DICT = {
 'ANNUAL':'PD',
@@ -29,11 +30,11 @@ TYPE_DICT = {
 'MICROBOONE':'TR',
 'MUCOOL':'TR',
 'PLAN':'PD',
-'POSTER':'CO',
+'POSTER':'TR',
 'PROPOSAL':'TR',
 'PUB':'JA',
 'REVIEW':'PD',
-'SLIDES':'CO',
+'SLIDES':'TR',
 'THESIS':'TD',
 'TM':'TR',
 'VLHCPUB':'TR'
