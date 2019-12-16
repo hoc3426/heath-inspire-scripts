@@ -9,6 +9,7 @@ experiments = {
 
 'ALICE':'CERN-LHC-ALICE',
 'AMANDA':'AMANDA',
+'ANNIE':'FNAL-E-1063',
 'ANTARES':'ANTARES',
 'ArgoNeuT':'FNAL-T-0962',
 'ATLAS':'CERN-LHC-ATLAS',

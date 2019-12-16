@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 A system to extract collaboration author lists from tex files or ieee.
 """
@@ -14,7 +16,7 @@ import time
 
 from unidecode import unidecode
 
-from invenio.search_engine import perform_request_search,\
+from invenio.search_engine import perform_request_search, \
                                   get_fieldvalues
 from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
@@ -109,6 +111,22 @@ def author_first_last(author):
     if re.search(r',', author):
         author = re.sub(r'\,\s*', ', ', author)
         return author + qname
+    if re.match(r'^Tatjana Agatonovic Jovin$', author):
+        return 'Agatonovic Jovin, Tatjana'
+    if re.match(r'^Ivanka Bozovic Jelisavcic$', author):
+        return 'Bozovic Jelisavcic, Ivanka'
+    if re.match(r'^Enrique Calvo Alamillo$', author):
+        return 'Calvo Alamillo, Enrique'
+    if re.match(r'^Ziad El Bitar$', author):
+        return 'El Bitar, Ziad'
+    if re.match(r'^Hector García Cabrera$', author):
+        return 'García Cabrera, Hector'
+    if re.match(r'^Amir Noori Shirazi$', author):
+        return 'Noori Shirazi, Amir'
+    if re.match(r'^Maria Soledad Robles Manzano$', author):
+        return 'Robles Manzano, Maria Soledad'
+    if re.match(r'^Antonio Verdugo de Osa$', author):
+        return 'Verdugo de Osa, Antonio'
     #Anything ending in a period is the firstname block
     if re.search(ur'\. [^\.]+$', author, re.U):
         return re.sub(ur'(.*\.) ([^\.]+)', r'\2, \1', author, re.U) + \

@@ -85,10 +85,8 @@ def cites_per_year(key, value, start='1970', end='2020'):
                                       all_papers[year])
         total += citations_year[year]
         print '{0:6d} {1:6d} {2:6d}'.format(year, citations_year[year], total)
-
-
-#cites_per_year()
-#quit()
+cites_per_year('ea', 't.c.brooks.1', start='1970', end='2020')
+quit()
 
 
 def authors():
@@ -212,8 +210,8 @@ def experiment_notes():
 
         print print_rec(common_fields)
         #print "wget {0}".format(url)
-experiment_notes()
-quit()
+#experiment_notes()
+#quit()
 
 def bad_aff():
     x=get_all_field_values('110__t')
@@ -227,8 +225,8 @@ def bad_aff():
     baddies.sort()
     for ab in baddies:
         print ab
-bad_aff()
-quit()
+#bad_aff()
+#quit()
 
 def citation_primarch(recid):
   for primarch in ['cond-mat*', 
@@ -244,7 +242,7 @@ or 037__c:astro-ph.EP or 037__c:astro-ph.IM or 037__c:astro-ph.sr']:
         primarch = 'astro-ph'
     primarch = primarch.replace('*', '')
     print "{0:10} {1:5d}".format(primarch, number)
-citation_primarch(451647)
+citation_primarch(89145)
 quit()
 
 
