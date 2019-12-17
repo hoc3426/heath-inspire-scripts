@@ -222,22 +222,28 @@ def extract_metadata(input_dict):
         return None
 
     article_dict['doi'] = doi
-    if bibcode not in INSPIRE_BIBCODES:
-        article_dict['bibcode'] = bibcode
-    search = 'find j {0},{1},{2}'.format(journal, volume, page)
+    if bibcode in INSPIRE_BIBCODES:
+        logging.info('Bibcode in INSPIRE: ' + str(input_dict))
+    else:
+        try:
+            article_dict['bibcode'] = bibcode
+        except KeyError:
+            logging.info('No bibcode: ' + str(input_dict))
+    search = 'find j "{0},{1},{2}"'.format(journal, volume, page)
     result = perform_request_search(p=search, cc='HEP')
     journal_recid = 0
-    if len(result) == 0:
+    if len(result) > 1:
+        logging.info('Multiple {0},{1},{2}'.format(journal, volume, page))
+        return None
+    elif len(result) == 1:
+        logging.info('JVP in INSPIRE: {0},{1},{2}'.format(journal,
+                                                          volume, page))
+        journal_recid = result[0]
+    elif len(result) == 0:
         article_dict['journal'] = journal
         article_dict['volume'] = volume
         article_dict['page'] = page
         article_dict['year'] = year
-    elif len(result) > 1:
-        logging.info('Multiple {0},{1},{2}'.format(journal, volume, page))
-        return None
-    else:
-        journal_recid = result[0]
-
     if eprint not in INSPIRE_IDENTIFIER_RECID_DICT:
         logging.info('Problem searching eprint: ' + str(eprint))
         return None
@@ -253,7 +259,9 @@ def create_xml(input_dict):
     This function create_xml takes a metadata dictionary.
     """
 
+    #print input_dict
     metadata_dict = extract_metadata(input_dict)
+    #print metadata_dict
     if not metadata_dict:
         return None
     record = {}
@@ -273,10 +281,12 @@ def create_xml(input_dict):
             pubnote = [('q', journal), ('v', volume), ('c', page)]
         else:
             pubnote.append(('y', year))
+        record_add_field(record, '773', '', '', subfields=pubnote)
     except KeyError:
-        logging.info('Problem with extracting j,v,p,y: ' + str(input_dict))
-        return None
-    record_add_field(record, '773', '', '', subfields=pubnote)
+        #logging.info('Problem with extracting j,v,p,y: ' + str(input_dict))
+        #return None
+        pass
+
     try:
         doi = [('a', metadata_dict['doi']), ('2', 'DOI'), ('9', 'ADS')]
     except KeyError:
@@ -287,10 +297,11 @@ def create_xml(input_dict):
         record_add_field(record, '024', '7', '', subfields=doi)
     try:
         bibcode = [('a', metadata_dict['bibcode']), ('9', 'ADS')]
+        record_add_field(record, '035', '', '', subfields=bibcode)
     except KeyError:
-        logging.info('Not adding bibcode: ' + str(input_dict))
-        return None
-    record_add_field(record, '035', '', '', subfields=bibcode)
+        #logging.info('Not adding bibcode: ' + str(input_dict))
+        #return None
+        pass
     return print_rec(record)
 
 def get_eprint_doi_needed(ads_eprints, ads_dois, doi_to_eprint):
@@ -374,6 +385,7 @@ def process_ads_xml_file(document):
         if check_doi_eprint(eprint):
             output_check_doi_eprint += generate_spreadsheet_line(eprint, doi)
             continue
+        #print child.attrib
         record_update = create_xml(child.attrib)
         if record_update:
             try:
