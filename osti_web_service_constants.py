@@ -45,7 +45,7 @@ ACCEPTED_SEARCH = '8564_z:openaccess or 8564_z:postprint or \
 0247_2:doi ignore'
 
 DADD_SEARCH = 'dadd:2012 or dadd:2013 or dadd:2014 or \
-dadd:2015 or dadd:2016 or dadd:2017 or dadd:2018 or dadd:2019 \
+dadd:2015 or dadd:2016 or dadd:2017 or dadd:2018 or dadd:2019 or dadd:2020 \
 -037__a:fermilab-code-*'
 
 THESIS_SEARCH = '8564_y:fermilabthesisf'
