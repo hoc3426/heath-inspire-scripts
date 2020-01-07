@@ -85,8 +85,8 @@ def cites_per_year(key, value, start='1970', end='2020'):
                                       all_papers[year])
         total += citations_year[year]
         print '{0:6d} {1:6d} {2:6d}'.format(year, citations_year[year], total)
-cites_per_year('ea', 't.c.brooks.1', start='1970', end='2020')
-quit()
+#cites_per_year('ea', 't.c.brooks.1', start='1970', end='2020')
+#quit()
 
 
 def authors():
@@ -229,6 +229,7 @@ def bad_aff():
 #quit()
 
 def citation_primarch(recid):
+  total = 3641
   for primarch in ['cond-mat*', 
                    'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph',
                    'hep-th', 'math-ph', 'math*', 'nucl-ex', 'nucl-th',
@@ -241,8 +242,10 @@ or 037__c:astro-ph.EP or 037__c:astro-ph.IM or 037__c:astro-ph.sr']:
     if 'astro' in primarch:
         primarch = 'astro-ph'
     primarch = primarch.replace('*', '')
-    print "{0:10} {1:5d}".format(primarch, number)
-citation_primarch(89145)
+    print "{0:10} {1:5d} {2:4f}".format(primarch, number, float(number)/float(total)*100)
+    #total += number
+  print 'Total citations:', total
+citation_primarch(1421100)
 quit()
 
 

@@ -11,8 +11,8 @@ from osti_check_accepted_dois import DOIS, YEARS
 
 DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'LBNF', 'ND',
              'PPD', 'T', 'TD']
-DIVISIONS = ['(AD|APC)', 'CD', 'DI', 'LBNF', 'ND',
-             '(A|AE|CMS|E|PPD|T)', 'TD']
+DIVISIONS = ['(AD|APC)', 'CD', 'CCD', 'DI', 'ESH', 'FESS', 'LBNF', 'ND',
+             '(A|AE|CMS|E|PPD|T)', 'PIP', 'QIS', 'SCD', 'TD', 'WDRS']
 
 JOURNALS = []
 LOGFILE = 'tmp_' + __file__

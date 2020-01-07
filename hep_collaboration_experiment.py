@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 import re
-from invenio.search_engine import perform_request_search, get_record
+from invenio.search_engine import perform_request_search, get_record, \
+                                  get_fieldvalues
 from invenio.bibrecord import print_rec, record_get_field_instances, \
      record_add_field
 
@@ -106,10 +107,13 @@ def main():
         for r in x:
             #if r in done_records:
             #    break
+            if 'BNL-E-0821' in get_fieldvalues(r, '693__e'):
+                continue
             output.write(create_xml(r, experiments[key]))
             done_records.append(r)
     output.write('</collection>')
     output.close()
+    print filename   
 
 if __name__ == '__main__':
     try:
