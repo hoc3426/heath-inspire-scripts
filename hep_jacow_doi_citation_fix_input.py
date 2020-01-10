@@ -1,5 +1,7 @@
+COUNTER_MAX = 100
 SEARCH = 'find r fermilab and fc b'
 SEARCH = '999C5a:doi:10.18429/JAC* or 65017a:accelerators'
+SEARCH = '999C5r:IPAC*'
 JACOW_CONFERENCES = [
 'ABDW',
 'APAC',

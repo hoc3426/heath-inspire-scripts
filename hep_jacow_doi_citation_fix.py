@@ -39,14 +39,16 @@ from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field
-from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES
+from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES, \
+                                             COUNTER_MAX
 
+TEST = False
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR|SA|SU)\d?[A-Z]{1,8}\d{1,8}',
                         re.IGNORECASE)
 URL_REGEX = re.compile(
 r'https?://(accelconf.web.cern.ch|jacow.org).*/(\w+\d{4})/papers/(\w+)\.pdf',
 re.IGNORECASE)
-REPORT_REGEX = re.compile(r'([A-z]+)\-(\d{4})\-(\w+)')
+REPORT_REGEX = re.compile(r'([A-z]+)\-?(\d{4})\-(\w+)')
 
 JACOW_CONFERENCES = sorted(JACOW_CONFERENCES, key=len, reverse=True)
 
@@ -110,6 +112,8 @@ def create_jacow_doi(conf, year, talk):
         return None
     doi = 'doi:10.18429/JACoW-' + conf + year + '-' + talk
     doi = jacow_case(doi)
+    if TEST:
+        print doi
     if doi in JACOW_DOIS:
         return doi
     for jacow_doi in JACOW_DOIS:
@@ -147,9 +151,13 @@ def extract_jacow_doi(ref):
 
     match_obj = REPORT_REGEX.match(ref)
     if match_obj:
+        if TEST:
+            print ref
         conf = match_obj.group(1)
         year = match_obj.group(2)
         talk = match_obj.group(3).upper()
+        if TEST:
+            print conf, year, talk
         return create_jacow_doi(conf, year, talk)
 
     for jacow_conf in JACOW_CONFERENCES:
@@ -181,6 +189,10 @@ def create_xml(recid):
             [(tag, field_instance) for tag in tags \
              for field_instance in record_get_field_instances(record, \
              tag[0:3], tag[3], tag[4])]:
+        original_subfields = []
+        for code, value in field_instance[0]:
+            original_subfields.append((code, value))
+
         correct_subfields = []
         flag_instance = False
         for code, value in field_instance[0]:
@@ -193,9 +205,9 @@ def create_xml(recid):
             if code in ('m', 'u', 'x', 'r'):
                 doi = extract_jacow_doi(value)
                 if doi:
-                    if ('a', doi) in correct_subfields:
+                    if ('a', doi) in original_subfields:
                         flag_instance = False
-                    else:
+                    elif ('a', doi) not in correct_subfields:
                         correct_subfields.append(('a', doi))
                         flag_instance = True
             if (code, value) in correct_subfields:
@@ -227,6 +239,8 @@ def main(options):
         if xml:
             output.write(xml)
             counter += 1
+        if counter > COUNTER_MAX:
+            break
     output.write('</collection>')
     output.close()
     print 'Number of records examined:', len(result)
@@ -239,13 +253,15 @@ def main(options):
 if __name__ == '__main__':
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:t')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
     for option, argument in OPTIONS:
         if option == '-r':
             SEARCH = '001:' + argument
+        if option == '-t':
+            TEST = True
     try:
         main(OPTIONS)
     except KeyboardInterrupt:
