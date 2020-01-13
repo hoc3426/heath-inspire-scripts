@@ -108,7 +108,8 @@ EXPT_DICT = {
     ("8.5", "Gravitational lensing/Dark matter")
     ],
 ("9", "Theory collaborations"):[
-    ("9.1", "Lattice")
+    ("9.1", "Lattice"),
+    ("9.2", "Simulation tools")
    ]
 }
 
