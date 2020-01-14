@@ -109,7 +109,7 @@ EXPT_DICT = {
     ],
 ("9", "Theory collaborations"):[
     ("9.1", "Lattice"),
-    ("9.2", "Simulation tools")
+#    ("9.2", "Simulation tools")
    ]
 }
 

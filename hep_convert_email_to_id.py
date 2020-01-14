@@ -12,7 +12,7 @@ from sys import argv
 from invenio.search_engine import perform_request_search, get_record, \
                                   search_unit, get_all_field_values
 from invenio.bibrecord import print_rec, record_get_field_instances, \
-                              record_add_field
+                              record_add_field, record_get_field_value
 from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from invenio.search_engine import get_collection_reclist
@@ -49,7 +49,7 @@ def bad_id_check(id_num):
 
     email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
     email_regex = re.compile(
-        u"^[\w\-\.\'\+]+@[\w\-\.]+\.(\w{2,4}|email|canon)$")
+        r"^[\w\-\.\'\+]+@[\w\-\.]+\.(\w{2,4}|email|canon)$")
     email_regex = re.compile(
         r"^(([^<>()\[\]\.,;:\s@\"]{1,64}(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@\[*(?!.*?\.\.)(([^<>()[\]\.,;\s@\"]+\.?)+[^<>()[\]\.,;\s@\"]{2,})\]?$")
 
@@ -99,7 +99,7 @@ def find_records_containing_email():
     search = r'100__m:/\w/ or 700__m:/\w/'
     if SEARCH:
         search = SEARCH
-    result  = perform_request_search(p=search, cc='HEP')
+    result = perform_request_search(p=search, cc='HEP')
     result += perform_request_search(p=search, cc='Fermilab')
     result = set(result)
     print "Checking", len(result), "records"
@@ -112,7 +112,7 @@ def get_hepnames_recid_from_email(email):
     """
     Find the HEPNames recid based on email
     """
-   
+
     if email not in EMAILS_HEPNAMES:
         if VERBOSE:
             print "WARNING: no hepnames record found for %s: " % (email)
@@ -140,6 +140,8 @@ def get_hepnames_recid_from_email(email):
         return None
 
 def get_recid_from_id(id_number):
+    ''' Get the recid corresponding to an ID number. '''
+
     search = '035__a:' + id_number
     result = perform_request_search(p=search, cc='HepNames')
     if len(result) == 1:
@@ -205,11 +207,11 @@ def convert_email_to_inspire_id(email):
     """
 
     inspire_id = None
-    orcid      = None
+    orcid = None
     recid = get_hepnames_recid_from_email(email)
     if str(recid).isdigit():
         inspire_id = find_inspire_id_from_record(recid)
-        orcid      = get_hepnames_anyid_from_recid(recid, 'ORCID')
+        orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
     return [inspire_id, orcid]
 
 def get_orcid_from_inspire_id(inspire_id):
@@ -225,7 +227,7 @@ def get_orcid_from_inspire_id(inspire_id):
         recid = result[0]
     if recid:
         inspire_id = find_inspire_id_from_record(recid)
-        orcid      = get_hepnames_anyid_from_recid(recid, 'ORCID')
+        orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
     return [inspire_id, orcid]
 
 
@@ -237,6 +239,8 @@ def create_xml(recid, tags, author_dict):
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
+    time_stamp = record_get_field_value(record, '005')
+    record_add_field(correct_record, '001', controlfield_value=time_stamp)
     flag = False
     for (tag, field_instance) in \
             [(tag, field_instance) for tag in tags \
@@ -308,7 +312,7 @@ def main(recordlist):
             print "ERROR: bad recid given"
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
-    output = open(filename,'w')
+    output = open(filename, 'w')
     output.write('<collection>')
     author_dict = {}
     counter = 0
