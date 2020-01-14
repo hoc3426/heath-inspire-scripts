@@ -38,7 +38,7 @@ import sys
 from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search
 from invenio.bibrecord import print_rec, record_get_field_instances, \
-                              record_add_field
+                              record_add_field, record_get_field_value
 from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES, \
                                              COUNTER_MAX
 
@@ -183,6 +183,8 @@ def create_xml(recid):
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
+    time_stamp = record_get_field_value(record, '005')
+    record_add_field(correct_record, '005', controlfield_value=time_stamp)
     #We don't want to update records that already have the DOI.
     flag_instances = []
     for (tag, field_instance) in \
