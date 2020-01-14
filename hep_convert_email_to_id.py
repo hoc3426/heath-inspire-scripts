@@ -240,7 +240,7 @@ def create_xml(recid, tags, author_dict):
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
     time_stamp = record_get_field_value(record, '005')
-    record_add_field(correct_record, '001', controlfield_value=time_stamp)
+    record_add_field(correct_record, '005', controlfield_value=time_stamp)
     flag = False
     for (tag, field_instance) in \
             [(tag, field_instance) for tag in tags \

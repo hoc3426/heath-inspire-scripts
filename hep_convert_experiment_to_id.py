@@ -13,7 +13,7 @@ import os
 from invenio.search_engine import perform_request_search, get_record, \
      get_fieldvalues
 from invenio.bibrecord import print_rec, record_get_field_instances, \
-     record_add_field
+     record_add_field, record_get_field_value
 from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     get_hepnames_anyid_from_recid
 from hep_convert_experiment_to_id_constants import EXPERIMENTS, \
@@ -23,7 +23,7 @@ from hep_convert_experiment_to_id_constants import EXPERIMENTS, \
 def get_hepnames_recid_from_search(search):
     """Find recid in HEPNames from a search."""
 
-    reclist = perform_request_search(p = search, cc='HepNames')
+    reclist = perform_request_search(p=search, cc='HepNames')
     if len(reclist) == 1:
         return reclist[0]
     elif len(reclist) > 1:
@@ -41,7 +41,7 @@ def convert_search_to_inspire_id(search):
     """Convert a search to an INSPIRE ID."""
 
     inspire_id = None
-    orcid      = None
+    orcid = None
     recid = get_hepnames_recid_from_search(search)
     if recid:
         inspire_id = find_inspire_id_from_record(recid)
@@ -55,6 +55,8 @@ def create_xml(recid, tags, experiment, author_dict):
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
+    time_stamp = record_get_field_value(record, '005')
+    record_add_field(correct_record, '005', controlfield_value=time_stamp)
     flag = None
     for tag in tags:
         field_instances = record_get_field_instances(record, tag[0:3],
@@ -66,10 +68,12 @@ def create_xml(recid, tags, experiment, author_dict):
                 if code == 'a':
                     if value not in author_dict:
                         search = 'find a ' + value + ' and exp ' + experiment
-                        if VERBOSE: print
+                        if VERBOSE:
+                            print search
                         author_dict[value] = \
                            convert_search_to_inspire_id(search)
-                        if VERBOSE: print author_dict[value]
+                        if VERBOSE:
+                            print author_dict[value]
                     if author_dict[value][0]:
                         flag = True
                         correct_subfields.append(('i', author_dict[value][0]))
@@ -94,7 +98,7 @@ def find_records_with_no_id(experiment):
     search = "693__e:" + experiment + " date:2010->2020"
     search += " -100__i:INSPIRE* -700__i:INSPIRE* \
                 -100__j:ORCID* -700__j:ORCID* \
-                -100__k:ORCID* -700__k:ORCID*" 
+                -100__k:ORCID* -700__k:ORCID*"
     result = perform_request_search(p=search, cc='HEP')
     if VERBOSE:
         print len(result)
@@ -116,15 +120,15 @@ def experiment_convert(experiment):
                   ": %d records with no author ids found" % len(recordlist)
         file_name = 'tmp_hep_convert_experiment_to_id_' + experiment + \
                    '_correct.out'
-        output = open(file_name,'w')
+        output = open(file_name, 'w')
         for record in recordlist:
             if i_count > COUNT_MAX:
                 break
             if VERBOSE > 0:
                 print "%d doing %d" % (i_count, record)
-            #print create_xml(record,['100__','700__'])
-            #create_xml(record, ['100__','700__'], experiment)
-            new_author_list = create_xml(record, ['100__','700__'], \
+            #print create_xml(record,['100__', '700__'])
+            #create_xml(record, ['100__', '700__'], experiment)
+            new_author_list = create_xml(record, ['100__', '700__'], \
                                          experiment, author_dict)
             if new_author_list[0]:
                 output.write(new_author_list[0])
@@ -132,7 +136,7 @@ def experiment_convert(experiment):
                 i_count += 1
             author_dict = new_author_list[1]
         output.close()
-        if (os.stat(file_name)[6] == 0):
+        if os.stat(file_name)[6] == 0:
             os.unlink(file_name)
     else:
         if VERBOSE:
