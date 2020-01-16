@@ -36,13 +36,13 @@ import os
 import re
 import sys
 from invenio.search_engine import get_all_field_values, get_record, \
-                                  perform_request_search
+                                  perform_request_search, search_unit
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field, record_get_field_value
 from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES, \
                                              COUNTER_MAX
 
-TEST = False
+VERBOSE = False
 TALK_REGEX = re.compile(r'^(MO|TU|WE|TH|FR|SA|SU)\d?[A-Z]{1,8}\d{1,8}',
                         re.IGNORECASE)
 URL_REGEX = re.compile(
@@ -51,6 +51,16 @@ re.IGNORECASE)
 REPORT_REGEX = re.compile(r'([A-z]+)\-?(\d{4})\-(\w+)')
 
 JACOW_CONFERENCES = sorted(JACOW_CONFERENCES, key=len, reverse=True)
+
+def good_doi(doi):
+    '''Check to see if a url is valid.'''
+
+    bare_doi = doi.replace('doi:', '')
+    url = 'https://doi.org/api/handles/' + bare_doi
+    curl = 'curl --output /dev/null --silent --head --fail '
+    if os.system(curl + url) == 0:
+        return True
+    return False
 
 def jacow_case(ref):
     """Convert to the proper case form of all JACoW IDs."""
@@ -63,12 +73,29 @@ def jacow_case(ref):
 def get_jacow_dois():
     """Return all the JACoW DOIs INSPIRE has."""
 
-    jacow_dois = set()
+    jacow_dois_record = set()
     for doi in get_all_field_values('0247_a'):
         if doi.startswith('10.18429/JACoW-'):
-            jacow_dois.add('doi:' + doi)
-    return jacow_dois
+            jacow_dois_record.add('doi:' + doi)
 
+    jacow_dois_ref = set()
+    for doi in get_all_field_values('999C5a'):
+        if doi.startswith('doi:10.18429/JACoW-'):
+            jacow_dois_ref.add(doi)
+    missing_dois = jacow_dois_ref - jacow_dois_record
+    if not missing_dois:
+        return jacow_dois_record
+
+    
+    for doi in sorted(missing_dois):
+        if good_doi(doi):
+            search_unit('doi', f='0247_2', m='a')
+            doi = doi.replace('doi:', '')
+            if search_unit(doi, f='0247_2', m='a'):
+                continue
+            print 'https://doi.org/{0}'.format(doi)
+    sys.exit()
+  
 JACOW_DOIS = get_jacow_dois()
 CURRENT_YEAR = datetime.now().year
 
@@ -89,16 +116,6 @@ def jacow_citation_statistics():
             print "{0:3d} {1:6d}".format(key, value)
     print 'Total', total
 
-def good_doi(doi):
-    '''Check to see if a url is valid.'''
-
-    bare_doi = doi.replace('doi:', '')
-    url = 'https://doi.org/api/handles/' + bare_doi
-    curl = 'curl --output /dev/null --silent --head --fail '
-    if os.system(curl + url) == 0:
-        return True
-    return False
-
 def create_jacow_doi(conf, year, talk):
     """Takes candidate for e.g. IPAC2016 and returns normalized form."""
 
@@ -112,8 +129,9 @@ def create_jacow_doi(conf, year, talk):
         return None
     doi = 'doi:10.18429/JACoW-' + conf + year + '-' + talk
     doi = jacow_case(doi)
-    if TEST:
-        print doi
+    if VERBOSE:
+        #print doi
+        pass
     if doi in JACOW_DOIS:
         return doi
     for jacow_doi in JACOW_DOIS:
@@ -143,6 +161,9 @@ def extract_jacow_doi(ref):
 
     match_obj = URL_REGEX.match(ref)
     if match_obj:
+        if VERBOSE:
+            #print ref
+            pass
         conf = match_obj.group(2)
         year = re.sub(r'\D', '', conf)
         conf = re.sub(r'\d', '', conf)
@@ -151,13 +172,15 @@ def extract_jacow_doi(ref):
 
     match_obj = REPORT_REGEX.match(ref)
     if match_obj:
-        if TEST:
-            print ref
+        if VERBOSE:
+            #print ref
+            pass
         conf = match_obj.group(1)
         year = match_obj.group(2)
         talk = match_obj.group(3).upper()
-        if TEST:
-            print conf, year, talk
+        if VERBOSE:
+            #print conf, year, talk
+            pass
         return create_jacow_doi(conf, year, talk)
 
     for jacow_conf in JACOW_CONFERENCES:
@@ -196,14 +219,16 @@ def create_xml(recid):
             original_subfields.append((code, value))
 
         correct_subfields = []
+
         flag_instance = False
         for code, value in field_instance[0]:
-            if code == 'a' and value.startswith('doi:10.18429/JAC'):
-                if value not in JACOW_DOIS:
-                    doi = fix_jacow_doi(value)
-                    if doi:
-                        value = doi
-                        flag_instance = True
+            if code == 'a' and value.startswith('doi:10.18429/JAC') \
+                           and value not in JACOW_DOIS:
+                doi = fix_jacow_doi(value)
+                if doi:
+                    print 'DOI missing from INSPIRE', doi
+                    value = doi
+                    flag_instance = True
             if code in ('m', 'u', 'x', 'r'):
                 doi = extract_jacow_doi(value)
                 if doi:
@@ -255,15 +280,15 @@ def main(options):
 if __name__ == '__main__':
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:t')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'r:v')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
     for option, argument in OPTIONS:
         if option == '-r':
             SEARCH = '001:' + argument
-        if option == '-t':
-            TEST = True
+        if option == '-v':
+            VERBOSE = True
     try:
         main(OPTIONS)
     except KeyboardInterrupt:
