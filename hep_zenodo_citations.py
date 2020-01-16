@@ -1,10 +1,25 @@
 '''Script to find the citations to Zenodo DOIs.'''
 
+import cPickle as pickle
+import os
+from os.path import exists
 import re
 from urllib2 import urlopen, URLError
 
 from invenio.search_engine import perform_request_search, \
                                   get_all_field_values, get_fieldvalues
+
+
+DIRECTORY = '/afs/cern.ch/project/inspire/TEST/hoc/'
+ZENODO_METADATA_FILE = 'hep_author_collaboration_zenodo_metadata.p'
+ZENODO_METADATA_FILE = DIRECTORY + ZENODO_METADATA_FILE
+try:
+    ZENODO_METADATA = pickle.load(open(ZENODO_METADATA_FILE, "rb"))
+except EOFError:
+    print "Error opening:", ZENODO_METADATA_FILE
+except IOError:
+    ZENODO_METADATA = {}
+
 
 class Repository(object):
     """
@@ -115,6 +130,10 @@ class Zenodo(Repository):
     def get_ref_metadata_repository(self, ref):
         '''Find the author and title of a Zenodo work.'''
 
+        if ref in ZENODO_METADATA:
+            author = ZENODO_METADATA[ref]['author']
+            title = ZENODO_METADATA[ref]['title']
+            return author + ' : ' + title
         url = 'https://zenodo.org/record/' + \
                    ref.replace('doi:10.5281/zenodo.', '')
         try:
@@ -128,6 +147,10 @@ class Zenodo(Repository):
                       str(webpage)).group(1)
         except AttributeError:
             author = ''
+        if author and title:
+            ZENODO_METADATA[ref] = {}
+            ZENODO_METADATA[ref]['author'] = author
+            ZENODO_METADATA[ref]['title'] = title
         return author + ' : ' + title
 
 def main():
@@ -145,6 +168,14 @@ def main():
     zenodo_output = Zenodo()
     output.write(zenodo_output.citations)
     output.close()
+    if exists(ZENODO_METADATA_FILE):
+        backup = ZENODO_METADATA_FILE + '.bak'
+        if exists(backup):
+            os.remove(backup)
+        os.rename(ZENODO_METADATA_FILE, backup)
+    with open(ZENODO_METADATA_FILE, "wb") as fname:
+        pickle.dump(ZENODO_METADATA, fname)
+    print 'Number of Zenodo records:', len(ZENODO_METADATA)
     print filename
 
 if __name__ == '__main__':
