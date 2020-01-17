@@ -150,6 +150,10 @@ def new_orcids(already_seen):
               or {3}:ORCID:* (037__c:hep-* or 037__c:nucl-* \
               or 037__c:math*)".format(fields[0],
                   fields[1], fields[2], fields[3])
+    search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
+              or {3}:ORCID:* 037__c:hep-th".format(fields[0],
+                  fields[1], fields[2], fields[3])
+
 
     result = perform_request_search(p=search, cc='HEP')
     #search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \

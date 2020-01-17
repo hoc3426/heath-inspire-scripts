@@ -178,8 +178,10 @@ def process_author_name(author):
     author = author.replace(r'xxxx', r'\~')
     #print 'MIDWAY1 =', author
     author = translate_latex2unicode(author)
+    author = author.replace('\\"i', 'ï')
     if '\\' in author and not 'UTF8' in author:
         print 'Problem with', author
+        sys.exit()
     author = author.replace(',', ', ')
     author = author.replace('.', '. ')
     author = re.sub(r'\s+', ' ', author)
