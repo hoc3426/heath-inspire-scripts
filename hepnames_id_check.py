@@ -28,7 +28,26 @@ RECIDS_HEPN = get_collection_reclist('HepNames')
 RECIDS_INST = get_collection_reclist('Institutions')
 RECIDS_EXPT = get_collection_reclist('Experiments')
 
+GOOD_IDENTIFIERS = set([x.lower() for x in ['ARXIV', 'BAI', 'CERN',
+'DESY', 'GoogleScholar', 'INSPIRE', 'JACOW', 'KAKEN', 'ORCID',
+'ResearcherID', 'SCOPUS', 'SLAC', 'Wikipedia']])
+
+
 BAI_URL = 'https://inspirehep.net/author/manage_profile/'
+
+def bad_identifiers():
+    """Looks for bad 035__9 fields"""
+
+    identifiers = set([y.lower() for y in
+                       get_fieldvalues(RECIDS_HEPN, '035__9')])
+    for identifier in identifiers - GOOD_IDENTIFIERS:
+        search = '035__9:' + identifier
+        result = perform_request_search(p=search, cc='HepNames')
+        if not result:
+            continue
+        print search
+        for recid in result:
+            print 'https://inspirehep.net/record/' + str(recid)
 
 def bad_orcid_bai():
     """Check ORCIDs have correct form in BAI."""
@@ -59,8 +78,8 @@ def check_ids(letter=None):
     """Go through HEPNames looking for bad IDs."""
 
     already_seen = {}
-    duplicates   = set()
-    bad_id_set   = set()
+    duplicates = set()
+    bad_id_set = set()
     fields = ['035__a', '035__z', '371__m']
     print 'check_ids: letter =', letter
     if letter:
@@ -223,8 +242,9 @@ def main(input_value=None):
     filename = re.sub('.py', '_correct.out', filename)
     print filename
     print 'main: letter =', input_value
-    output = open(filename,'w')
+    output = open(filename, 'w')
     sys.stdout = output
+    bad_identifiers()
     check_ids(letter=input_value)
     #bad_experiments_affilations()
     bad_url_z()

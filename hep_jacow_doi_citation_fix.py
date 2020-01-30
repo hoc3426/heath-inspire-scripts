@@ -39,6 +39,7 @@ from invenio.search_engine import get_all_field_values, get_record, \
                                   perform_request_search, search_unit
 from invenio.bibrecord import print_rec, record_get_field_instances, \
                               record_add_field, record_get_field_value
+#from check_url import checkURL
 from hep_jacow_doi_citation_fix_input import SEARCH, JACOW_CONFERENCES, \
                                              COUNTER_MAX
 
@@ -61,6 +62,7 @@ def good_doi(doi):
     if os.system(curl + url) == 0:
         return True
     return False
+    #return checkURL(url)
 
 def jacow_case(ref):
     """Convert to the proper case form of all JACoW IDs."""

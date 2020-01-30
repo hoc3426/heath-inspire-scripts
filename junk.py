@@ -31,6 +31,42 @@ from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
 
+def create_xml(recid, urls):
+    common_fields = {}
+    common_tags = {}
+    record_add_field(common_fields, '001', controlfield_value=str(recid))
+    tag = '8564_'
+    for url in urls:
+        url = 'https://rivet.hepforge.org/analyses/' + url
+        common_tags[tag] = [('u', url), ('y', 'Rivet analyses reference')]
+        record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+            subfields=common_tags[tag])
+    return print_rec(common_fields)
+
+def json_read(file):
+    import json
+    with open(file) as json_file:
+        data = json.load(json_file)
+    print len(data)
+    i = 1
+    j = 1
+    output = open('tmp_rivet_%d.out' % j, 'w')
+    for key, value in data.iteritems():
+        search = '001:{0} 8564_y:"Rivet analyses reference"'.format(key)
+        if perform_request_search(p=search, cc='HEP'):
+            continue
+        #print key, value
+        if i == 100:
+            i = 1
+            output.close()
+            output = open('tmp_rivet_%d.out' % j, 'w')
+            j += 1
+        output.write(create_xml(key, value))
+        i += 1
+    output.close()
+
+json_read('analyses.json')
+quit()
 
 def counter_list(journals):
     from Counter import Counter
