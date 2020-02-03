@@ -8,7 +8,7 @@ from BeautifulSoup import BeautifulSoup as BS
 
 import re
 
-FILE = "/afs/cern.ch/project/inspire/info/Experiments/list.webdoc"
+FILE = "/afs/cern.ch/project/inspire/info/Experiments/list2.webdoc"
 
 BASE_URL = 'http://inspirehep.net/search?cc=Experiments'
 BASE_URL += '&sf=experimentname&so=a&p=372__a:'
@@ -108,10 +108,18 @@ EXPT_DICT = {
     ("8.5", "Gravitational lensing/Dark matter")
     ],
 ("9", "Theory collaborations"):[
-    ("9.1", "Lattice"),
-#    ("9.2", "Simulation tools")
+    ("9.1", "Data Analysis"),
+    {("9.2", "Simulation vtools"):[
+        ("9.2.1", "Detector Simulation"),
+        ("9.2.2", "Event Simulation")
+        ]
+    },
+    ("9.3", "Parton Distribution Fits"),
+    ("9.4", "Lattice Gauge Theory")
    ]
 }
+
+
 
 ELEMENT = ElementMaker(makeelement=html_parser.makeelement)
 
@@ -125,22 +133,28 @@ def populate_ul(input_ul, input_tuple):
     input_ul.append(li_final)
     return li_final
 
-def create_html_list(experiment_dictionary):
-    """HTML TABLE generation by lxml.html tree.
+def create_html_list(experiment_dictionary, ul_top = ELEMENT.UL()):
+    """HTML UL LIST generation by lxml.html tree.
        Follows http://lxml.de/3.3/api/lxml.html.builder-module.html
     """
 
-    ul_top = ELEMENT.UL()
+    #ul_top = ELEMENT.UL()
     for key in sorted(experiment_dictionary):
+        print 'key =', key
         li_top = populate_ul(ul_top, key)
         ul_sub = ELEMENT.UL()
         for value in experiment_dictionary[key]:
             print '  1  value =', value
-            if isinstance(value, dict):
-                ul_sub = create_html_list(value)
-                li_top.append(ul_sub)
-            elif value:
+            if isinstance(value, tuple):
+                print '  2  value =', value
                 populate_ul(ul_sub, value)
+            elif isinstance(value, dict):
+                ul_sub = create_html_list(value, ul_sub)
+                li_top.append(ul_sub)
+            #print 'ul_sub =', LH.tostring(ul_sub)
+            #print ' '
+            #print 'ul_top =', LH.tostring(ul_top)
+            #print ' '
         li_top.append(ul_sub)
     return ul_top
 
