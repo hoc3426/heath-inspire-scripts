@@ -15,6 +15,8 @@ from hep_convert_email_to_id import get_hepnames_recid_from_email, \
                                     get_recid_from_id
 from invenio.bibrecord import print_rec, record_add_field
 
+from hep_baiprofiledups import get_all_orcids
+from hep_collaboration_authors import EMAIL_REGEX
 from hepnames_add_from_list_email_to_aff import *
 from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
                                            EXPERIMENT, SOURCE, INSPIRE
@@ -101,48 +103,53 @@ def main(authors, inspire):
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '.out', filename)
     output = open(filename, 'w')
-    emails = set()
-    orcids = set()
+
+    filename_append = 'tmp_' + __file__ + '_append'
+    filename_append = re.sub('.py', '.out', filename_append)
+    output_append = open(filename_append, 'w')
+
+
+    already_seen = set()
     for author_info in authors:
-        #print author_info
+        author = email = orcid = None
+        affiliation = native_name = None
+        recid_email = recid_orcid = None
         author = author_info[0]
-        email = author_info[1]
-        email = email.lower()
-        try:
-            orcid = author_info[2]
-        except IndexError:
-            orcid = None
-        if orcid:
-            if orcid.startswith('000') and \
-            not ORCID_REGEX.match(orcid):
-                print('Bad ORCID:', orcid)
-            elif not ORCID_REGEX.match(orcid):
-                affiliation = orcid
-                orcid = None
-        try:
-            affiliation = author_info[3]
-        except IndexError:
-            affiliation = None
-        try:
-            native_name = author_info[5]
-        except IndexError:
-            native_name = None
-        if email in emails and email:
-            print "Duplicate", email
-            continue
-        else:
-           emails.add(email)
-        if orcid in orcids and orcid:
-            print "Duplicate", orcid
-            continue
-        else:
-           orcids.add(orcid)
-        recid_email = get_hepnames_recid_from_email(email)       
-        recid_orcid = None
+        for element in author_info[1:]:
+            if '@' in element:
+                email = element
+            elif element.startswith('000'):
+                orcid = element
+            else:
+                try:
+                    element.decode('ascii')
+                except UnicodeDecodeError:
+                    native_name = element
+                else:
+                    affiliation = element
+        for value in (email, orcid):
+            if not value:
+                continue
+            if value in already_seen:
+                print "Duplicate", value
+                continue
+            if not EMAIL_REGEX.match(value) and not \
+            ORCID_REGEX.match(value):
+                print('Bad format: {0}'.format(value))
+            already_seen.add(value)
+ 
+        if email:
+            recid_email = get_hepnames_recid_from_email(email)
         if orcid:
             recid_orcid = get_recid_from_id(orcid)
-            if recid_email and not recid_orcid:
-                print recid_email, orcid
+        if recid_email and not recid_orcid and orcid:
+            output_append.write('Need {0} on {1}'.format(orcid, recid_email))
+        elif recid_orcid and not recid_email and email:
+            output_append.write('Need {0} on {1}'.format(email, recid_orcid))
+        if recid_email and recid_orcid and recid_email != recid_orcid:
+            print('Mismatch {0} {1}  {2} {3}'.
+                  format(email, recid_email, orcid, recid_orcid))
+            continue
         recid = recid_email or recid_orcid
         if recid and EXPERIMENT == None:
             continue
@@ -176,8 +183,10 @@ def main(authors, inspire):
         output.write('\n')
         inspire += 1
     output.close()
+    output_append.close()
     print "Next INSPIRE", inspire
     print filename
+    print filename_append
 
 if __name__ == '__main__':
 
