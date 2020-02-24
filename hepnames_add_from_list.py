@@ -21,51 +21,6 @@ from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
 
 from hep_collaboration_authors import process_author_name, ORCID_REGEX 
 
-#EXPERIMENT = 'FNAL-E-0974'
-#EXPERIMENT = 'AUGER'
-#EXPERIMENT = 'BNL-RHIC-STAR'
-#EXPERIMENT = 'DUNE'
-#EXPERIMENT = 'GERDA'
-#EXPERIMENT = 'EXO-200'
-#EXPERIMENT = 'PEN'
-#EXPERIMENT = 'PADME'
-#EXPERIMENT = 'XENON1T'
-#EXPERIMENT = 'Baby-MIND'
-#EXPERIMENT = 'HARPO'
-#EXPERIMENT = None
-#EXPERIMENT = 'WiggleZ'
-#EXPERIMENT = 'DUNE'
-#EXPERIMENT = 'HAWC'
-#EXPERIMENT = 'KATRIN'
-#EXPERIMENT = 'SUPER-KAMIOKANDE'
-#EXPERIMENT = None
-#EXPERIMENT = 'DES'
-
-
-#SOURCE = 'Fermilab'
-#SOURCE = 'HARPO'
-#SOURCE = 'WiggleZ'
-#SOURCE = 'Fermilab'
-#SOURCE = 'HAWC'
-#SOURCE = 'Fermilab'
-#SOURCE = 'KATRIN'
-#SOURCE = 'SUPER-KAMIOKANDE'
-#SOURCE = 'DES'
-
-#INSPIRE = 72053
-#INSPIRE = 72499
-#INSPIRE = 72524
-#INSPIRE = 73359
-#INSPIRE = 73383
-#INSPIRE = 73787
-#INSPIRE = 74388
-#INSPIRE = 76741
-#INSPIRE = 78756
-#INSPIRE = 78849
-#INSPIRE =  78890
-#INSPIRE =  78916
-#INSPIRE =  78935
-
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''
 
@@ -89,7 +44,7 @@ def email_lookup():
     emails_unknown = []
     for email in EMAILS:
         recid = get_hepnames_recid_from_email(email)
-        if recid:
+        if recid and EXPERIMENT:
             search = '001:' + str(recid)  + ' 693__e:' + EXPERIMENT
             result = perform_request_search(p = search, cc = 'HepNames')
             if len(result) == 0:
@@ -122,9 +77,10 @@ def create_xml(author, email, affiliation, experiment, inspire_id, orcid,
         common_tags['371__'] = [('m', email), ('z', 'current')]
     if experiment:
         common_tags['693__'] = [('e', experiment), ('z', 'current')]
-    common_tags['035__'] = [('9', 'INSPIRE'), ('a', inspire_id)]
     if orcid:
         common_tags['035__'] = [('9', 'ORCID'), ('a', orcid)]
+    else:
+        common_tags['035__'] = [('9', 'INSPIRE'), ('a', inspire_id)]
     if SOURCE:
         common_tags['670__'] = [('a', SOURCE)]
     if native_name:
@@ -157,7 +113,10 @@ def main(authors, inspire):
         except IndexError:
             orcid = None
         if orcid:
-            if not ORCID_REGEX.match(orcid):
+            if orcid.startswith('000') and \
+            not ORCID_REGEX.match(orcid):
+                print('Bad ORCID:', orcid)
+            elif not ORCID_REGEX.match(orcid):
                 affiliation = orcid
                 orcid = None
         try:
@@ -178,9 +137,13 @@ def main(authors, inspire):
             continue
         else:
            orcids.add(orcid)
-        recid = get_hepnames_recid_from_email(email)
-        if not recid and orcid:
-            recid = get_recid_from_id(orcid)
+        recid_email = get_hepnames_recid_from_email(email)       
+        recid_orcid = None
+        if orcid:
+            recid_orcid = get_recid_from_id(orcid)
+            if recid_email and not recid_orcid:
+                print recid_email, orcid
+        recid = recid_email or recid_orcid
         if recid and EXPERIMENT == None:
             continue
         elif recid and EXPERIMENT:
