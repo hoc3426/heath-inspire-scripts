@@ -156,9 +156,10 @@ def main(authors, inspire):
             orcid = author_info[2]
         except IndexError:
             orcid = None
-        if not ORCID_REGEX.match(orcid):
-            affiliation = orcid
-            orcid = None
+        if orcid:
+            if not ORCID_REGEX.match(orcid):
+                affiliation = orcid
+                orcid = None
         try:
             affiliation = author_info[3]
         except IndexError:

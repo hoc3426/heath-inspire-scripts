@@ -1,4 +1,4 @@
-"""Dictionary of experiment categories."""
+"""Dictionary of Collaboration categories."""
 
 import lxml.html as LH
 import lxml.etree as ET
@@ -8,19 +8,19 @@ from BeautifulSoup import BeautifulSoup as BS
 
 import re
 
-FILE = "/afs/cern.ch/project/inspire/info/Experiments/list2.webdoc"
+FILE = "/afs/cern.ch/project/inspire/info/Experiments/list.webdoc"
 
 BASE_URL = 'http://inspirehep.net/search?cc=Experiments'
 BASE_URL += '&sf=experimentname&so=a&p=372__a:'
-TITLE = 'WebDoc-Page-Title:Experiment categories'
-PARAGRAPH = """The following list of major experiments in HEP and related
-fields seeks to organize the experiments by their primary characteristic.
-Where experiments could reasonably be included in more than one
+TITLE = 'WebDoc-Page-Title:Collaboration categories'
+PARAGRAPH = """The following list of major collaborations in HEP and related
+fields seeks to organize the collaborations by their primary focus.
+Where the focus could reasonably be included in more than one
 category, we have attempted to select the most meaningful.
 For example, although LHCb could be included in the "Hadron collider"
 category, its primary focus is the investigation of beauty sector physics
 and as such it has been included in the "Heavy Flavor Factory" category.
-However, this is not always possible and some experiments have more than
+However, this is not always possible and some collaborations have more than
 one category.
 This is very much a work in progress and we value your feedback.
 If you have any questions or comments please feel free to contact us about it
@@ -82,7 +82,7 @@ EXPT_DICT = {
     ("4.2", "Axion search experiments"),
     ("4.3", "Dark Forces")
     ],
-("5", "Cosmic ray experiments"):[
+("5", "Cosmic ray/Gamma ray experiments"):[
     ("5.1", "Ground array"),
     ("5.2", "Cerenkov array"),
     ("5.3", "Satellite"),
@@ -107,9 +107,9 @@ EXPT_DICT = {
     ("8.4", "Gravitational waves"),
     ("8.5", "Gravitational lensing/Dark matter")
     ],
-("9", "Theory collaborations"):[
+("9", "HEP Theory/Computing"):[
     ("9.1", "Data Analysis"),
-    {("9.2", "Simulation vtools"):[
+    {("9.2", "Simulation tools"):[
         ("9.2.1", "Detector Simulation"),
         ("9.2.2", "Event Simulation")
         ]

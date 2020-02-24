@@ -93,7 +93,7 @@ def get_jacow_dois():
         if good_doi(doi):
             search_unit('doi', f='0247_2', m='a')
             doi = doi.replace('doi:', '')
-            if search_unit(doi, f='0247_2', m='a'):
+            if search_unit(doi, f='0247_a', m='a'):
                 continue
             print 'https://doi.org/{0}'.format(doi)
     sys.exit()

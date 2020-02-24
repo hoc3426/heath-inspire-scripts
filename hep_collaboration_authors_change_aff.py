@@ -25,14 +25,23 @@ def main():
     except KeyError:
         print "No current value for", aff_input
 
-    aff_output = raw_input("INSPIRE ICN? ")
-    if len(aff_input) < 3 or len(aff_output) < 3:
+    try:
+        aff_output = input("INSPIRE ICN? ")
+    except NameError:
+        #pass
+        aff_output = raw_input("INSPIRE ICN? ")
+    if len(aff_input) < 3 or len(aff_output) < 3 \
+       and isinstance(aff_output, str):
         print "That's too short. Game over."
         return None
-    search = '110__u:"' + aff_output + '"'
-    if len(perform_request_search(p=search, cc='Institutions')) != 1:
-        print "Invalid ICN", aff_output
-        return None
+    if isinstance(aff_output, str):
+        aff_output = [aff_output]
+    print aff_output
+    for aff in aff_output:
+        search = '110__u:"' + aff + '"'
+        if len(perform_request_search(p=search, cc='Institutions')) != 1:
+            print "Invalid ICN", aff
+            return None
 
 #    try:
 #        affiliations_done = pickle.load(open(AFFILIATIONS_DONE_FILE, "rb"))

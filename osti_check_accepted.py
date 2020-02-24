@@ -5,7 +5,8 @@ import logging
 import re
 from Counter import Counter
 
-from invenio.search_engine import get_fieldvalues, search_unit
+from invenio.search_engine import get_fieldvalues, perform_request_search, \
+                                  search_unit
 from osti_web_service import check_already_sent
 from osti_check_accepted_dois import DOIS, YEARS
 
@@ -46,7 +47,12 @@ def recid_from_doi(doi):
     """Find if we have a DOI."""
 
     try:
-        return search_unit(p=doi, f='0247*', m='a')[0]
+        #return search_unit(p=doi, f='0247*', m='a')[0]
+        search = '0247_a:' + doi
+        result = perform_request_search(p=search, cc='Fermilab')
+        result2 = perform_request_search(p=search, cc='HEP')
+        result = result or result2
+        return result[0]
     except IndexError:
         return None
 

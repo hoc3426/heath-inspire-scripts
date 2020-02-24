@@ -50,6 +50,7 @@ experiments = {
 'MINERvA':'FNAL-E-0938',
 'MiniBooNE':'FNAL-E-0898',
 'MINOS':'FNAL-E-0875',
+'MINOS+':'FNAL-E-1016',
 'MILC':'LATTICE-MILC',
 'MIPP':'FNAL-E-0907',
 'Mu2e':'FNAL-E-0973',

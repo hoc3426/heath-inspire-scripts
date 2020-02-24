@@ -4,6 +4,7 @@ import unicodedata
 import re
 import operator
 import os
+import pprint
 import string
 from datetime import date
 import sys
@@ -30,6 +31,82 @@ from osti_web_service import get_osti_id
 from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
+
+
+def get_grid():
+    from dune_affiliation_translations import DICT
+    NEW_DICT = {}
+    for dune_aff, inspire_affs in DICT.items():
+        inspire_affs_dict = {}
+        for inspire_aff in inspire_affs:
+            search = '110__u:"{0}"'.format(inspire_aff)
+            result = perform_request_search(p=search, cc='Institutions')
+            if len(result) != 1:
+                print search
+                break
+            fields = get_fieldvalues(result[0], '035__a')
+            inspire_affs_dict[inspire_aff] = {}
+            for field in fields:
+                if field.startswith('grid'):
+                    inspire_affs_dict[inspire_aff]['grid'] = field
+                if field.startswith('https://ror.org'):
+                    inspire_affs_dict[inspire_aff]['ror'] = field
+            if len(inspire_affs_dict[inspire_aff]) < 2:
+                print dune_aff, inspire_affs
+                print '    https://inspirehep.net/record/{0}'.format(result[0])
+                break
+        NEW_DICT[dune_aff] = inspire_affs_dict
+    pp = pprint.PrettyPrinter()
+    pp.pprint(NEW_DICT)
+    #print NEW_DICT
+    
+#get_grid()
+#quit()
+
+def twitter():
+    search="8564_u:/twitter/"
+    result = perform_request_search(p=search, cc='Conferences')
+    print len(result)
+
+def count_by_year(search):
+    for year in range(1980, 2021):
+        searcht = search + ' earliestdate:' + str(year)
+        result = perform_request_search(p=searcht, cc='HEP')
+        print year, len(result)
+
+#count_by_year('"neural network"')
+#quit()
+
+
+eprints = [
+"10.22323/1.345.0072",
+"10.22323/1.345.0072",
+"10.22323/1.345.0048",
+"10.22323/1.345.0048",
+"10.1016/j.nuclphysa.2018.09.033",
+"10.1016/j.nuclphysa.2018.09.033",
+"10.1016/j.cpc.2017.01.015",
+"10.17632/dhnmtfpz9k.1",
+"10.1016/j.cpc.2017.01.015",
+"10.22323/1.345.0099",
+"10.22323/1.345.0099",
+"10.1103/physRevC.96.024909",
+"10.1103/physRevC.96.024909",
+"10.1016/j.nuclphysbps.2017.05.035",
+"10.1016/j.nuclphysbps.2017.05.035",
+"10.1016/j.nuclphysa.2017.05.105",
+"10.1016/j.nuclphysa.2017.05.105",
+"10.1016/j.nuclphysa.2017.06.028",
+"10.1016/j.nuclphysa.2017.06.028"]
+print len(eprints)
+for r in eprints:
+  search = 'doi:' + r
+  s = perform_request_search(p=search,cc='HEP')
+  if s:
+    print 'or {0}'.format(s[0])
+  else:
+    print search
+#quit()
 
 def create_xml(recid, urls):
     common_fields = {}
@@ -65,8 +142,8 @@ def json_read(file):
         i += 1
     output.close()
 
-json_read('analyses.json')
-quit()
+#json_read('analyses.json')
+#quit()
 
 def counter_list(journals):
     from Counter import Counter
@@ -281,8 +358,8 @@ or 037__c:astro-ph.EP or 037__c:astro-ph.IM or 037__c:astro-ph.sr']:
     print "{0:10} {1:5d} {2:4f}".format(primarch, number, float(number)/float(total)*100)
     #total += number
   print 'Total citations:', total
-citation_primarch(1421100)
-quit()
+#citation_primarch(1421100)
+#quit()
 
 
 def accepted_sent_check():
@@ -487,7 +564,7 @@ def zenodo_citations():
             url = 'https://inspirehep.net/record/' + str(recid) + '/references'
             print '   ', url
 zenodo_citations()
-quit()
+#quit()
 
 
 
@@ -519,14 +596,14 @@ with open('tmp.1000') as fp:
             inst = get_fieldvalues(match_obj.group(1), '110__u')[0]
             line = '\\newcommand{\\' + match_obj.group(1) + '}{' + inst + '}'
         print line.rstrip()
-quit()
+#quit()
 
 
 for recid in perform_request_search(p=
 '999C5a:/doi:10.5281\/zenodo.*:$/', cc='HEP'):
     print recid
     #print print_record(recid, ot=['999C5'], format='hm')
-quit()
+#quit()
 
 
 zenodos = []
@@ -537,12 +614,12 @@ for ref in get_all_field_values('999C5a'):
             zenodos.append((len(cites), ref))
 for doi in sorted(zenodos, reverse=True):
     print doi
-quit()
+#quit()
 
 for recid in perform_request_search(p=
 '700__u:testinggpiccofootnote', cc='HEP'):
     print print_record(recid, ot=['100', '700'], format='hm')
-quit()
+#quit()
 
 
 
@@ -594,7 +671,7 @@ with open('tmp.1000') as fp:
         #    line = re.sub(r'\\href{http://inspirehep.net/record/\d+}',
         #                  inst + ' %', line)
         #print line.rstrip()
-quit()
+#quit()
 
 AWARD = 'Dannie Heineman Prize'
 with open('tmp.9b') as fp:
@@ -622,7 +699,7 @@ with open('tmp.9b') as fp:
            #print x
        except ValueError:
            pass
-quit() 
+#quit() 
 
 def format_inst(affiliation):
     affiliation_key = re.sub(r'\W+', ' ', affiliation).upper()
@@ -662,7 +739,7 @@ inst_dict['UNIVERSITY OF ILLINOIS'] = ['Illinois U., Urbana']
 inst_dict['UNIVERSITY OF ARIZONA'] = ['Arizona U.']
 print len(inst_dict)
 print inst_dict
-quit()
+#quit()
 
 
 result = perform_request_search(p='find exp des and date > 2015', cc='HEP')
@@ -677,7 +754,7 @@ for author in sorted(authors_full):
     if len(perform_request_search(p='find exp des and a ' + author,
                                   cc='HepNames')) != 1:
         print 'find a', author, 'and exp des'
-quit()
+#quit()
 
 
 OSTIS = ["15017018",
@@ -742,7 +819,7 @@ for year in range(1900,2019):
     citations[year] = len(perform_request_search(
            p='find topcite 2000+ and tc p and jy ' + str(year), cc='HEP'))
     print year, citations[year]
-quit()
+#quit()
 
 if 0:
 #for recid in perform_request_search(p='500__a:/All figures and tables/', cc='HEP'):
@@ -795,13 +872,13 @@ for recid in result:
                     value = get_fieldvalues(recid, '269__c')[0][:4]
                 except IndexError:
                     print 'No date on', recid
-                    quit()
+                    #quit()
             elif element == '502__c':
                 try:
                     value = get_fieldvalues(recid, '100__u')[0]
                 except IndexError:
                     print 'No aff on', recid
-                    quit() 
+                    #quit() 
         #if element in ['500__a', '502__c', '701__a', '701__u']:
         #    if element == '500__a':
         #        match = re.match(r'Ph.D.\s*Thesis\s*\(Advisor[;:]\s*(.*)\)', value, 
@@ -814,7 +891,7 @@ for recid in result:
         #    line += element + value + '$$'
         line += value + '|'
     print line
-quit()
+#quit()
 
 
 for number in range(1,20):
@@ -823,7 +900,7 @@ for number in range(1,20):
     search = 'find fc p or fc t and tc p and ac ' + str(number)
     x2 = perform_request_search(p=search, cc='HEP')
     print '{0:2d} {1:8d} {2:10d} {3:10f}'.format(number, len(x1), len(x2), float(len(x1))/float(len(x2)))
-quit()
+#quit()
 
 #SEARCH = "119__a:/^FNAL/ or 119__c:/^FNAL/ or \
 #419__a:/^FNAL/ or 119__u:Fermilab"
@@ -874,12 +951,12 @@ for url in get_all_field_values('8564_u'):
     if re.search('([^\/]+linkedin[^\/]+)', url):
         domain.add(r'\1')
 print domain
-quit()
+#quit()
 
 for x in range(1,14):
     search = 'find topcite ' + str(x) + '000->' + str(x) + '999'
     print search, len(perform_request_search(p=search, cc='HEP'))
-quit()
+#quit()
 
 #search = '100__a:/\\\\/ or 700__a:/\\\\/ 710__g:babar 001:1000000->1700000'
 #print search
@@ -904,10 +981,10 @@ for collab in collabs:
 sorted_collab_dict = sorted(collab_dict.items(), key=operator.itemgetter(1))
 for key in sorted_collab_dict:
     print key, sorted_collab_dict[key]
-quit()
+#quit()
 
 print print_record(1665613, ot=['700'],format='hm')
-quit()
+#quit()
 
 
 search='693__e:dune'
@@ -931,7 +1008,7 @@ for recid in perform_request_search(p=search, cc='HepNames'):
         email = ''
     print name, ';', orcid, ';', inspire, ';', email
     #print author
-quit()
+#quit()
 
 
 from pdg_aff import AFFS
@@ -951,7 +1028,7 @@ with open('./institutions_names_prd.txt', 'r') as oldfh:
         except KeyError:
             newaff = get_aff(oldaff)
         print newaff, ':', oldaff
-quit()
+#quit()
 
 for aff in AFFS:
     aff2 = translate_latex2unicode(aff)
@@ -959,7 +1036,7 @@ for aff in AFFS:
         print AFFILIATIONS_DONE[re.sub(r'\W+', ' ', aff2).upper()][0], ';', aff
     except KeyError:
         print get_aff(aff), ';', aff
-quit()
+#quit()
 
 
 
@@ -971,11 +1048,11 @@ for recid in perform_request_search(p=search, cc='HEP'):
             emails.add(email)
 for email in emails:
     print 'or', email
-quit()
+#quit()
 
 
 print print_record(1680821,ot=['001', '100', '700'],format='xm')
-quit()
+#quit()
 
 
 recid = 499284
@@ -986,7 +1063,7 @@ for primarch in ['astro-ph*', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph',
     search += ' 037__c:' + primarch
     number = len(perform_request_search(p=search, cc='HEP'))
     print primarch, number
-quit()
+#quit()
 
 
 
@@ -998,7 +1075,7 @@ IDS = ["1420402", "1420403", "1420404", "1420405", "1420406", "1420407",
 for id in IDS:
     if not perform_request_search(p="035__a:" + id, cc='HEP'):
         print id
-quit()
+#quit()
 
 
 #print print_record(1674528, ot=['001','100', '700'], format='xm')
@@ -1015,7 +1092,7 @@ result = intbitset(result_m) & intbitset(result_d) - intbitset(result_i)
 for recid in result:
     doi = get_fieldvalues(recid, '0247_a')[0]
     print recid, doi
-quit()
+#quit()
 '''
 
 if False:
@@ -1114,7 +1191,7 @@ for recid in result:
         record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
             subfields=common_tags[tag])
     print print_rec(common_fields)
-quit()    
+#quit()    
         
 
 tags = ['702__']
@@ -1157,7 +1234,7 @@ for recid in result:
         record_add_field(correct_record, tag[0:3], tag[3], tag[4], \
             subfields=correct_subfields)
     print print_rec(correct_record)        
-quit()
+#quit()
 
 counter = 1
 search = '037:fermilab-* 035__9:osti -0247:doi -980:arXiv -du:2018-02-15'
@@ -1173,7 +1250,7 @@ for recid in result:
     doi = get_osti_id(recid)
     if doi in dois:
         print "Duplicate"
-        quit()
+        #quit()
     dois.add(doi)
     print 'doi = ', doi
     if not doi:
@@ -1195,7 +1272,7 @@ for recid in result:
             subfields=common_tags[key])
     #return common_fields
     print print_rec(common_fields)
-quit()
+#quit()
 
 
 
@@ -1216,7 +1293,7 @@ for key in reversed(sorted(topcites)):
     #print key, topcites[key]
     #print key, topcites[key][0], topcites[key][1]
     print "%4d %-12s %-50s" % (key, topcites[key][0], topcites[key][1][:40])
-quit()
+#quit()
 
 
 search_a = 'find t axion and de '
@@ -1226,7 +1303,7 @@ for date in range(2016, 2018):
     search2 = search_b + str(date)
     print date, len(perform_request_search(p=search1, cc='HEP')), \
                 len(perform_request_search(p=search2, cc='HEP'))
-quit()
+#quit()
 
 
 search = 'refersto:recid:1343079 980:CORE year:2017'
@@ -1236,7 +1313,7 @@ for recid in perform_request_search(p=search, cc='HEP'):
     title = re.sub(r'(\w+)s\b', r'\1', title)
     for word in title.split():
         print word
-quit()
+#quit()
 
 
 
@@ -1252,7 +1329,7 @@ for (search1, search2, search3) in list:
             result = perform_request_search(p=search, cc='HEP')
             #print %ssearch, len(result)
             print "{0:20} {1:<20}".format(search, len(result))
-quit()
+#quit()
 
 
 
@@ -1261,7 +1338,7 @@ search = '773__c:/^R/ 0247_a:/^10\.1103\/PhysRev\w\.\d+\.\d/'
 result = perform_request_search(p=search, cc='HEP')
 for recid in result:
     print print_record(recid, ot=['0247_', '773__'], format='hm')
-quit()
+#quit()
 
     
 
@@ -1276,7 +1353,7 @@ for experiment in sorted(experiments):
     for recid in result:
         title = get_fieldvalues(recid, '245__a')[0]
         print "{0:12s} {1:50s}".format(experiment, title)
-quit()
+#quit()
 
 
 import itertools
@@ -1285,11 +1362,11 @@ for x, db in itertools.product(('p', 'q'), ('HepNames', 'DELETED')):
     search = '909CO' + x + ':"INSPIRE:hepnames"'
     y = perform_request_search(p=search, cc=db)
     print search, db, len(y)
-quit()
+#quit()
 
 result = search_unit(p = 'INSPIRE:Jobs', m = 'q', f = '909*')
 print result
-quit()
+#quit()
 
 from hep_aff import get_aff
 
@@ -1326,7 +1403,7 @@ for year in range(1990,1992):
     big_total += total
     print "{0:6d} {1:6d} {2:6d}".format(year, total, big_total)
 print "{0:6s} {1:6d}".format('Total', big_total)
-quit()
+#quit()
 
 journals = ['Mon.Not.Roy.Astron.Soc.', 'Astrophys.J.', 'Astron.J.',
             'Astropart.Phys.']
@@ -1366,7 +1443,7 @@ for journal in sorted(journals):
         result[journal] += ')'
         result[journal] = result[journal].replace('( ', '(')
     print "{0:20s} {1:50s}".format(journal, result[journal])
-quit()
+#quit()
             
 
 search = '693:FNAL-E-0741 or 693:FNAL-E-0775 or 693:FNAL-E-0830 and 037:fermilab-thesis-* and 100__a:/\, \w\.$/ and 100__i:INSPIRE*'
@@ -1390,7 +1467,7 @@ for recid in result:
     #print name_dict
     print "perl -i -pe 's/" + get_fieldvalues(recid, '100__a')[0] + "/" + \
            full_name[0] + "/' tmp_names.txt"
-quit()
+#quit()
 
 
 import json
@@ -1398,7 +1475,7 @@ aff_dict = {}
 for aff in AFFILIATIONS:
     aff_dict[aff] = get_aff(aff)[0]
 print json.dumps(aff_dict, indent=4, sort_keys=True)
-quit()
+#quit()
 
 
 def send_hoc_email(input):
@@ -1420,8 +1497,8 @@ def send_hoc_email(input):
     except:
         print "problem"
 
-send_hoc_email('TEST')
-quit()
+#send_hoc_email('TEST')
+#quit()
 
     
 
@@ -1429,7 +1506,7 @@ quit()
 fileName = 'tmp.out'
 for line in open(fileName, 'r').readlines():
     print translate_latex2unicode(line)
-quit()
+#quit()
 
 
 
@@ -1447,7 +1524,7 @@ for recid in result:
         email = None
     #if not orcid:
     print "{0}|{1}|{2}|{3}".format(name, email, inspire, orcid)
-quit()
+#quit()
 
 
 search = '773__p:physics - 0274_2:doi'
@@ -1473,13 +1550,13 @@ for recid in result:
             subfields=common_tags[key])
     #return common_fields
     print print_rec(common_fields)
-quit()
+#quit()
 
 
 aff = 'Inter-University Centre for Astronomy and Astrophysics, Pune 411007,India'
 print aff
 print get_aff(aff)
-quit()
+#quit()
 
 
 import cPickle as pickle
@@ -1494,7 +1571,7 @@ for recid in result:
     except IndexError:
         print "Hmm", recid,  get_fieldvalues(recid, '037__a')
 pickle.dump(ads_eprints, open("hep_ads_xml_eprints_notdone.p", "wb"))
-quit()
+#quit()
 
 search = '037:fermilab* 773__y:2016 980:published'
 result = intbitset(perform_request_search(p=search, cc='HEP'))
@@ -1517,7 +1594,7 @@ for university in sorted(universities):
     print university, len(result_u & result)
     collaboration_papers = (collaboration_papers | result_u) & result
 print 'Number of collaboration papers', len(collaboration_papers)
-quit()
+#quit()
 
     
 
@@ -1535,7 +1612,7 @@ for recid in result:
         email = None
     if not orcid:
         print "{0}|{1}|{2}|{3}".format(name, email, inspire, orcid)
-quit()
+#quit()
 
 
 searches={'conf_theory':'037__a:/^fermilab\-conf\-16\-.*\-[A,T]\-/ or \
@@ -1566,7 +1643,7 @@ print "{0:15s} {1:5d} {2:5d}".format('pub_other', len(results['pub_other']),
                                      len(results['pub_other'] & ACCEPTED))
                                                           
 
-quit()
+#quit()
 
 
 for year in range (1974, 2018):
@@ -1576,7 +1653,7 @@ for year in range (1974, 2018):
     search = "find r CERN-thesis-" + year_string + "-*"
     result = perform_request_search(p=search, cc='HEP')
     print "%5d %4d" % (year, len(result))
-quit()
+#quit()
 
 EXPT_DICT_FLAT = {}
 def create_expt_flat(experiment_dictionary):
@@ -1641,7 +1718,7 @@ for key, value in THESIS_DICT.iteritems():
     print '  Number of theses:', number
 
 print "Total number of theses:", total
-quit()       
+#quit()       
             
 
 search = "372__9:inspire 119__a:fnal*"
@@ -1657,7 +1734,7 @@ for recid in result:
         print '  Number of theses:', len(result1)
         total += len(result1)
 print "Total number of theses:", total
-quit()
+#quit()
 
 
 search = "245__a:/\)$/ 372__9:inspire"
@@ -1667,7 +1744,7 @@ print search
 result = perform_request_search(p=search, cc='HEP')
 for recid in result:
     print print_record(recid, ot=['035','037'], format='xm')
-quit()
+#quit()
 
 emails = ["qinnian@ihep.ac.cn",
 "hcai@whu.edu.cn",

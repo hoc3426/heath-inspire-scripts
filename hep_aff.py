@@ -42,7 +42,6 @@ or 100__v:/cern/ or 700__v:/cern/ \
 or 100__v:/60510/ or 700__v:/60510/ \
 or 100__v:/Fermilab/ or 700__v:/Fermilab/ \
 or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
-or 100__v:/slac/ or 700__v:/slac/ \
 -100__u:/\\w/ \
 -700__u:/\\w/'
     atsearch_today = 'find du today'
@@ -68,6 +67,8 @@ def create_xml(recid, tags):
     record = get_record(recid)
     correct_record = {}
     record_add_field(correct_record, '001', controlfield_value=str(recid))
+    time_stamp = record_get_field_value(record, '005')
+    record_add_field(correct_record, '005', controlfield_value=time_stamp)
     flag = None
     for tag in tags:
         field_instances = record_get_field_instances(record, tag[0:3], \
