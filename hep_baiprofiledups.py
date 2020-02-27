@@ -17,16 +17,6 @@ from invenio.search_engine import get_fieldvalues #, perform_request_search
 from hep_convert_email_to_id import get_recid_from_id, \
                                     get_hepnames_anyid_from_recid
 
-def get_all_orcids():
-    '''Do not really need this because we see them in ID check'''
-    
-    orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
-    all_orcids = set()
-    for value in get_all_field_values('035__a'):
-        if re.match(orcid_regex, value):
-            all_orcids.add(value)
-    return all_orcids
-
 def show_papers(personid, external_id=None, orcid=None, inspire=None):
     search = 'select * from aidPERSONIDPAPERS where personid='
     search += str(personid) + ' and flag>-2'

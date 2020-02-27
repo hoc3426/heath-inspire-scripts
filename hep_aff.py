@@ -17,7 +17,7 @@ sys.path.append(DIRECTORY + '/afftranslator')
 
 from invenio.search_engine import perform_request_search, get_record
 from invenio.bibrecord import print_rec, record_get_field_instances, \
-     record_add_field
+     record_add_field, record_get_field_value
 from afftranslator2 import bestmatch
 
 

@@ -5,23 +5,38 @@ Script to add names to HEPNames, or append experiment tags.
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+import csv
 import getopt
 import re
 import random
 import sys
 
-from invenio.search_engine import perform_request_search
+from invenio.search_engine import perform_request_search, get_all_field_values
 from hep_convert_email_to_id import get_hepnames_recid_from_email, \
                                     get_recid_from_id
 from invenio.bibrecord import print_rec, record_add_field
 
-from hep_baiprofiledups import get_all_orcids
 from hep_collaboration_authors import EMAIL_REGEX
-from hepnames_add_from_list_email_to_aff import *
+from hepnames_add_from_list_email_to_aff import aff_from_email
 from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
                                            EXPERIMENT, SOURCE, INSPIRE
 
-from hep_collaboration_authors import process_author_name, ORCID_REGEX 
+from hep_collaboration_authors import process_author_name, ORCID_REGEX
+
+MIS_URL = 'https://inspirehep.net/search?cc=HepNames&p=find+recid+'
+ORCID_REGEX_NODASH = re.compile(r'^\d{15}[\dX]$')
+
+def get_all_orcids():
+    '''Get all the ORCIDs in INSPIRE'''
+
+    all_orcids = set()
+    for value in get_all_field_values('035__a'):
+        if ORCID_REGEX.match(value):
+            all_orcids.add(value)
+    return all_orcids
+
+INSPIRE_ORCIDS = get_all_orcids()
+
 
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''
@@ -35,7 +50,9 @@ def orcid_lookup():
     '''Check to see if we have ORCIDs in HEPNames.'''
 
     for (name, orcid) in ORCIDS:
-        if perform_request_search(p = '035:' + orcid, cc = 'HepNames'):
+        if orcid in INSPIRE_ORCIDS:
+            pass
+        elif perform_request_search(p='035:' + orcid, cc='HepNames'):
             pass
         else:
             print name, '\t', orcid
@@ -48,7 +65,7 @@ def email_lookup():
         recid = get_hepnames_recid_from_email(email)
         if recid and EXPERIMENT:
             search = '001:' + str(recid)  + ' 693__e:' + EXPERIMENT
-            result = perform_request_search(p = search, cc = 'HepNames')
+            result = perform_request_search(p=search, cc='HepNames')
             if len(result) == 0:
                 print 'or', recid
         else:
@@ -58,16 +75,22 @@ def email_lookup():
     quit()
 
 
-def create_xml(author, email, affiliation, experiment, inspire_id, orcid,
-               native_name):
+def create_xml(recid=None, author=None, email=None, affiliation=None,
+               inspire_id=None, orcid=None, native_name=None):
     '''Create the xml file to upload.'''
 
-    common_fields = {}
+    record = {}
     common_tags = {}
-    author2 = re.sub(r'(.*)\, (.*)', r'\2 \1', author)
-    common_tags['980__'] = [('a', 'HEPNAMES')]
-    common_tags['100__'] = [('a', author), ('q', author2), ('g', 'ACTIVE')]
-    if affiliation:
+    if recid:
+        record_add_field(record, '001', controlfield_value=str(recid))
+    else:
+        common_tags['980__'] = [('a', 'HEPNAMES')]
+        if SOURCE:
+            common_tags['670__'] = [('a', SOURCE)]
+    if author:
+        author2 = re.sub(r'(.*)\, (.*)', r'\2 \1', author)
+        common_tags['100__'] = [('a', author), ('q', author2), ('g', 'ACTIVE')]
+    if affiliation and email:
         if isinstance(affiliation, (list,)):
             for aff in affiliation:
                 common_tags['371__'] = [('m', email), ('a', aff),
@@ -75,24 +98,41 @@ def create_xml(author, email, affiliation, experiment, inspire_id, orcid,
         else:
             common_tags['371__'] = [('m', email), ('a', affiliation),
                                     ('z', 'current')]
-    else:
+    elif email:
         common_tags['371__'] = [('m', email), ('z', 'current')]
-    if experiment:
-        common_tags['693__'] = [('e', experiment), ('z', 'current')]
+    if EXPERIMENT:
+        common_tags['693__'] = [('e', EXPERIMENT), ('z', 'current')]
     if orcid:
         common_tags['035__'] = [('9', 'ORCID'), ('a', orcid)]
-    else:
+    elif inspire_id:
         common_tags['035__'] = [('9', 'INSPIRE'), ('a', inspire_id)]
-    if SOURCE:
-        common_tags['670__'] = [('a', SOURCE)]
     if native_name:
         common_tags['880__'] = [('a', native_name)]
     for key in common_tags:
         tag = key
-        record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
-            subfields = common_tags[key])
-    #return common_fields
-    return print_rec(common_fields)
+        record_add_field(record, tag[0:3], tag[3], tag[4], \
+            subfields=common_tags[key])
+    #return record
+    return print_rec(record)
+
+def get_authors(filename):
+    '''Read spreadsheet and convert it to a dictionary for the authors.'''
+
+    with open(filename, 'r') as csvfile:
+        try:
+            #Read only the first line because different lines can
+            #have different numbers of columns depending on affilations.
+            dialect = csv.Sniffer().sniff(csvfile.readline())
+                                          #delimiters=delimiters)
+        except csv.Error:
+            print('Could not determine delimiter.')
+            print('Expected values are ' + delimiters)
+            return None
+        csvfile.seek(0)
+        reader = csv.reader(csvfile)
+        author_lines = list(reader)
+    print author_lines
+    return author_lines
 
 
 def main(authors, inspire):
@@ -100,21 +140,21 @@ def main(authors, inspire):
 
     print "Experiment:", EXPERIMENT
     print "Starting INSPIRE", inspire
-    filename = 'tmp_' + __file__
-    filename = re.sub('.py', '.out', filename)
-    output = open(filename, 'w')
 
-    filename_append = 'tmp_' + __file__ + '_append'
-    filename_append = re.sub('.py', '.out', filename_append)
+    filename = 'tmp_' + __file__
+    filename_insert = re.sub('.py', '_insert.out', filename)
+    output_insert = open(filename_insert, 'w')
+    filename_append = re.sub('.py', '_append.out', filename)
     output_append = open(filename_append, 'w')
 
 
     already_seen = set()
     for author_info in authors:
-        author = email = orcid = None
+        author = email = orcid = inspire_id = None
         affiliation = native_name = None
         recid_email = recid_orcid = None
         author = author_info[0]
+        author = process_author_name(author)
         for element in author_info[1:]:
             if '@' in element:
                 email = element
@@ -133,71 +173,80 @@ def main(authors, inspire):
             if value in already_seen:
                 print "Duplicate", value
                 continue
-            if not EMAIL_REGEX.match(value) and not \
-            ORCID_REGEX.match(value):
-                print('Bad format: {0}'.format(value))
+            if not any([EMAIL_REGEX.match(value), ORCID_REGEX.match(value)]):
+                if ORCID_REGEX_NODASH.match(value):
+                    possible_orcid = '-'.join(value[i:i+4]
+                                     for i in range(0, len(value), 4))
+                    print '''Dashless ORCID: {0}
+  {1}
+  https://orcid.org/{2}'''.\
+                          format(value, author, possible_orcid)
+                else:
+                    print 'Bad format: {0}'.format(value)
             already_seen.add(value)
- 
+        if affiliation:
+            affiliation = get_aff(affiliation)
+        elif email:
+            affiliation = aff_from_email(email)
         if email:
             recid_email = get_hepnames_recid_from_email(email)
         if orcid:
             recid_orcid = get_recid_from_id(orcid)
         if recid_email and not recid_orcid and orcid:
-            output_append.write('Need {0} on {1}'.format(orcid, recid_email))
+            output_append.write(create_xml(recid=recid_email, orcid=orcid))
+            output_append.write('\n')
         elif recid_orcid and not recid_email and email:
-            output_append.write('Need {0} on {1}'.format(email, recid_orcid))
+            output_append.write(create_xml(recid=recid_orcid, email=email,
+                                           affiliation=affiliation))
+            output_append.write('\n')
         if recid_email and recid_orcid and recid_email != recid_orcid:
-            print('Mismatch {0} {1}  {2} {3}'.
-                  format(email, recid_email, orcid, recid_orcid))
+            print('{0}{1}+or+{2}&of=hd'.
+                  format(MIS_URL, recid_email, recid_orcid))
             continue
         recid = recid_email or recid_orcid
         if recid and EXPERIMENT == None:
             continue
-        elif recid and EXPERIMENT:
+        elif recid:
             search = "001:" + str(recid) + " -693__e:" + EXPERIMENT
-            if len(perform_request_search(p = search, cc = 'HepNames')) == 1:
+            if len(perform_request_search(p=search, cc='HepNames')) == 1:
                 print 'or', recid
             continue
-        #print 'email =', email
         if not affiliation:
             affiliation = aff_from_email(email)
-        #print 'affiliation =', affiliation
-        if False:
-        #if affiliation == None:
-            try:
-                affiliation = author_info[4]
-                affiliation = get_aff(affiliation)
-            except IndexError:
-                pass
-        #print 'affiliation =', affiliation
-
-        #if ", " not in author:
-        #    author = re.sub(r'(.*) (\S+)', r'\2, \1', author)
-        #author = author.replace(',', ', ')
-        #author = re.sub(r'\s+', ' ', author)
-        author = process_author_name(author)
-        inspire_id = 'INSPIRE-00' + str(inspire) + \
-                     str(random.randint(1, 9))
-        output.write(create_xml(author, email, affiliation,
-                                EXPERIMENT, inspire_id, orcid, native_name))
-        output.write('\n')
+        else:
+            affiliation = get_aff(affiliation)
+        if not orcid:
+            inspire_id = 'INSPIRE-00' + str(inspire) + \
+                         str(random.randint(1, 9))
+        output_insert.write(create_xml(author=author, email=email,
+                                       affiliation=affiliation,
+                                       inspire_id=inspire_id,
+                                       orcid=orcid, native_name=native_name))
+        output_insert.write('\n')
         inspire += 1
-    output.close()
+    output_insert.close()
     output_append.close()
     print "Next INSPIRE", inspire
-    print filename
+    print filename_insert
     print filename_append
 
 if __name__ == '__main__':
 
-    TEST = True
+    INPUT_FILE = None
     TEST = False
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 't,v')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'f:t')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
+
+    for option, argument in OPTIONS:
+        if option == '-f':
+            INPUT_FILE = argument
+            AUTHORS = get_authors(INPUT_FILE)
+        if option == '-t':
+            TEST = True
 
     if TEST:
         def get_aff(aff):
