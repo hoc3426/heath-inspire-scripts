@@ -7,8 +7,9 @@ Script to add names to HEPNames, or append experiment tags.
 
 import csv
 import getopt
-import re
+import logging
 import random
+import re
 import sys
 
 from invenio.search_engine import perform_request_search, get_all_field_values
@@ -119,19 +120,9 @@ def get_authors(filename):
     '''Read spreadsheet and convert it to a dictionary for the authors.'''
 
     with open(filename, 'r') as csvfile:
-        try:
-            #Read only the first line because different lines can
-            #have different numbers of columns depending on affilations.
-            dialect = csv.Sniffer().sniff(csvfile.readline())
-                                          #delimiters=delimiters)
-        except csv.Error:
-            print('Could not determine delimiter.')
-            print('Expected values are ' + delimiters)
-            return None
         csvfile.seek(0)
         reader = csv.reader(csvfile)
         author_lines = list(reader)
-    print author_lines
     return author_lines
 
 
@@ -140,6 +131,13 @@ def main(authors, inspire):
 
     print "Experiment:", EXPERIMENT
     print "Starting INSPIRE", inspire
+
+
+    logfile = 'tmp_' + __file__
+    logfile = re.sub('.py', '.log', logfile)
+    logging.basicConfig(filename=logfile, filemode='w',
+                    format='%(message)s',
+                    level=logging.INFO)
 
     filename = 'tmp_' + __file__
     filename_insert = re.sub('.py', '_insert.out', filename)
@@ -171,18 +169,18 @@ def main(authors, inspire):
             if not value:
                 continue
             if value in already_seen:
-                print "Duplicate", value
+                logging.warn('Duplicate {0}'.format(value))
                 continue
             if not any([EMAIL_REGEX.match(value), ORCID_REGEX.match(value)]):
                 if ORCID_REGEX_NODASH.match(value):
                     possible_orcid = '-'.join(value[i:i+4]
                                      for i in range(0, len(value), 4))
-                    print '''Dashless ORCID: {0}
+                    logging.warn('''Dashless ORCID: {0}
   {1}
   https://orcid.org/{2}'''.\
-                          format(value, author, possible_orcid)
+                          format(value, author, possible_orcid))
                 else:
-                    print 'Bad format: {0}'.format(value)
+                    logging.warn('Bad format: {0}'.format(value))
             already_seen.add(value)
         if affiliation:
             affiliation = get_aff(affiliation)
@@ -200,7 +198,7 @@ def main(authors, inspire):
                                            affiliation=affiliation))
             output_append.write('\n')
         if recid_email and recid_orcid and recid_email != recid_orcid:
-            print('{0}{1}+or+{2}&of=hd'.
+            logging.warn('{0}{1}+or+{2}&of=hd'.
                   format(MIS_URL, recid_email, recid_orcid))
             continue
         recid = recid_email or recid_orcid
@@ -229,6 +227,8 @@ def main(authors, inspire):
     print "Next INSPIRE", inspire
     print filename_insert
     print filename_append
+    print logfile
+
 
 if __name__ == '__main__':
 
