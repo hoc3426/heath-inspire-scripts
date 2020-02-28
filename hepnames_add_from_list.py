@@ -12,7 +12,10 @@ import random
 import re
 import sys
 
-from invenio.search_engine import perform_request_search, get_all_field_values
+from invenio.intbitset import intbitset
+from invenio.search_engine import perform_request_search, \
+                                  get_all_field_values, \
+                                  search_unit
 from hep_convert_email_to_id import get_hepnames_recid_from_email, \
                                     get_recid_from_id
 from invenio.bibrecord import print_rec, record_add_field
@@ -24,8 +27,10 @@ from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
 
 from hep_collaboration_authors import process_author_name, ORCID_REGEX
 
+DELETED = search_unit(p='DELETED', m='a', f='980*')
 MIS_URL = 'https://inspirehep.net/search?cc=HepNames&p=find+recid+'
 ORCID_REGEX_NODASH = re.compile(r'^\d{15}[\dX]$')
+
 
 def get_all_orcids():
     '''Get all the ORCIDs in INSPIRE'''
@@ -58,12 +63,35 @@ def orcid_lookup():
         else:
             print name, '\t', orcid
 
+def check_recid(recid):
+    '''Check that a recid is an integer and that it is not DELETED.'''
+  
+    if recid == None:
+        return (True, recid)
+    elif isinstance(recid, list):
+        if len(recid) == 1:
+            check_recid(recid[0])
+        recid = intbitset(recid) - DELETED
+        if len(recid) == 1:
+            recid = check_recid(recid[0])
+            if recid[0]:
+                return recid
+        return (False, 'List')
+    elif int(recid) in DELETED:
+        return (False, 'Deleted')
+    return (True, recid)
+
 def email_lookup():
     '''Check to see if we have email addresses in HEPNames.'''
 
     emails_unknown = []
     for email in EMAILS:
         recid = get_hepnames_recid_from_email(email)
+        test = check_recid(recid)
+        if not test[0]:
+            logging.warn('Check {0}, {1}, {2}'.format(email, recid,
+                                                      test[1]))
+            return None
         if recid and EXPERIMENT:
             search = '001:' + str(recid)  + ' 693__e:' + EXPERIMENT
             result = perform_request_search(p=search, cc='HepNames')
@@ -188,8 +216,22 @@ def main(authors, inspire):
             affiliation = aff_from_email(email)
         if email:
             recid_email = get_hepnames_recid_from_email(email)
+            test = check_recid(recid_email)
+            if not test[0]:
+                logging.warn('Check {0}, {1}, {2}'.format(email, recid_email,
+                                                      test[1]))
+                continue
+            else:
+                recid_email = test[1]
         if orcid:
             recid_orcid = get_recid_from_id(orcid)
+            test = check_recid(recid_orcid)
+            if not test[0]:
+                logging.warn('Check {0}, {1}, {2}'.format(orcid, recid_orcid,
+                                                      test[1]))
+                continue
+            else:
+                recid_orcid = test[1]
         if recid_email and not recid_orcid and orcid:
             output_append.write(create_xml(recid=recid_email, orcid=orcid))
             output_append.write('\n')
