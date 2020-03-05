@@ -15,12 +15,12 @@ import sys
 from invenio.intbitset import intbitset
 from invenio.search_engine import perform_request_search, \
                                   get_all_field_values, \
-                                  search_unit
+                                  search_unit, get_fieldvalues
 from hep_convert_email_to_id import get_hepnames_recid_from_email, \
                                     get_recid_from_id
 from invenio.bibrecord import print_rec, record_add_field
 
-from hep_collaboration_authors import EMAIL_REGEX
+from hep_convert_email_to_id import bad_id_check
 from hepnames_add_from_list_email_to_aff import aff_from_email
 from hepnames_add_from_list_authors import AUTHORS, EMAILS, ORCIDS, \
                                            EXPERIMENT, SOURCE, INSPIRE
@@ -65,13 +65,18 @@ def orcid_lookup():
 
 def check_recid(recid):
     '''Check that a recid is an integer and that it is not DELETED.'''
-  
+
     if recid == None:
         return (True, recid)
     elif isinstance(recid, list):
         if len(recid) == 1:
             check_recid(recid[0])
         recid = intbitset(recid) - DELETED
+        if len(recid) > 1:
+            recid = list(recid)
+            for recid_i in recid:
+                if get_fieldvalues(recid_i, '980__c') == 'DELETED':
+                    recid.remove(recid_i)
         if len(recid) == 1:
             recid = check_recid(recid[0])
             if recid[0]:
@@ -176,6 +181,7 @@ def main(authors, inspire):
 
     already_seen = set()
     for author_info in authors:
+        print author_info
         author = email = orcid = inspire_id = None
         affiliation = native_name = None
         recid_email = recid_orcid = None
@@ -183,9 +189,23 @@ def main(authors, inspire):
         author = process_author_name(author)
         for element in author_info[1:]:
             if '@' in element:
-                email = element
+                email = element.lower()
+                if not bad_id_check(email):
+                    logging.warn('Bad email: {0}'.format(email))
+                    email = None
             elif element.startswith('000'):
                 orcid = element
+                if ORCID_REGEX_NODASH.match(orcid):
+                    possible_orcid = '-'.join(orcid[i:i+4]
+                                     for i in range(0, len(orcid), 4))
+                    logging.warn(
+'''Dashless ORCID: {0}
+  {1}
+  https://orcid.org/{2}'''.format(orcid, author, possible_orcid))
+                    orcid = None
+                elif not bad_id_check(orcid):
+                    logging.warn('Bad ORCID: {0}'.format(orcid))
+                    orcid = None
             else:
                 try:
                     element.decode('ascii')
@@ -197,23 +217,17 @@ def main(authors, inspire):
             if not value:
                 continue
             if value in already_seen:
-                logging.warn('Duplicate {0}'.format(value))
+                logging.warn('Duplicate: {0}'.format(value))
                 continue
-            if not any([EMAIL_REGEX.match(value), ORCID_REGEX.match(value)]):
-                if ORCID_REGEX_NODASH.match(value):
-                    possible_orcid = '-'.join(value[i:i+4]
-                                     for i in range(0, len(value), 4))
-                    logging.warn('''Dashless ORCID: {0}
-  {1}
-  https://orcid.org/{2}'''.\
-                          format(value, author, possible_orcid))
-                else:
-                    logging.warn('Bad format: {0}'.format(value))
             already_seen.add(value)
         if affiliation:
-            affiliation = get_aff(affiliation)
+            try:
+                affiliation = get_aff(affiliation)
+            except TypeError:
+                print 'Problem with affiliation: {0}'.format(affiliation)
         elif email:
-            affiliation = aff_from_email(email)
+            print 'EMAIL =', email
+            #affiliation = aff_from_email(email)
         if email:
             recid_email = get_hepnames_recid_from_email(email)
             test = check_recid(recid_email)

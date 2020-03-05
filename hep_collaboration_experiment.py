@@ -31,6 +31,7 @@ experiments = {
 'DES':'DES',
 'Double Chooz':'DOUBLECHOOZ',
 'DUNE':'DUNE',
+'EDELWEISS':'EDELWEISS',
 'Event Horizon Telescope':'EHT',
 'FAMU':'FAMU',
 'FAST':'FAST',
