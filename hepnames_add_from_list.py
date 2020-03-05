@@ -181,7 +181,6 @@ def main(authors, inspire):
 
     already_seen = set()
     for author_info in authors:
-        print author_info
         author = email = orcid = inspire_id = None
         affiliation = native_name = None
         recid_email = recid_orcid = None
@@ -190,21 +189,22 @@ def main(authors, inspire):
         for element in author_info[1:]:
             if '@' in element:
                 email = element.lower()
-                if not bad_id_check(email):
-                    logging.warn('Bad email: {0}'.format(email))
+                if bad_id_check(email):
+                    logging.warn('Author: {0}'.format(author))
+                    logging.warn('  Bad email: {0}'.format(email))
                     email = None
             elif element.startswith('000'):
                 orcid = element
                 if ORCID_REGEX_NODASH.match(orcid):
-                    possible_orcid = '-'.join(orcid[i:i+4]
+                    dashed = '-'.join(orcid[i:i+4]
                                      for i in range(0, len(orcid), 4))
-                    logging.warn(
-'''Dashless ORCID: {0}
-  {1}
-  https://orcid.org/{2}'''.format(orcid, author, possible_orcid))
+                    logging.warn('Author: {0}'.format(author))
+                    logging.warn('  Dashless ORCID: {0}'.format(orcid))
+                    logging.warn('  https://orcid.org/{0}'''.format(dashed))
                     orcid = None
-                elif not bad_id_check(orcid):
-                    logging.warn('Bad ORCID: {0}'.format(orcid))
+                elif bad_id_check(orcid):
+                    logging.warn('Author: {0}'.format(author))
+                    logging.warn('  Bad ORCID: {0}'.format(orcid))
                     orcid = None
             else:
                 try:
@@ -226,8 +226,7 @@ def main(authors, inspire):
             except TypeError:
                 print 'Problem with affiliation: {0}'.format(affiliation)
         elif email:
-            print 'EMAIL =', email
-            #affiliation = aff_from_email(email)
+            affiliation = aff_from_email(email)
         if email:
             recid_email = get_hepnames_recid_from_email(email)
             test = check_recid(recid_email)
@@ -265,10 +264,6 @@ def main(authors, inspire):
             if len(perform_request_search(p=search, cc='HepNames')) == 1:
                 print 'or', recid
             continue
-        if not affiliation:
-            affiliation = aff_from_email(email)
-        else:
-            affiliation = get_aff(affiliation)
         if not orcid:
             inspire_id = 'INSPIRE-00' + str(inspire) + \
                          str(random.randint(1, 9))
