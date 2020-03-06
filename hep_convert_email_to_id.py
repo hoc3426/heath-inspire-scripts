@@ -25,6 +25,7 @@ EMAILS_HEPNAMES = get_all_field_values('371__m') + \
          get_all_field_values('371__o') + \
          get_all_field_values('595__m') + \
          get_all_field_values('595__o')
+EMAILS_HEPNAMES = set([email_hn.lower() for email_hn in EMAILS_HEPNAMES])
 EMAILS_HEP = get_all_field_values('100__m') + get_all_field_values('700__m')
 
 COUNTER_MAX = 400
@@ -113,7 +114,7 @@ def get_hepnames_recid_from_email(email):
     Find the HEPNames recid based on email
     """
 
-    if email.lower() not in (email_hn.lower() for email_hn in EMAILS_HEPNAMES):
+    if email.lower() not in EMAILS_HEPNAMES:
         if VERBOSE:
             print "WARNING: no hepnames record found for %s: " % (email)
         return None
