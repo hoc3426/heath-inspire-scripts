@@ -200,7 +200,10 @@ def main(authors, inspire):
                                      for i in range(0, len(orcid), 4))
                     logging.warn('Author: {0}'.format(author))
                     logging.warn('  Dashless ORCID: {0}'.format(orcid))
-                    logging.warn('  https://orcid.org/{0}'''.format(dashed))
+                    if bad_id_check(dashed):
+                        logging.warn('  Bad ORCID: {0}'.format(dashed))
+                    else:
+                        logging.warn('  https://orcid.org/{0}'''.format(dashed))
                     orcid = None
                 elif bad_id_check(orcid):
                     logging.warn('Author: {0}'.format(author))

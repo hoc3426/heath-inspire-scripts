@@ -113,7 +113,7 @@ def get_hepnames_recid_from_email(email):
     Find the HEPNames recid based on email
     """
 
-    if email not in EMAILS_HEPNAMES:
+    if email.lower() not in (email_hn.lower() for email_hn in EMAILS_HEPNAMES):
         if VERBOSE:
             print "WARNING: no hepnames record found for %s: " % (email)
         return None
