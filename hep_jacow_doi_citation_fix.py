@@ -57,6 +57,8 @@ def good_doi(doi):
     '''Check to see if a url is valid.'''
 
     bare_doi = doi.replace('doi:', '')
+    if '(' in bare_doi:
+        return False
     url = 'https://doi.org/api/handles/' + bare_doi
     curl = 'curl --output /dev/null --silent --head --fail '
     if os.system(curl + url) == 0:
@@ -88,7 +90,7 @@ def get_jacow_dois():
     if not missing_dois:
         return jacow_dois_record
 
-    
+    stop = False
     for doi in sorted(missing_dois):
         if good_doi(doi):
             search_unit('doi', f='0247_2', m='a')
@@ -96,8 +98,10 @@ def get_jacow_dois():
             if search_unit(doi, f='0247_a', m='a'):
                 continue
             print 'https://doi.org/{0}'.format(doi)
-    sys.exit()
-  
+            stop = True
+    if stop:
+        sys.exit()
+
 JACOW_DOIS = get_jacow_dois()
 CURRENT_YEAR = datetime.now().year
 

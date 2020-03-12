@@ -41,9 +41,6 @@ def get_all_orcids():
             all_orcids.add(value)
     return all_orcids
 
-INSPIRE_ORCIDS = get_all_orcids()
-
-
 def generate_inspire_ids(inspire):
     ''' Generate a list of INSPIRE IDs.'''
 
@@ -106,7 +103,6 @@ def email_lookup():
             emails_unknown.append(email)
     for email in emails_unknown:
         print email
-    quit()
 
 
 def create_xml(recid=None, author=None, email=None, affiliation=None,
@@ -174,6 +170,13 @@ def main(authors, inspire):
 
     filename = 'tmp_' + __file__
     filename_insert = re.sub('.py', '_insert.out', filename)
+
+    if authors:
+        INSPIRE_ORCIDS = get_all_orcids()
+    elif EMAILS:
+        email_lookup()
+        return None
+
     output_insert = open(filename_insert, 'w')
     filename_append = re.sub('.py', '_append.out', filename)
     output_append = open(filename_append, 'w')
