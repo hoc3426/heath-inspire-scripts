@@ -2,6 +2,8 @@
 Script for checking the work of catalogers regarding affiliations.
 '''
 
+import re
+
 from invenio.search_engine import get_all_field_values,\
                                   perform_request_search,\
                                   get_fieldvalues
@@ -16,7 +18,10 @@ def get_all_affs():
 def find_bad_affs(cataloger, all_affs):
     '''Find bad affiliations in the work of a catalogers'''
 
-    print 'Records for {0}'.format(cataloger)
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_' + cataloger + '.out', filename)
+    output = open(filename, 'w')
+    output.write('Records for {0}\n'.format(cataloger))
     search = 'find cat {0}'.format(cataloger)
     result = perform_request_search(p=search, cc='HEP')
     cataloger_affs = set()
@@ -26,9 +31,11 @@ def find_bad_affs(cataloger, all_affs):
                    get_fieldvalues(recid, '700__u'):
             cataloger_affs.add(aff)
         if cataloger_affs - all_affs:
-            print '{0}{1}'.format(URL, recid)
+            output.write('{0}{1}\n'.format(URL, recid))
             for aff in cataloger_affs - all_affs:
-                print '    ', aff
+                output.write('    {0}\n'.format(aff))
+    output.close()
+    print filename
 
 def main():
     '''Find bad affiliations in the work of catalogers'''
