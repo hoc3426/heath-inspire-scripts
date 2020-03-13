@@ -107,7 +107,7 @@ EXPT_DICT = {
     ("8.4", "Gravitational waves"),
     ("8.5", "Gravitational lensing/Dark matter")
     ],
-("9", "HEP Theory/Computing"):[
+("9", "Non-experimental"):[
     ("9.1", "Data Analysis"),
     {("9.2", "Simulation tools"):[
         ("9.2.1", "Detector Simulation"),
@@ -115,7 +115,8 @@ EXPT_DICT = {
         ]
     },
     ("9.3", "Parton Distribution Fits"),
-    ("9.4", "Lattice Gauge Theory")
+    ("9.4", "Lattice Gauge Theory"),
+    ("9.5", "Neutrino Physics") 
    ]
 }
 

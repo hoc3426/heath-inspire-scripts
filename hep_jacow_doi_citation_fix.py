@@ -90,17 +90,25 @@ def get_jacow_dois():
     if not missing_dois:
         return jacow_dois_record
 
-    stop = False
+    counter_good = counter_bad = 0
     for doi in sorted(missing_dois):
         if good_doi(doi):
-            search_unit('doi', f='0247_2', m='a')
+            #search_unit('doi', f='0247_2', m='a')
             doi = doi.replace('doi:', '')
             if search_unit(doi, f='0247_a', m='a'):
                 continue
             print 'https://doi.org/{0}'.format(doi)
-            stop = True
-    if stop:
+            counter_good += 1
+        else:
+            if search_unit(doi, f='999C5a', m='a'):
+                print '999C5a:{0}'.format(doi)
+                counter_bad += 1
+    if counter_good:
+        print 'Missing good dois: {0}'.format(str(counter_good))
         sys.exit()
+    elif counter_bad:
+        print 'Bad  dois: {0}'.format(str(counter_bad))
+    return jacow_dois_record
 
 JACOW_DOIS = get_jacow_dois()
 CURRENT_YEAR = datetime.now().year
