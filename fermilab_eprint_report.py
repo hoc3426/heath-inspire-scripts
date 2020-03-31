@@ -23,6 +23,8 @@ def get_eprint(recid):
     if VERBOSE:
         print reports
     for report in reports:
+        if 'DESIGN' in report:
+            continue
         if re.search("FERMILAB", report):
             report_fermilab = report
             if VERBOSE:

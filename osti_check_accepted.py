@@ -90,7 +90,7 @@ def examine(doi):
     if check_already_sent(recid):
         return (True, report)
     else:
-        logging.info('Need accepted version')
+        logging.info('Need accepted version {0}'.format(report))
         logging.info('  https://inspirehep.net/record/{0}'.format(recid))
         return (False, report)
 

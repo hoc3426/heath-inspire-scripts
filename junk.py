@@ -98,27 +98,48 @@ eprints = [
 "10.1016/j.nuclphysa.2017.05.105",
 "10.1016/j.nuclphysa.2017.06.028",
 "10.1016/j.nuclphysa.2017.06.028"]
-print len(eprints)
-for r in eprints:
-  search = 'doi:' + r
-  s = perform_request_search(p=search,cc='HEP')
-  if s:
-    print 'or {0}'.format(s[0])
-  else:
-    print search
+
+def get_recids(eprints):
+    print len(eprints)
+    for r in eprints:
+        search = 'doi:' + r
+        s = perform_request_search(p=search,cc='HEP')
+        if s:
+          print 'or {0}'.format(s[0])
+        else:
+          print search
 #quit()
 
-def create_xml(recid, urls):
+def create_xml(recid, urls=None, delete=False):
     common_fields = {}
     common_tags = {}
     record_add_field(common_fields, '001', controlfield_value=str(recid))
-    tag = '8564_'
-    for url in urls:
-        url = 'https://rivet.hepforge.org/analyses/' + url
-        common_tags[tag] = [('u', url), ('y', 'Rivet analyses reference')]
-        record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
-            subfields=common_tags[tag])
+    if urls:
+        tag = '8564_'
+        for url in urls:
+            url = 'https://rivet.hepforge.org/analyses/' + url
+            common_tags[tag] = [('u', url), ('y', 'Rivet analyses reference')]
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
+    if delete:
+        for (tag, subfield, value) in [('100__', 'a', 'Smith, John Q.'), 
+                                       ('980__', 'a', 'HepNames'),
+                                       ('980__', 'c', 'DELETED')]:
+            common_tags[tag] = [(subfield, value)]
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
     return print_rec(common_fields)
+
+def delete_records(search=None, collection=None, result=None):
+    if search and collection:
+        result = perform_request_search(p=search, cc=collection)
+    for recid in result:
+        print create_xml(recid, delete=True)
+
+#delete_records('find da today', 'HepNames')
+#from junk_input import RECIDS
+#delete_records(result=RECIDS)
+#quit()
 
 def json_read(file):
     import json
@@ -170,8 +191,13 @@ def doi_ending():
         
 def aff_fix(search):
     for recid in perform_request_search(p=search, cc='HEP'):
-        print print_record(recid, ot=['100', '700'], format='hm')
-
+        rec = print_record(recid, ot=['100', '700'], format='hm')
+        rec = rec.replace('<pre style="margin: 1em 0px;">', '')
+        rec = rec.replace('</pre>', '')
+        print rec
+#aff_fix('700__u:/ U$/ or 100__u:/ U$/')
+aff_fix('100__q:/^DESY/ or 700__q:/^DESY/')
+quit()
 
 
 def cites_per_year(key, value, start='1970', end='2020'):
