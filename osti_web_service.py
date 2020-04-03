@@ -161,6 +161,8 @@ def get_url(recid):
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
+            url_i = url_i.replace('inspirehep.net', 'old.inspirehep.net')
+            url_i = url_i.replace('old.old.', 'old')
             if re.search(r'lss.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_fermilab = url_i
             elif re.search(r'record/\d+/files/arXiv', url_i, re.IGNORECASE) \

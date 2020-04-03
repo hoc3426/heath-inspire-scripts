@@ -32,6 +32,53 @@ from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
 
+def counter_list(journals):
+    from Counter import Counter
+    import operator
+    journals.sort()
+    counted_all_refs=Counter(journals)
+    sorted_count = sorted(counted_all_refs.items(),
+                          key=operator.itemgetter(1), reverse=True)
+    i = 1
+    for recid_count, count in sorted_count:
+        print('{2:3d} {0:30s} {1:3d}'.format(recid_count, count, i))
+        i += 1
+
+def fermilab_accepted():
+
+    from osti_web_service import get_url
+    search = '8564_z:postprint or 8564_z:openaccess'
+    result = perform_request_search(p=search, cc='Fermilab')
+    for recid in result:
+        [url, accepted] = get_url(recid)
+        if not accepted:
+            continue
+        if not url:
+            print recid, url, accepted
+            continue
+        if 'inspirehep' in url:
+            print url
+
+fermilab_accepted()
+quit()
+
+
+def experiment_papers():
+
+    search = 'find primarch hep-ex and jy 2019 and tc p'
+    result = perform_request_search(p=search, cc='HEP')
+    experiments = []
+    for recid in result:
+        try:
+            experiments.append(get_fieldvalues(recid, '693__e')[0])
+        except IndexError:
+            pass
+    counter_list(experiments)
+
+experiment_papers()
+quit()
+    
+
 
 def get_grid():
     from dune_affiliation_translations import DICT
@@ -165,16 +212,6 @@ def json_read(file):
 
 #json_read('analyses.json')
 #quit()
-
-def counter_list(journals):
-    from Counter import Counter
-    import operator
-    journals.sort()
-    counted_all_refs=Counter(journals)
-    sorted_count = sorted(counted_all_refs.items(),
-                          key=operator.itemgetter(1))
-    for recid_count, count in sorted_count:
-        print('{0:30s} {1:3d}'.format(recid_count, count))
 
 def doi_ending():
     dois = []
