@@ -156,13 +156,18 @@ def get_hepnames_anyid_from_recid(record, id_type):
     """
 
     record = int(record)
-    author_id = None
+    author_id = []
     for item in BibFormatObject(record).fields('035__'):
         if item.has_key('9') and item['9'] == id_type and item.has_key('a'):
-            author_id = item['a']
+            author_id.append(item['a'])
     if VERBOSE and not author_id:
         print "WARNING: no %s ID found for %s: " % (id_type, record)
-    return author_id
+    if len(author_id) > 1:
+        print 'WARNING: Duplicate {0} on recid {1}: {2}'.format(recid,
+        id_type, author_id)
+    elif len(author_id) == 1:
+        return author_id[0]
+    return None
 
 def get_hepnames_aff_from_recid(record, id_type):
     """
