@@ -85,6 +85,16 @@ def check_ids(letter=None):
     if letter:
         fields.append('100__a')
 
+    for recid, id_type in [(recid, id_type) for recid in RECIDS_HEPN \
+                                        for id_type in ('INSPIRE',
+                                                        'ORCID',
+                                                        'BAI')]:
+        idnum = get_hepnames_anyid_from_recid(recid, id_type)
+        if not idnum:
+            continue
+        if bad_id_check(idnum):
+            print 'Bad {0} on {1}: {2}'.format(id_type, recid, idnum)
+
     for recid, field in [(recid, field) for recid in RECIDS_HEPN \
                                         for field in fields]:
         skip = False

@@ -43,9 +43,18 @@ def generate_check_digit(base_digits):
         result = "X"
     return result
 
+def bad_orcid_check(orcid):
+    orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
+    if not orcid_regex.match(orcid):
+        return True
+    base_digits = orcid.replace('-', '')[0:15]
+    check_digit = orcid.replace('-', '')[15]
+    if check_digit != str(generate_check_digit(base_digits)):
+        return True
+    return False
 
 
-def bad_id_check(id_num):
+def bad_id_check(id_num, id_type=''):
     """Check various IDs for correct format."""
 
     email_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
@@ -55,18 +64,25 @@ def bad_id_check(id_num):
         r"^(([^<>()\[\]\.,;:\s@\"]{1,64}(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@\[*(?!.*?\.\.)(([^<>()[\]\.,;\s@\"]+\.?)+[^<>()[\]\.,;\s@\"]{2,})\]?$")
 
     bitnet_regex = re.compile(r"^[\w\-\.\'\+]+@[\w\-]+\.bitnet$")
-    orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     inspire_regex = re.compile(r'^INSPIRE-\d{8}$')
+    bai_regex = re.compile(r'[A-Z][A-z\.\-]+\.\d+$')
+
+    if id_type.upper() == 'INSPIRE':
+        if not inspire_regex.match(id_num):
+            return True
+    elif id_type.upper() == 'ORCID':
+        if bad_orcid_check(id_num):
+            return True
+    elif id_type.upper() == 'BAI':
+        if not bai_regex.match(id_num):
+            return True
+
 
     if id_num.startswith('INSP') and not re.match(inspire_regex, id_num):
         return True
-    elif re.search(r'000\-', id_num) and re.match(orcid_regex, id_num):
-        base_digits = id_num.replace('-', '')[0:15]
-        check_digit = id_num.replace('-', '')[15]
-        if check_digit != str(generate_check_digit(base_digits)):
+    elif re.search(r'000\-', id_num):
+        if bad_orcid_check(id_num):
             return True
-    elif re.search(r'000\-', id_num) and not re.match(orcid_regex, id_num):
-        return True
     elif re.search(r'\@', id_num) and not \
          re.match(email_regex, id_num) and not \
          re.match(bitnet_regex, id_num):
@@ -150,21 +166,21 @@ def get_recid_from_id(id_number):
     else:
         return None
 
-def get_hepnames_anyid_from_recid(record, id_type):
+def get_hepnames_anyid_from_recid(recid, id_type):
     """
     Returns any id with a HEPNames recid
     """
 
-    record = int(record)
+    recid = int(recid)
     author_id = []
-    for item in BibFormatObject(record).fields('035__'):
+    for item in BibFormatObject(recid).fields('035__'):
         if item.has_key('9') and item['9'] == id_type and item.has_key('a'):
             author_id.append(item['a'])
     if VERBOSE and not author_id:
-        print "WARNING: no %s ID found for %s: " % (id_type, record)
+        print "WARNING: no %s ID found for %s: " % (id_type, recid)
     if len(author_id) > 1:
-        print 'WARNING: Duplicate {0} on recid {1}: {2}'.format(recid,
-        id_type, author_id)
+        print 'WARNING: Duplicate {0} on recid {1}: {2}'.format(id_type,
+        recid, author_id)
     elif len(author_id) == 1:
         return author_id[0]
     return None
