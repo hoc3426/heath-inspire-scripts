@@ -28,9 +28,31 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
 #from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
-from hep_msnet import create_xml
+#from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
+
+def create_xml(recid, urls=None, delete=False):
+    common_fields = {}
+    common_tags = {}
+    record_add_field(common_fields, '001', controlfield_value=str(recid))
+    if urls:
+        tag = '8564_'
+        for url in urls:
+            #url = 'https://lss.fnal.gov/archive/openaccess/' + url
+            common_tags[tag] = [('u', url), ('y', 'Open Access fulltext')]
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
+    if delete:
+        for (tag, subfield, value) in [('100__', 'a', 'Smith, John Q.'),
+                                       ('980__', 'a', 'HepNames'),
+                                       ('980__', 'c', 'DELETED')]:
+            common_tags[tag] = [(subfield, value)]
+            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
+                subfields=common_tags[tag])
+    return print_rec(common_fields)
+
+
 
 def counter_list(journals):
     from Counter import Counter
@@ -44,23 +66,59 @@ def counter_list(journals):
         print('{2:3d} {0:30s} {1:3d}'.format(recid_count, count, i))
         i += 1
 
+
+def url_accepted(recid):
+    
+    accepted = None
+    url = None
+    for item in BibFormatObject(int(recid)).fields('8564_'):
+        if item.has_key('y'):
+            if item['y'] in ['Article from SCOAP3',
+                             'Fulltext from Publisher',
+                             'Fulltext from publisher']:
+                return None
+        if item.has_key('z'):
+            if item['z'] == 'openaccess':
+                url = item['u']
+                accepted = 'openaccess'
+            elif item['z'] == 'postprint':
+                url = item['u']
+                accepted = 'postprint'
+    if not url:
+        return None
+    if 'inspirehep' in url:
+        url = url.replace('inspirehep', 'old.inspirehep')
+        url = url.replace('old.old.', 'old.')
+        url = url.replace('http', 'https')
+        url = url.replace('httpss', 'https')
+        return url
+    return None
+
 def fermilab_accepted():
 
     from osti_web_service import get_url
     search = '8564_z:postprint or 8564_z:openaccess'
     result = perform_request_search(p=search, cc='Fermilab')
+    counter = 0
+    pdfs = set()
     for recid in result:
-        [url, accepted] = get_url(recid)
-        if not accepted:
-            continue
-        if not url:
-            print recid, url, accepted
-            continue
-        if 'inspirehep' in url:
-            print url
+        output = ''
+        url = url_accepted(recid)
+        if url:
+            pdf = re.sub(r'.*\/([^\/]+)', r'\1', url)
+            if pdf in pdfs:
+                output = ' -O ' + str(recid) + '.pdf'
+                pdf = str(recid) + '.pdf'
+            #print 'wget{0} "{1}"'.format(output, url)
+            #print '{0} https://lss.fnal.gov/archive/openaccess/{1}'.format(recid, pdf)
+            url = 'https://lss.fnal.gov/archive/openaccess/' + pdf
+            print create_xml(recid, urls=[url])
+            counter += 1
+            pdfs.add(pdf)
+            #if counter % 25 == 0:
+            #    print counter
+    print counter
 
-fermilab_accepted()
-quit()
 
 
 def experiment_papers():
@@ -75,8 +133,6 @@ def experiment_papers():
             pass
     counter_list(experiments)
 
-experiment_papers()
-quit()
     
 
 
@@ -107,8 +163,6 @@ def get_grid():
     pp.pprint(NEW_DICT)
     #print NEW_DICT
     
-#get_grid()
-#quit()
 
 def twitter():
     search="8564_u:/twitter/"
@@ -121,8 +175,6 @@ def count_by_year(search):
         result = perform_request_search(p=searcht, cc='HEP')
         print year, len(result)
 
-#count_by_year('"neural network"')
-#quit()
 
 
 eprints = [
@@ -155,27 +207,7 @@ def get_recids(eprints):
           print 'or {0}'.format(s[0])
         else:
           print search
-#quit()
 
-def create_xml(recid, urls=None, delete=False):
-    common_fields = {}
-    common_tags = {}
-    record_add_field(common_fields, '001', controlfield_value=str(recid))
-    if urls:
-        tag = '8564_'
-        for url in urls:
-            url = 'https://rivet.hepforge.org/analyses/' + url
-            common_tags[tag] = [('u', url), ('y', 'Rivet analyses reference')]
-            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
-                subfields=common_tags[tag])
-    if delete:
-        for (tag, subfield, value) in [('100__', 'a', 'Smith, John Q.'), 
-                                       ('980__', 'a', 'HepNames'),
-                                       ('980__', 'c', 'DELETED')]:
-            common_tags[tag] = [(subfield, value)]
-            record_add_field(common_fields, tag[0:3], tag[3], tag[4], \
-                subfields=common_tags[tag])
-    return print_rec(common_fields)
 
 def delete_records(search=None, collection=None, result=None):
     if search and collection:
@@ -233,8 +265,6 @@ def aff_fix(search):
         rec = rec.replace('</pre>', '')
         print rec
 #aff_fix('700__u:/ U$/ or 100__u:/ U$/')
-aff_fix('100__q:/^DESY/ or 700__q:/^DESY/')
-quit()
 
 
 def cites_per_year(key, value, start='1970', end='2020'):
@@ -536,24 +566,25 @@ def fermilab_experiments():
 
 
 def fermilab_orcid():
-    '''
     hidden_m = search_unit('*@fnal.gov', f='595__m', m='a')
-    print 'hiddenm', len(hidden_m)
+    #print 'hiddenm', len(hidden_m)
     hidden_o = search_unit('*@fnal.gov', f='595__o', m='a')
-    print 'hiddeno', len(hidden_o)
+    #print 'hiddeno', len(hidden_o)
     search = '371:/fnal.gov$/'
     result = intbitset(perform_request_search(p=search, cc='HepNames'))
-    print '371', len(result)
+    #print '371', len(result)
     result = hidden_m | hidden_o | result
-    print 'result mor', len(result)
+    search = '693__e:FNAL* or 693__e:DUNE'
+    result_e = intbitset(perform_request_search(p=search, cc='HepNames'))
+    result = result_e | result
+    #print 'result mor', len(result)
     search = '035__9:orcid'
     result = result & intbitset(perform_request_search(p=search, cc='HepNames'))
     print 'result orcid', len(result)
-    '''
 
-    search = '035__9:inspire 035__9:orcid 693__e:fnal-e-973'
-    search = '693__e:fnal-e-0973'
-    result = perform_request_search(p=search, cc='HepNames')
+    #search = '035__9:inspire 035__9:orcid 693__e:fnal-e-973'
+    # search = '693__e:fnal-e-0973'
+    # result = perform_request_search(p=search, cc='HepNames')
     for recid in result:
         orcid = inspire = current_email = None
         orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
@@ -2220,4 +2251,6 @@ if False:
           print '{0:11d} {1:40s} {2:20s}'.format(rr, authorName, authorId)
           #print rr, authorName, '[', authorId, ']'
 
+
+fermilab_orcid()
 

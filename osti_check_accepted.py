@@ -29,7 +29,7 @@ def get_journal(recid):
         JOURNALS.append(get_fieldvalues(recid, '773__p')[0])
     except IndexError:
         logging.info('No journal on:')
-        logging.info('  http://inspirehep.net/record/' + str(recid))
+        logging.info('  https://old.inspirehep.net/record/' + str(recid))
 
 def get_fermilab_report(recid):
     """Get the Fermilab report number."""
@@ -85,13 +85,13 @@ def examine(doi):
     report = get_fermilab_report(recid)
     if not report:
         logging.info('Need report')
-        logging.info('  https://inspirehep.net/record/{0}'.format(recid))
+        logging.info('  https://old.inspirehep.net/record/{0}'.format(recid))
         return (False, None)
     if check_already_sent(recid):
         return (True, report)
     else:
         logging.info('Need accepted version {0}'.format(report))
-        logging.info('  https://inspirehep.net/record/{0}'.format(recid))
+        logging.info('  https://old.inspirehep.net/record/{0}'.format(recid))
         return (False, report)
 
 def process_dois(dois):

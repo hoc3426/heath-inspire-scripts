@@ -8,7 +8,8 @@ from invenio.search_engine import get_collection_reclist, \
                                   perform_request_search,\
                                   get_fieldvalues
                                    
-CATALOGERS = ['mcook', 'teresa', 'karin', 'carnold', 'fnalspi4', 'xml']
+CATALOGERS = ['mcook', 'teresa', 'karin', 'carnold', 'fnalspi4', 'xml',
+              'summers']
 URL = 'https://old.inspirehep.net/record/edit/?ln=en#state=edit&recid='
 URL_XML = 'https://inspirehep.net/record/'
 
