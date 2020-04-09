@@ -23,7 +23,6 @@ from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     bad_id_check, \
                                     get_hepnames_anyid_from_recid
 
-LETTER = None
 RECIDS_HEPN = get_collection_reclist('HepNames')
 RECIDS_INST = get_collection_reclist('Institutions')
 RECIDS_EXPT = get_collection_reclist('Experiments')
@@ -74,45 +73,37 @@ def bad_orcid_bai():
         if bad_id_check(orcid):
             print '{0}\t"{1}"'.format(BAI_URL + str(pid), orcid)
 
-def check_ids(letter=None):
+def check_id(recid, already_seen, duplicates, bad_id_set):
+    '''Check the IDs in a single record.'''
+
+    for id_type in ('INSPIRE', 'ORCID', 'BAI'):
+        idnum = get_hepnames_anyid_from_recid(recid, id_type)
+        if not idnum:
+            continue
+        if bad_id_check(idnum):
+            bad_id_set.add('Bad {0} on {1}: {2}'.format(id_type,
+                                                        recid, idnum))
+    for field in ('035__a', '035__z', '371__m'):
+        field_values = get_fieldvalues(recid, field)
+        for field_value in field_values:
+            if field_value in already_seen:
+                duplicates.add(field + ':"' + field_value + '"')
+                continue
+            already_seen[field_value] = field
+            if bad_id_check(field_value):
+                bad_id_set.add(field + ':"' + field_value + '"')
+    return (already_seen, duplicates, bad_id_set)
+
+def check_ids():
     """Go through HEPNames looking for bad IDs."""
 
     already_seen = {}
     duplicates = set()
     bad_id_set = set()
-    fields = ['035__a', '035__z', '371__m']
-    print 'check_ids: letter =', letter
-    if letter:
-        fields.append('100__a')
 
-    for recid, id_type in [(recid, id_type) for recid in RECIDS_HEPN \
-                                        for id_type in ('INSPIRE',
-                                                        'ORCID',
-                                                        'BAI')]:
-        idnum = get_hepnames_anyid_from_recid(recid, id_type)
-        if not idnum:
-            continue
-        if bad_id_check(idnum):
-            print 'Bad {0} on {1}: {2}'.format(id_type, recid, idnum)
-
-    for recid, field in [(recid, field) for recid in RECIDS_HEPN \
-                                        for field in fields]:
-        skip = False
-        field_values = get_fieldvalues(recid, field)
-        if field == '100__a':
-            try:
-                if not field_values[0].startswith(letter):
-                    skip = True
-            except IndexError:
-                print "No name on record:", recid
-        if not skip:
-            for field_value in field_values:
-                if field_value in already_seen:
-                    duplicates.add(field + ':"' + field_value + '"')
-                    continue
-                already_seen[field_value] = field
-                if bad_id_check(field_value):
-                    bad_id_set.add(field + ':"' + field_value + '"')
+    for recid in RECIDS_HEPN:
+        already_seen, duplicates, bad_id_set = \
+        check_id(recid, already_seen, duplicates, bad_id_set)
 
     print "Duplicates"
     for duplicate in sorted(duplicates):
@@ -245,17 +236,16 @@ def bad_experiments_affilations():
                     print search, result
 
 
-def main(input_value=None):
+def main():
     """Runs the script, outputting to a file."""
 
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     print filename
-    print 'main: letter =', input_value
     output = open(filename, 'w')
     sys.stdout = output
     bad_identifiers()
-    check_ids(letter=input_value)
+    check_ids()
     #bad_experiments_affilations()
     bad_url_z()
     output.close()
@@ -263,11 +253,7 @@ def main(input_value=None):
 
 if __name__ == '__main__':
     try:
-        LETTER = str(sys.argv[1:][0]).upper()
-    except IndexError:
-        LETTER = None
-    try:
-        main(input_value=LETTER)
+        main()
     except KeyboardInterrupt:
         print 'Exiting'
 
