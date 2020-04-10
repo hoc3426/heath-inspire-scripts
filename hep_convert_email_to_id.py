@@ -179,8 +179,7 @@ def get_hepnames_anyid_from_recid(recid, id_type):
     if VERBOSE and not author_id:
         print "WARNING: no %s ID found for %s: " % (id_type, recid)
     if len(author_id) > 1:
-        print 'WARNING: Duplicate {0} on recid {1}: {2}'.format(id_type,
-        recid, author_id)
+        print 'Multiple {0} on recid {1}: {2}'.format(id_type, recid, author_id)
     elif len(author_id) == 1:
         return author_id[0]
     return None

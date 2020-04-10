@@ -156,7 +156,7 @@ def new_orcids(already_seen):
                     print 'Needs to start with "ORCID:"', recid, orcid
                 continue
             orcid = orcid.replace('ORCID:', '')
-            if bad_id_check(orcid):
+            if bad_id_check(orcid, 'ORCID'):
                 search = field + ':' + orcid
                 recid = perform_request_search(p=search, cc='HEP')
                 if len(recid):
@@ -189,7 +189,7 @@ def new_orcids(already_seen):
             orcid = orcid.strip('ORCID:')
             if orcid in already_seen:
                 continue
-            if bad_id_check(orcid):
+            if bad_id_check(orcid, 'ORCID'):
                 print "Bad ORCID in HEP:", orcid
             already_seen[orcid] = recid
             print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
@@ -247,7 +247,7 @@ def main():
     bad_identifiers()
     check_ids()
     #bad_experiments_affilations()
-    bad_url_z()
+    #bad_url_z()
     output.close()
 
 
