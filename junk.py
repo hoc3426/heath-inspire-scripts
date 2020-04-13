@@ -25,12 +25,20 @@ from invenio.search_engine import search_unit
 from invenio.search_engine import get_collection_reclist
 
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
-                                    get_hepnames_recid_from_email
+                                    get_hepnames_recid_from_email, \
+                                    bad_orcid_check
 #from hep_collaboration_authors import author_first_last
 from osti_web_service import get_osti_id
 #from hep_msnet import create_xml
 from osti_web_service import check_already_sent
 from datetime import datetime
+
+for recid in perform_request_search(p=
+'100__q:/\d+/', cc='HEP'):
+    print print_record(recid, ot=['100'], format='hm')
+quit()
+
+
 
 def create_xml(recid, urls=None, delete=False):
     common_fields = {}
@@ -588,6 +596,9 @@ def fermilab_orcid():
     for recid in result:
         orcid = inspire = current_email = None
         orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+        if bad_orcid_check(orcid):
+            print 'Bad orcid:', orcid
+            continue
         inspire = get_hepnames_anyid_from_recid(recid, 'INSPIRE')
         author = get_fieldvalues(recid, '100__a')[0]
         email_fnal = None
@@ -612,8 +623,8 @@ def fermilab_orcid():
         print '\"{0}\",{1},{2},{3},{4}'.format(author, inspire, orcid, 
                                            email_current, recid)
 
-fermilab_orcid()
-quit()
+#fermilab_orcid()
+#quit()
 
 def convert_zenodo_url_to_doi():
     #https://zenodo.org/record/3257749#.XSzbl8hKhPY
@@ -657,7 +668,7 @@ def zenodo_citations():
         for recid in doi[2]:
             url = 'https://inspirehep.net/record/' + str(recid) + '/references'
             print '   ', url
-zenodo_citations()
+#zenodo_citations()
 #quit()
 
 
@@ -710,10 +721,6 @@ for doi in sorted(zenodos, reverse=True):
     print doi
 #quit()
 
-for recid in perform_request_search(p=
-'700__u:testinggpiccofootnote', cc='HEP'):
-    print print_record(recid, ot=['100', '700'], format='hm')
-#quit()
 
 
 

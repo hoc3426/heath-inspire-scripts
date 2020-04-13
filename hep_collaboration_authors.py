@@ -22,9 +22,6 @@ from invenio.bibrecord import print_rec, record_add_field
 from invenio.textutils import translate_latex2unicode
 from hep_convert_email_to_id import get_hepnames_anyid_from_recid
 
-VERBOSE = False
-#VERBOSE = True
-
 EMAIL_REGEX = re.compile(r"^[\w\-\.\'\+]+@[\w\-\.]+\.\w{2,4}$")
 ORCID_REGEX = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
 INSPIRE_REGEX = re.compile(r'^INSPIRE-\d{8}$')
@@ -69,7 +66,11 @@ def download_source(eprint, download_path = ""):
         tarfiles = {}
         file_count = 0
         for this_file in this_tarfile.getnames():
-            if re.search(r'(tex|xml|txt|bib|bbl|inc)$', this_file):
+            file_type_regex = re.compile(r'^.*(tex|xml|txt)$')
+            if BIB:
+                file_type_regex = re.compile(r'^.*(tex|xml|txt|bib|bbl|inc)$')
+            #if re.search(r'(tex|xml|txt|bib|bbl|inc)$', this_file):
+            if file_type_regex.match(this_file):
                 file_count += 1
                 tarfiles[file_count] = this_file
                 print file_count, tarfiles[file_count]
@@ -827,15 +828,17 @@ def main(eprint):
 
 if __name__ == '__main__':
 
-    TEST = False
+    BIB = TEST = VERBOSE = False
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 't,v')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'btv')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
 
     for option, argument in OPTIONS:
+        if option == '-b':
+            BIB = True
         if option == '-t':
             TEST = True
         if option == '-v':

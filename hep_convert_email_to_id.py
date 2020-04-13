@@ -44,6 +44,8 @@ def generate_check_digit(base_digits):
     return result
 
 def bad_orcid_check(orcid):
+    if not isinstance(orcid, str):
+        return True 
     orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     if not orcid_regex.match(orcid):
         return True
