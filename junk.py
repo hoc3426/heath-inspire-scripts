@@ -609,7 +609,7 @@ def fermilab_orcid():
                     break
         if email_fnal:
             email_current = email_fnal
-        print "{0}|{1}|{2}|{3}|{4}".format(author, inspire, orcid, 
+        print '\"{0}\",{1},{2},{3},{4}'.format(author, inspire, orcid, 
                                            email_current, recid)
 
 fermilab_orcid()

@@ -137,18 +137,21 @@ def get_url(recid):
 
     for item in BibFormatObject(int(recid)).fields('8564_'):
         if item.has_key('y'):
-            if item['y'] in ['Article from SCOAP3',
-                             'Fulltext from Publisher',
-                             'Fulltext from publisher']:
+            if item['y'].lower() in ['article from scoap3',
+                                     'fulltext from publisher',
+                                     'open access fulltext']:
                 url_openaccess = item['u']
                 accepted = True
-        if item.has_key('z') and not url_openaccess:
-            if item['z'] == 'openaccess':
-                url_openaccess = item['u']
-                accepted = True
-            elif item['z'] == 'postprint':
+            elif item['y'].lower() == 'fermilab accepted manuscript':
                 url_postprint = item['u']
-                accepted = True
+                accepted = True                
+        #if item.has_key('z') and not url_openaccess:
+        #    if item['z'] == 'openaccess':
+        #        url_openaccess = item['u']
+        #        accepted = True
+        #    elif item['z'] == 'postprint':
+        #        url_postprint = item['u']
+        #        accepted = True
 
     #For an accepted paper to count, it should have a DOI.
     if 'DOI' in (element.upper() for element in
