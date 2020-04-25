@@ -13,7 +13,7 @@ from osti_check_accepted_dois import DOIS, YEARS
 DIVISIONS = ['A', '(AD|APC)', 'AE', 'CD', 'CMS', 'DI', 'E', 'LBNF', 'ND',
              'PPD', 'T', 'TD']
 DIVISIONS = ['(AD|APC)', 'CD', 'CCD', 'DI', 'ESH', 'FESS', 'LBNF', 'ND',
-             '(A|AE|CMS|E|PPD|T)', 'PIP2', 'QIS', 'SCD', 'TD', 'WDRS']
+             '(A|AE|CMS|E|PPD|T)', 'PIP2', 'QIS', 'SCD', 'TD', 'WDRS', 'V']
 
 JOURNALS = []
 LOGFILE = 'tmp_' + __file__
@@ -84,9 +84,12 @@ def examine(doi):
     get_journal(recid)
     report = get_fermilab_report(recid)
     if not report:
-        logging.info('Need report')
+        logging.info('* Need report')
         logging.info('  https://old.inspirehep.net/record/{0}'.format(recid))
         return (False, None)
+    if re.match(r'.*\d$', report):
+        logging.info('* No division or section {0}'.format(report))
+        logging.info('  https://old.inspirehep.net/record/{0}'.format(recid))
     if check_already_sent(recid):
         return (True, report)
     else:

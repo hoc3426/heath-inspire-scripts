@@ -33,9 +33,17 @@ from osti_web_service import get_osti_id
 from osti_web_service import check_already_sent
 from datetime import datetime
 
-for recid in perform_request_search(p=
-'100__q:/\d+/', cc='HEP'):
-    print print_record(recid, ot=['100'], format='hm')
+
+def cleanup(search, tag, cc='HEP'):
+
+    pre_open = '<pre style="margin: 1em 0px;">'
+    pre_close = '</pre>'
+    for recid in perform_request_search(p=search, cc=cc):
+       output = print_record(recid, ot=tag, format='hm')
+       output = output.replace(pre_open, '')
+       output = output.replace(pre_close, '')
+       print output
+cleanup('700__q:/\d+/', '700')
 quit()
 
 

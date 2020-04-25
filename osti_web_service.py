@@ -140,7 +140,8 @@ def get_url(recid):
             if item['y'].lower() in ['article from scoap3',
                                      'fulltext from publisher',
                                      'open access fulltext']:
-                url_openaccess = item['u']
+                url_openaccess = re.sub('https?://inspirehep.net',
+                           'https://old.inspirehep.net', item['u'])
                 accepted = True
             elif item['y'].lower() == 'fermilab accepted manuscript':
                 url_postprint = item['u']
@@ -164,8 +165,8 @@ def get_url(recid):
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
-            url_i = url_i.replace('inspirehep.net', 'old.inspirehep.net')
-            url_i = url_i.replace('old.old.', 'old')
+            url_i = re.sub('https?://inspirehep.net', 
+                           'https://old.inspirehep.net', url_i)
             if re.search(r'lss.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_fermilab = url_i
             elif re.search(r'record/\d+/files/arXiv', url_i, re.IGNORECASE) \
@@ -202,7 +203,7 @@ def get_url(recid):
                 return [url, accepted]
             else:
                 print "Check recid", recid
-                print "Problem (if) with", url
+                print "Problem with", url
                 return [None, accepted]
         except:
             print "Check recid", recid

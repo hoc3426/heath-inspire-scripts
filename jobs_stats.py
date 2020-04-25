@@ -32,8 +32,6 @@ def job_languages():
         print "{0:>5d} {1:8d} {2:8d} {3:8d} {4:8d} {5:8d} {6:8d}".format(year,
             total['perl'], total['python'], total['c++'],
             total['fortran'], total['java'], total[ANY])
-job_languages()
-quit()
 
 def job_stats():
     grand_total = 0
@@ -56,7 +54,7 @@ def eprints():
     fermilab = get_collection_reclist('Fermilab')
     print '{0:4s} {1:3s} {2:3s} {3:3s}'.format('Date', 'All', 'FNA',
                                                    '%')
-    date_range = ['1904', '1905', '1906']
+    date_range = ['2001', '2002', '2003']
     #date_range = range(1, 20)
     for yymm in date_range:
         yymm = str(yymm)
@@ -114,7 +112,8 @@ if False:
     print "{0:12s} {1:5d} {2:5d} {3:5d} {4:5d} {5:5d} {6:5d}".\
           format(search, len(x1), len(y1), total1, len(x), len(y), total)
 
-
+eprints()
+quit()
 
 if False:
   for r in range(2007, 2015):
