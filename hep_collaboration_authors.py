@@ -452,6 +452,11 @@ def preprocess_file(read_data):
             line_new = re.sub(r'(.*)\s+\((.*)\)', 
                               r'\\author{\1}\n\\affiliation{\2}', line)
             read_data = read_data.replace(line, line_new)
+ 
+        #Josh~McFayden\affmark[1,3]
+        if re.search(r'\\affmark\[', line):
+            line_new = re.sub(r'\\affmark\[(.*)\]', r'$^{\1}$', line)
+            read_data = read_data.replace(line, line_new)
 
         #\AddAuthor{C.~Lindsey}{11}{}{}
         if re.search(r'\\AddAuthor{', line):

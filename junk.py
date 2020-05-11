@@ -33,6 +33,24 @@ from osti_web_service import get_osti_id
 from osti_web_service import check_already_sent
 from datetime import datetime
 
+def papers_per_year(search, start, end, collection='HEP'):
+    print collection
+    for year in range(start, end):
+        searchy = search + ' and jy ' + str(year)
+        number = len(perform_request_search(p=searchy, cc=collection))
+        print year, number
+papers_per_year('find r fermilab and tc p', 2010, 2020, 'Fermilab')
+quit()
+
+
+def check_bibcodes(file_name):
+    with open(file_name) as input: # Use file to refer to the file object
+        lines = input.readlines()
+    for line in lines:
+        print line
+        #pipe = subprocess.Popen(["perl", "uireplace.pl", var])
+#check_bibcodes('multi_bibcodes.txt')
+#quit()
 
 def cleanup(search, tag, cc='HEP'):
 
@@ -43,8 +61,10 @@ def cleanup(search, tag, cc='HEP'):
        output = output.replace(pre_open, '')
        output = output.replace(pre_close, '')
        print output
-cleanup('700__q:/\d+/', '700')
-quit()
+#cleanup('700__q:/\d+/', '700')
+#cleanup('65027a:i* or 65027a:v*', '65027')
+#cleanup("500:'/spires/find/' 500__a:withdrawn*", ['245','500','980'])
+#quit()
 
 
 
@@ -681,42 +701,6 @@ def zenodo_citations():
 
 
 
-with open('tmp.1000') as fp:
-    for line in fp.readlines():
-        match_obj = re.search(r'\[(\d+)\]', line)
-        match_obj = re.search(r'\{(\d+)\}\{(.*)\}{\\ref{(.*)}}', line)
-        match_obj = re.search(r'\\iauthor\{(\d+)\}(.*)', line)
-        if match_obj:
-            id = '0'
-            orcid = get_hepnames_anyid_from_recid(match_obj.group(1), 'ORCID')
-            if orcid:
-                #line = re.sub(match_obj.group(1), orcid, line)
-                id = orcid
-            else:
-                inspire = get_hepnames_anyid_from_recid(match_obj.group(1),
-                                                        'INSPIRE')
-                if inspire:
-                    #line = re.sub(match_obj.group(1), inspire, line)
-                    id = inspire
-            author = match_obj.group(2)
-            #affs = match_obj.group(3)
-            line = '\\author[' + id + ']' + match_obj.group(2)
-        #print line.rstrip() 
-        #print '\\author[' + id + ']{' + author + '}\\affiliation{' + affs + '}'
-        #\newcommand{\902676}{U. Bonn, Phys. Inst.}
-        match_obj = re.search(r'newcommand{\\(\d+)', line)
-        if match_obj:
-            inst = get_fieldvalues(match_obj.group(1), '110__u')[0]
-            line = '\\newcommand{\\' + match_obj.group(1) + '}{' + inst + '}'
-        print line.rstrip()
-#quit()
-
-
-for recid in perform_request_search(p=
-'999C5a:/doi:10.5281\/zenodo.*:$/', cc='HEP'):
-    print recid
-    #print print_record(recid, ot=['999C5'], format='hm')
-#quit()
 
 
 zenodos = []
@@ -924,11 +908,13 @@ OSTIS = ["15017018",
     
 
 citations = {}
-for year in range(1900,2019):
-    citations[year] = len(perform_request_search(
-           p='find topcite 2000+ and tc p and jy ' + str(year), cc='HEP'))
-    print year, citations[year]
-#quit()
+def papers_per_year(search, start, end):
+    for year in range(start, end):
+        search = search + ' and jy ' + str(year)
+        number = len(perform_request_search(p=search, cc='HEP'))
+        print year, number
+papers_per_year('find r fermilab and tc p', 2010, 2020)
+quit()
 
 if 0:
 #for recid in perform_request_search(p='500__a:/All figures and tables/', cc='HEP'):

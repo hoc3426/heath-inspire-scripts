@@ -35,12 +35,15 @@ def get_fermilab_report(recid):
     """Get the Fermilab report number."""
 
     report = None
+    accepted = False
     report_numbers = get_fieldvalues(recid, "037__a") + \
                      get_fieldvalues(recid, "037__z")
     for report_number in report_numbers:
         if  report_number.startswith('FERMILAB'):
             report = report_number
-    return report
+        if report_number.lower() == 'osti_accepted':
+            accepted = True
+    return (report, accepted)
 
 
 def recid_from_doi(doi):
@@ -82,7 +85,7 @@ def examine(doi):
         logging.info('  https://doi.org/{0}'.format(doi))
         return (False, None)
     get_journal(recid)
-    report = get_fermilab_report(recid)
+    report, accepted = get_fermilab_report(recid)
     if not report:
         logging.info('* Need report')
         logging.info('  https://old.inspirehep.net/record/{0}'.format(recid))
@@ -90,6 +93,8 @@ def examine(doi):
     if re.match(r'.*\d$', report):
         logging.info('* No division or section {0}'.format(report))
         logging.info('  https://old.inspirehep.net/record/{0}'.format(recid))
+    if accepted:
+        return (True, report)
     if check_already_sent(recid):
         return (True, report)
     else:
@@ -133,6 +138,11 @@ def main():
             print "  {0:25s} {1:>20s}".format(division,
                   calculate_output(division_good,
                                    division_good + division_bad))
+            #print "  {0:25s} {1:>20s}".format(division,
+            #      calculate_output(len(report_numbers_good)-division_good,
+            #                       len(DOIS[year])-(division_good +
+            #                           division_bad)))
+
         labwide_good = labwide_bad = 0
         labwide_good_reports = []
         for report in report_numbers_good:
