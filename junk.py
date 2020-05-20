@@ -39,18 +39,33 @@ def papers_per_year(search, start, end, collection='HEP'):
         searchy = search + ' and jy ' + str(year)
         number = len(perform_request_search(p=searchy, cc=collection))
         print year, number
-papers_per_year('find r fermilab and tc p', 2010, 2020, 'Fermilab')
-quit()
+#papers_per_year('find r fermilab and tc p', 2010, 2020, 'Fermilab')
+#quit()
 
+def bad_url(url):
+    curl = 'curl --output /dev/null --silent --head --fail '
+    if os.system(curl + url) != 0:
+        return True
+    return False
 
 def check_bibcodes(file_name):
+
+    URL = 'https://ui.adsabs.harvard.edu/abs/'
+    ADS_REGEX = re.compile(r"\d{4}([a-z&]+)[\d.]+[a-z.\d]+",
+                           re.IGNORECASE)
     with open(file_name) as input: # Use file to refer to the file object
         lines = input.readlines()
     for line in lines:
+        try:
+            bibcode = re.search(ADS_REGEX, line).group()
+        except AttributeError:
+            continue
+        url = URL + bibcode
+        if bad_url(url):
+            continue
         print line
-        #pipe = subprocess.Popen(["perl", "uireplace.pl", var])
-#check_bibcodes('multi_bibcodes.txt')
-#quit()
+check_bibcodes('multi_bibcodes.txt')
+quit()
 
 def cleanup(search, tag, cc='HEP'):
 
@@ -64,7 +79,10 @@ def cleanup(search, tag, cc='HEP'):
 #cleanup('700__q:/\d+/', '700')
 #cleanup('65027a:i* or 65027a:v*', '65027')
 #cleanup("500:'/spires/find/' 500__a:withdrawn*", ['245','500','980'])
-#quit()
+#cleanup('100__u:"James Franck Inst." or 700__u:"James Franck Inst."', 
+#        ['100', '700'])
+cleanup('371__a:"James Franck Inst."', '371', 'HepNames')
+quit()
 
 
 

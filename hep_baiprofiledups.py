@@ -89,7 +89,8 @@ def create_report(filename='', extid='ORCID'):
             if eidold != eid and i > 1:
                 output.write('-'*30 + "\n\n")
                 eidold = eid
-            output.write("https://inspirehep.net/author/profile/%s\n\n" % pid)
+            output.write("https://old.inspirehep.net/author/profile/%s\n\n" % 
+                          pid)
             author = orcid = inspire = None
             for tag, data in run_sql(
                              "select tag, data from aidPERSONIDDATA where" +
