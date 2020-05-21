@@ -4,9 +4,8 @@ This module finds people in HEPNames to send email to
 asking them to send us their ORCID ID.
 """
 
-TEST = True
+IGNORE = False
 TEST = False
-VERBOSE = True
 VERBOSE = False
 RECIDS = None
 
@@ -15,6 +14,7 @@ from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
                                     get_hepnames_recid_from_email
 from hepnames_mailout_bad_recids import BAD_RECIDS
 
+import getopt
 import time
 import sys
 import re
@@ -30,7 +30,7 @@ from email.mime.text import MIMEText
 LINK_BLOG = "https://blog.inspirehep.net/2015/04/"
 LINK_BLOG += "what-is-orcid-and-how-can-it-help-you/"
 
-def main(recids):
+def main(recids, ignore=False):
     """
     Gets name and email from each HEPNames record.
     """
@@ -58,12 +58,13 @@ def main(recids):
             recid_str = str(recid)
             recid_int = int(recid)
         if recid_int in BAD_RECIDS:
-                print 'Bad recid', recid, '\n'
-                continue
-        if get_hepnames_anyid_from_recid(recid_int, 'ORCID'):
-            print recid_str, 'already has an ORCID\n'
-            icount += 1
+            print 'Bad recid', recid, '\n'
             continue
+        if not ignore:
+            if get_hepnames_anyid_from_recid(recid_int, 'ORCID'):
+                print recid_str, 'already has an ORCID\n'
+                icount += 1
+                continue
         try:
             contact_email = get_fieldvalues(recid_int, '371__m')[0]
         except IndexError:
@@ -116,7 +117,7 @@ def send_jobs_mail(recid, email, name):
         return None
     subject = 'record in INSPIRE HEPNames ' + recid
     subject_sender = 'Adding an ORCID to your ' + subject
-    link = "http://inspirehep.net/record/" + recid
+    link = "https://inspirehep.net/authors/" + recid
     html = \
 """<html>
 <head></head>
@@ -126,11 +127,11 @@ Dear %(name)s,
 <br /><br />
 Your HEPNames record:<br />
 <a href=\"%(link)s\">%(link)s</a><br />
-Does not appear to have an <a href=\"http://orcid.org\">ORCID ID</a>
+Does not appear to have an <a href=\"https://orcid.org\">ORCID ID</a>
 matched to it.
 <br /><br />
 If you do not have an ORCID ID you can obtain one at:
-<a href=\"http://orcid.org/register\">http://orcid.org/register</a>
+<a href=\"https://orcid.org/register\">https://orcid.org/register</a>
 <br /><br />
 Once you have an ORCID ID please just reply to this email and let us know
 what it is so that we can add it to your HEPNames record.
@@ -185,7 +186,7 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
     stmp_email.sendmail(hepnames_email, email, msg.as_string())
     stmp_email.quit()
 
-def find_records():
+def find_records(ignore=False):
     """
     Finds records to send email to.
     """
@@ -200,7 +201,8 @@ def find_records():
         print "That's not a search. Game over."
         return None
     search += r' 371__m:/\@/'
-    search +=  ' -035__9:ORCID'
+    if ignore:
+        search += r' -035__9:ORCID'
 
     print search
     result = perform_request_search(p=search, cc='HepNames')
@@ -218,16 +220,32 @@ def find_records():
         return None
 
 if __name__ == '__main__':
+
+    try:
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'ir:tv')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        sys.exit(0)
+
+    for option, argument in OPTIONS:
+        if option == '-t':
+            TEST = True
+        elif option == '-r':
+            RECID = argument
+        elif option == '-v':
+            VERBOSE = True
+        elif option == '-i':
+            IGNORE = True
+
     if not RECIDS:
         RECIDS = []
         try:
-            RECID = int(sys.argv[1:][0])
             RECIDS.append(RECID)
-        except IndexError:
-            RECIDS = find_records()
+        except NameError:
+            RECIDS = find_records(IGNORE)
     try:
         if RECIDS:
-            main(RECIDS)
+            main(RECIDS, IGNORE)
         else:
             print "Nothing to do."
     except KeyboardInterrupt:
