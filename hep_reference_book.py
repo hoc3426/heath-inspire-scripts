@@ -41,6 +41,7 @@ BOOKS = [
 ['Szekeres', 'A Course in Modern Mathematical Physics', '9780521829601', '669271'],
 ['Thomas', 'The Structure of the Nucleon', '9783527402977', '559956', '2001'],
 ['Thomas', 'New Starting Point for Nuclear Physics', 'CERN-TH-3368', '179234', '1982'],
+['Esposito','Advanced concepts in quantum mechanics', '9781316121689', '1333796', '2014'],
 ['Kovchegov', 'Quantum chromodynamics at high energy', '9780521112574', '1217905', '2012']]
 
 BOOKS = [BOOKS[23]]
@@ -70,8 +71,10 @@ def process_references(book):
     x_author = perform_request_search(p=search_author, cc='HEP')
     x_title = perform_request_search(p=search_title, cc='HEP')
     result = list(intbitset(x_author) & intbitset(x_title))
-
+    print len(result), result
     records = []
+    if len(result) == 1:
+        return None
     new_records = []
     for recid in result:
         records.append(print_record(recid, ot=['999C5'], format='hm'))
@@ -126,11 +129,17 @@ def main():
     output = open(filename_1, 'w')
     new_records = []
     for book in BOOKS:
-        new_records += process_references(book)
-    for record in new_records:
-        for line in record:
-            output.write(line)
+        new_record = process_references(book)
+        if new_record:
+            new_records += new_record
+    if new_records:
+        for record in new_records:
+            for line in record:
+                print line
+                output.write(line)
     output.close()
+    if not new_records:
+        return None
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     with open(filename, "w") as final_output:

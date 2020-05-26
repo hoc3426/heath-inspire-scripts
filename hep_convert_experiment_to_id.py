@@ -67,6 +67,7 @@ def create_xml(recid, tags, experiment, author_dict):
             for code, value in field_instance[0]:
                 if code == 'a':
                     if value not in author_dict:
+                        value = value.replace('ß', 'ss')
                         search = 'find a ' + value + ' and exp ' + experiment
                         if VERBOSE:
                             print search
