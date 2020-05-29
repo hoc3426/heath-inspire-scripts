@@ -33,6 +33,46 @@ from osti_web_service import get_osti_id
 from osti_web_service import check_already_sent
 from datetime import datetime
 
+def get_orcids(filename):
+    #<cal:authorid source="Inspire ID">INSPIRE-00043063</cal:authorid>
+    #<cal:orgName>Yerevan Physics Institute</cal:orgName>
+
+    from hep_aff import get_aff
+    from hep_convert_email_to_id import get_orcid_from_inspire_id
+    with open(filename) as input: # Use file to refer to the file object
+        lines = input.readlines()
+    address = icn = None
+    for line in lines:
+        #print line
+        inspire = re.search(r'INSPIRE\-\d{8}', line)
+        if inspire and False:
+            inspire = inspire.group(0)
+            orcid = get_orcid_from_inspire_id(inspire)[1]
+            if orcid:
+                print line.replace('Inspire ID', 'ORCID').replace(inspire, orcid)
+        if not address:
+            address = re.search(r'<cal:orgName>([^\<]+)', line)
+            #print 'address', address
+        if not icn:
+            icn = re.search(r'orgName source="INSPIRE">([^\<]+)', line)
+        if address and False:
+            address = address.group(1)
+            icn = get_aff(address)
+            try:
+                #print '            <cal:orgName source="INSPIRE">{0}</cal:orgName>'.format(icn[0])
+                print '{0} = {1}'.format(address, icn)
+            except IndexError:
+                print '\n Problem with: {0}\n'.format(address)
+        if address and icn:
+            print '"{0}" = "{1}"'.format(address.group(1), icn.group(1))
+            address = icn = None
+        #line = line.replace(r'\n', '')
+        #print line
+#get_orcids('authors_BABAR.xml')
+get_orcids('2005.08745_new.xml')
+quit()
+
+
 def papers_per_year(search, start, end, collection='HEP'):
     print collection
     for year in range(start, end):
