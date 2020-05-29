@@ -140,6 +140,28 @@ def check_ids():
     print "Finding new ORCIDs in HEP"
     new_orcids(already_seen)
 
+def bad_inspire_id():
+    '''Find bad INSPIRE IDs in HEP'''
+
+    print 'Check for bad INSPIRE IDs in HEP'
+    inspire_id_hep = set(get_all_field_values('100__i') + \
+                     get_all_field_values('700__i'))
+    id_hepnames = set(get_all_field_values('035__a'))
+    bad_inspire_ids = inspire_id_hep - id_hepnames
+    if not bad_inspire_ids:
+        return None
+    baddies = set()
+    for bad_inspire_id in bad_inspire_ids:
+        search = '100__i:"{0}" or 700__i:"{0}"'.format(bad_inspire_id)
+        result = perform_request_search(p=search, cc='HEP')
+        if not len(result):
+            continue
+        baddies.add(search)
+    if not len(baddies):
+        return None
+    for baddie in baddies:
+        print baddie
+
 def new_orcids(already_seen):
     """Search for new ORCIDs in HEP."""
 
@@ -245,6 +267,7 @@ def main():
     output = open(filename, 'w')
     sys.stdout = output
     bad_identifiers()
+    bad_inspire_id()
     check_ids()
     #bad_experiments_affilations()
     #bad_url_z()
