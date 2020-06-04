@@ -156,7 +156,10 @@ def bad_inspire_id():
         result = perform_request_search(p=search, cc='HEP')
         if not len(result):
             continue
-        baddies.add(search)
+        for recid in result:
+            if bad_inspire_id in get_fieldvalues(recid, '100__i') + \
+                                 get_fieldvalues(recid, '700__i'):
+                baddies.add(search)
     if not len(baddies):
         return None
     for baddie in baddies:
