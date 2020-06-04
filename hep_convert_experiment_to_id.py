@@ -101,6 +101,8 @@ def find_records_with_no_id(experiment):
                 -100__j:ORCID* -700__j:ORCID* \
                 -100__k:ORCID* -700__k:ORCID*"
     result = perform_request_search(p=search, cc='HEP')
+    result += perform_request_search(p=search, cc='Fermilab')
+    result = set(result)
     if VERBOSE:
         print len(result)
     clean_result = []
