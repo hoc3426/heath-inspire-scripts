@@ -69,7 +69,8 @@ def download_source(eprint, download_path = ""):
             file_type_regex = re.compile(r'^.*(tex|xml|txt)$')
             if BIB:
                 file_type_regex = re.compile(r'^.*(tex|xml|txt|bib|bbl|inc)$')
-            #if re.search(r'(tex|xml|txt|bib|bbl|inc)$', this_file):
+            if DAT:
+                file_type_regex = re.compile(r'^.*(tex|xml|txt|dat)$')
             if file_type_regex.match(this_file):
                 file_count += 1
                 tarfiles[file_count] = this_file
@@ -833,10 +834,10 @@ def main(eprint):
 
 if __name__ == '__main__':
 
-    BIB = TEST = VERBOSE = False
+    BIB = DAT = TEST = VERBOSE = False
 
     try:
-        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'btv')
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'bdtv')
     except getopt.error:
         print 'error: you tried to use an unknown option'
         sys.exit(0)
@@ -844,6 +845,8 @@ if __name__ == '__main__':
     for option, argument in OPTIONS:
         if option == '-b':
             BIB = True
+        if option == '-d':
+            DAT = True
         if option == '-t':
             TEST = True
         if option == '-v':

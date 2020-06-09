@@ -116,7 +116,8 @@ EXPT_DICT = {
     },
     ("9.3", "Parton Distribution Fits"),
     ("9.4", "Lattice Gauge Theory"),
-    ("9.5", "Neutrino Physics") 
+    ("9.5", "Neutrino Physics"),
+    ("9.6", "Particle Properties")
    ]
 }
 
