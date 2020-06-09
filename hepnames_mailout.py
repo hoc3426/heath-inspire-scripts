@@ -118,6 +118,7 @@ def send_jobs_mail(recid, email, name):
     subject = 'record in INSPIRE HEPNames ' + recid
     subject_sender = 'Adding an ORCID to your ' + subject
     link = "https://inspirehep.net/authors/" + recid
+    edit_link = link.replace('/authors/', '/submissions/authors/')
     html = \
 """<html>
 <head></head>
@@ -133,8 +134,10 @@ matched to it.
 If you do not have an ORCID ID you can obtain one at:
 <a href=\"https://orcid.org/register\">https://orcid.org/register</a>
 <br /><br />
-Once you have an ORCID ID please just reply to this email and let us know
-what it is so that we can add it to your HEPNames record.
+Once you have an ORCID ID please just go to your your HEPNames record
+and click "<a href=\"%(edit_link)s\">edit</a>" (requires ORCID login).
+You will be able to add your ORCID and any other information that needs
+updating. 
 <br /><br />
 For more information on ORCID and its importance to INSPIRE, please see
 our 2015 <a href=\"%(link_blog)s\">blog post</a>.
@@ -149,7 +152,7 @@ Follow INSPIRE on Twitter: https://twitter.com/inspirehep
 </p>
 </body>
 </html>
-"""% {"link":link, "link_blog":LINK_BLOG, "name":name}
+"""% {"link":link, "edit_link":edit_link, "link_blog":LINK_BLOG, "name":name}
 
     text = BeautifulSoup(html, "lxml").text
     text = re.sub('click the appropriate link below to ', '', text)
