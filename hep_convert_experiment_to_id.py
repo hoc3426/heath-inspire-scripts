@@ -6,7 +6,7 @@ This module adds INSPIRE IDs and ORCIDs to names in HEP records
 for people on experimental collaborations.
 """
 
-
+import getopt
 import sys
 import os
 
@@ -17,6 +17,7 @@ from invenio.bibrecord import print_rec, record_get_field_instances, \
 from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     get_hepnames_anyid_from_recid
 from hep_convert_experiment_to_id_constants import EXPERIMENTS, \
+                                                   EXPERIMENTS_FNAL, \
                                                    VERBOSE, \
                                                    COUNT_MAX
 
@@ -159,7 +160,22 @@ def main(experiments_input):
         experiment_convert(experiment)
 
 if __name__ == '__main__':
-    EXPERIMENTS_INPUT = sys.argv[1:]
+
+    try:
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'e:fv')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        sys.exit(0)
+
+    for option, argument in OPTIONS:
+        if option == '-e':
+            EXPERIMENTS_INPUT = [argument]
+        elif option == '-f':
+            EXPERIMENTS_INPUT = EXPERIMENTS_FNAL
+        if option == '-v':
+            VERBOSE = True
+
+
     try:
         main(EXPERIMENTS_INPUT)
     except KeyboardInterrupt:

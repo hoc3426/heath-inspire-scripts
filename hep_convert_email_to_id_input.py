@@ -13,4 +13,3 @@ SEARCH = '100__m:/fnal.gov/ or 700__m:/fnal.gov/'
 SEARCH = '100__m:/\w/ or 700__m:/\w/ du:2019-02-25->2019-04-01'
 SEARCH = '100__m:/\w/ or 700__m:/\w/ du:2019-03-15->2019-04-01'
 SEARCH = None
-SEARCH = '100__m:/\w/ or 700__m:/\w/ du:2020-06-08'
