@@ -240,7 +240,8 @@ def create_xml(recid):
                            and value not in JACOW_DOIS:
                 doi = fix_jacow_doi(value)
                 if doi:
-                    print 'DOI missing from INSPIRE', doi
+                    if doi not in JACOW_DOIS:
+                        print 'DOI missing from INSPIRE', doi
                     value = doi
                     flag_instance = True
             if code in ('m', 'u', 'x', 'r'):

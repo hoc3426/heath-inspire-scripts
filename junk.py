@@ -1,37 +1,38 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import unicodedata
-import re
-import operator
-import os
-import pprint
-import string
-from datetime import date
-import sys
-from check_url import checkURL
 
-from invenio.search_engine import perform_request_search
-from invenio.search_engine import get_fieldvalues
-from invenio.search_engine import get_record
-from invenio.search_engine import get_all_field_values
-from invenio.search_engine import print_record
-from invenio.bibformat_engine import BibFormatObject
-from hep_convert_email_to_id import *
-from invenio.bibrecord import print_rec, record_get_field_instances, \
-     record_add_field
-from invenio.intbitset import intbitset
+#import unicodedata
+#import re
+#import operator
+#import os
+#import pprint
+#import string
+#from datetime import date
+#import sys
+#from check_url import checkURL
+
+#from invenio.search_engine import perform_request_search
+#from invenio.search_engine import get_fieldvalues
+#from invenio.search_engine import get_record
+#from invenio.search_engine import get_all_field_values
+#from invenio.search_engine import print_record
+#from invenio.bibformat_engine import BibFormatObject
+#from hep_convert_email_to_id import *
+#from invenio.bibrecord import print_rec, record_get_field_instances, \
+#     record_add_field
+#from invenio.intbitset import intbitset
 from invenio.textutils import translate_latex2unicode
-from invenio.search_engine import search_unit
-from invenio.search_engine import get_collection_reclist
+##from invenio.search_engine import search_unit
+#from invenio.search_engine import get_collection_reclist
 
-from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
-                                    get_hepnames_recid_from_email, \
-                                    bad_orcid_check
+#from hep_convert_email_to_id import get_hepnames_anyid_from_recid, \
+#                                    get_hepnames_recid_from_email, \
+#                                    bad_orcid_check
 #from hep_collaboration_authors import author_first_last
-from osti_web_service import get_osti_id
+#from osti_web_service import get_osti_id
 #from hep_msnet import create_xml
-from osti_web_service import check_already_sent
-from datetime import datetime
+#from osti_web_service import check_already_sent
+#from datetime import datetime
 
     
 
@@ -105,24 +106,27 @@ def check_bibcodes(file_name):
         print line
 
 
-def cleanup(search, tag, cc='HEP'):
-
+def cleanup(search, tag, cc='HEP', old=None, new=None):
+    import re
+    from invenio.search_engine import perform_request_search, print_record
     pre_open = '<pre style="margin: 1em 0px;">'
     pre_close = '</pre>'
+    if old and new:
+        old = re.compile(old, re.I)
     for recid in perform_request_search(p=search, cc=cc):
+       if recid in RECIDS:
+           print 'Already done', recid
+           continue
+       RECIDS.add(recid)
        output = print_record(recid, ot=tag, format='hm')
        output = output.replace(pre_open, '')
        output = output.replace(pre_close, '')
-       print output
-    #cleanup('700__q:/\d+/', '700')
-    #cleanup('65027a:i* or 65027a:v*', '65027')
-    #cleanup("500:'/spires/find/' 500__a:withdrawn*", ['245','500','980'])
-    #cleanup('100__u:"James Franck Inst." or 700__u:"James Franck Inst."', 
-    #        ['100', '700'])
-    #cleanup('371__a:"James Franck Inst."', '371', 'HepNames')
-
-
-
+       print 'OLD', output
+       if new in output:
+           output = re.sub(old, '', output)
+       elif old.search(output):
+           output = re.sub(old, new, output)
+       print 'NEW', output
 
 def create_xml(recid, urls=None, delete=False):
     common_fields = {}
@@ -324,13 +328,13 @@ def doi_ending():
                 print result, search
     #counter_list(dois)
         
-def aff_fix(search):
+def record_fix(search):
     for recid in perform_request_search(p=search, cc='HEP'):
         rec = print_record(recid, ot=['100', '700'], format='hm')
         rec = rec.replace('<pre style="margin: 1em 0px;">', '')
         rec = rec.replace('</pre>', '')
         print rec
-#aff_fix('700__u:/ U$/ or 100__u:/ U$/')
+#record_fix('700__u:/ U$/ or 100__u:/ U$/')
 
 
 def cites_per_year(key, value, start='1970', end='2020'):
@@ -720,8 +724,20 @@ def zenodo_citations():
 
 if __name__ == '__main__':
 
-    search = '100__i:"INSPIRE-00448848 " or 700__i:"INSPIRE-00448848 "'
-    tag = ['100', '700']
-    cleanup(search, tag, cc='HEP')
+    RECIDS = set()
+    for old, new in [('FERMILAB-FN-1025-T', 'CERN-2017-002-M'),
+                     ('FERMILAB-FN-1025-T', 'CERN-2017-002'),
+                     ('FERMILAB-FN-1021-T', 'CERN-TH-2016-112'),
+                     ('FERMILAB-CONF-13-667-T', 'CERN-2013-004'),
+                     ('FERMILAB-DESIGN-2012-01', 'CERN-LHCC-2012-015'),
+                     ('FERMILAB-DESIGN-2012-02', 'CERN-LHCC-2012-016'),
+                     ('FERMILAB-CONF-02-422', 'CERN-2003-002'),
+                     ('FERMILAB-FN-1009-CD', 'CERN-LPCC-2016-001'),
+                     ('FERMILAB-PUB-16-296-T', 'CERN-TH-2016-111'),
+                     ('FERMILAB-FN-0779', 'CERN-2005-005')
+                    ]:
+        search = '999C5r:' + old
+        tag = ['999C5']
+        cleanup(search, tag, cc='HEP', old='\$\$r' + old, new='$$r' + new)
 
 

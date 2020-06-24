@@ -52,7 +52,8 @@ or 100__v:/Fermi Nat/ or 700__v:/Fermi Nat/ \
     result = perform_request_search(p=atsearch, cc='HEP') + \
              perform_request_search(p=atsearch, cc='Fermilab')
     #result.reverse()
-    #result = set(result)
+    result = set(result)
+    result = list(result)
     result = result[:200]
     return result
 

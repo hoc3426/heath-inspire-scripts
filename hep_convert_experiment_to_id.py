@@ -161,6 +161,8 @@ def main(experiments_input):
 
 if __name__ == '__main__':
 
+    EXPERIMENTS_INPUT = None
+    
     try:
         OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'e:fv')
     except getopt.error:
