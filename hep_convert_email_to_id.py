@@ -6,8 +6,9 @@ This module adds INSPIRE IDs and ORCIDs to names in HEP records
 based on email addresses.
 """
 
-import re
 from sys import argv
+import getopt
+import re
 
 from invenio.search_engine import perform_request_search, get_record, \
                                   search_unit, get_all_field_values
@@ -44,8 +45,10 @@ def generate_check_digit(base_digits):
     return result
 
 def bad_orcid_check(orcid):
+    '''Returns True if ORCID is fails a check'''
+
     if not isinstance(orcid, str):
-        return True 
+        return True
     orcid_regex = re.compile(r'^0000-\d{4}-\d{4}-\d{3}[\dX]$')
     if not orcid_regex.match(orcid):
         return True
@@ -318,6 +321,18 @@ def create_xml(recid, tags, author_dict):
     else:
         return [None, author_dict]
 
+def find_records_updated_today():
+    '''Find records updated today'''
+
+    search = 'find du today'
+    result = perform_request_search(p=search, cc='HEP')
+    if not result:
+        return None
+    result += perform_request_search(p=search, cc='Fermilab')
+    result += find_records_containing_email()
+    result = set(result)
+    return result
+
 def main(recordlist):
     """Run the script."""
 
@@ -357,8 +372,31 @@ def main(recordlist):
 
 if __name__ == '__main__':
 
-    if not RECIDS:
-        RECIDS = argv[1:]
+#    if not RECIDS:
+#        RECIDS = argv[1:]
+#    try:
+#        main(RECIDS)
+#    except KeyboardInterrupt:
+#        print 'Exiting'
+
+
+
+    try:
+        OPTIONS, ARGUMENTS = getopt.gnu_getopt(argv[1:], 'r:tv')
+    except getopt.error:
+        print 'error: you tried to use an unknown option'
+        quit()
+
+    for option, argument in OPTIONS:
+        if option == '-r':
+            RECIDS = [argument]
+        elif option == '-t':
+            RECIDS = find_records_updated_today()
+            if not RECIDS:
+                print 'No records updated today'
+                quit()
+        if option == '-v':
+            VERBOSE = True
     try:
         main(RECIDS)
     except KeyboardInterrupt:
