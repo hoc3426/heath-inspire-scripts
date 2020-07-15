@@ -56,6 +56,7 @@ def eprints():
                                                    '%')
     date_range = ['2001', '2002', '2003']
     #date_range = range(1, 20)
+    date_range = ['2004', '2005', '2006']
     for yymm in date_range:
         yymm = str(yymm)
         if len(yymm) == 1:

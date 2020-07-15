@@ -35,6 +35,38 @@ from invenio.textutils import translate_latex2unicode
 #from datetime import datetime
 
     
+def add_date():
+
+    import re
+    from invenio.search_engine import get_fieldvalues,\
+                                      perform_request_search
+
+    search = '037:/\-20[012][0-9]/ -date:1000->3000 -980:thesis'
+    search = '037:/\-[789][0-9]\-/ -date:1000->3000 -980:thesis'
+    search = '773__w:c* -date:1000->3000 -269__c:1000->3000'
+    #print search
+    result = perform_request_search(p=search, cc='HEP')
+    #print len(result)
+    for recid in result[:500]:
+        #for report in get_fieldvalues(recid, '037__a'):
+        for report in get_fieldvalues(recid, '773__w'):
+            year = re.search(r'\d{4}', report)
+            year = re.search(r'\-[789][0-9]\-', report)
+            year = re.search(r'\-[12][0-9]\-', report)
+            year = re.search(r'C\d\d\-', report)
+            if year:
+                year = year.group(0)
+                year = re.sub(r'-', '', year)
+                year = re.sub(r'C', '', year)
+                if year.startswith('0'):
+                    year = '20' + year
+                elif int(year) > 30:
+                    year = '19' + year
+                else:
+                    year = '20' + year
+                #print report
+                print create_xml(recid, '269__', 'c', year)
+
 
 def get_orcids(filename):
     #<cal:authorid source="Inspire ID">INSPIRE-00043063</cal:authorid>
@@ -128,7 +160,21 @@ def cleanup(search, tag, cc='HEP', old=None, new=None):
            output = re.sub(old, new, output)
        print 'NEW', output
 
-def create_xml(recid, urls=None, delete=False):
+
+def create_xml(recid, tag, subfield, value):
+    from invenio.bibrecord import print_rec, record_add_field
+
+    common_fields = {}
+    common_tags = {}
+    record_add_field(common_fields, '001', controlfield_value=str(recid))
+    common_tags[tag] = [(subfield, value)]
+    record_add_field(common_fields, tag[0:3], tag[3], tag[4],\
+                     subfields=common_tags[tag])
+    return print_rec(common_fields)
+
+
+
+def create_xml_old(recid, urls=None, delete=False):
     common_fields = {}
     common_tags = {}
     record_add_field(common_fields, '001', controlfield_value=str(recid))
@@ -722,9 +768,10 @@ def zenodo_citations():
 
 
 
-if __name__ == '__main__':
+def bad_reports():
 
     RECIDS = set()
+    search = ''
     for old, new in [('FERMILAB-FN-1025-T', 'CERN-2017-002-M'),
                      ('FERMILAB-FN-1025-T', 'CERN-2017-002'),
                      ('FERMILAB-FN-1021-T', 'CERN-TH-2016-112'),
@@ -736,8 +783,16 @@ if __name__ == '__main__':
                      ('FERMILAB-PUB-16-296-T', 'CERN-TH-2016-111'),
                      ('FERMILAB-FN-0779', 'CERN-2005-005')
                     ]:
-        search = '999C5r:' + old
-        tag = ['999C5']
-        cleanup(search, tag, cc='HEP', old='\$\$r' + old, new='$$r' + new)
+        search = search + ' or 999C5r:' + old
+    import re
+    search = re.sub(r'^ or ', '', search)
+    print search
+        #tag = ['999C5']
+        #cleanup(search, tag, cc='HEP', old='\$\$r' + old, new='$$r' + new)
+
+
+if __name__ == '__main__':
+
+    add_date()
 
 
