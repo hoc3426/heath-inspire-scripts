@@ -124,8 +124,7 @@ def find_records_containing_email():
     result = perform_request_search(p=search, cc='HEP')
     result += perform_request_search(p=search, cc='Fermilab')
     result = set(result)
-    print "Checking", len(result), "records"
-    return sorted(result, reverse=True)
+    return result
 
 
 
@@ -325,12 +324,15 @@ def find_records_updated_today():
     '''Find records updated today'''
 
     search = 'find du today'
-    result = perform_request_search(p=search, cc='HEP')
-    if not result:
+    result_today_h = perform_request_search(p=search, cc='HEP')
+    result_today_f = perform_request_search(p=search, cc='Fermilab')
+    if not result_today_h and not result_today_f:
         return None
-    result += perform_request_search(p=search, cc='Fermilab')
-    result += find_records_containing_email()
-    result = set(result)
+    result_today = result_today_h + result_today_f
+    result_today = intbitset(result_today)
+    result_email = find_records_containing_email()
+    result_email = intbitset(result_email)
+    result = result_today & result_email
     return result
 
 def main(recordlist):
@@ -348,6 +350,8 @@ def main(recordlist):
             recordlist = [int(r) for r in recordlist]
         except TypeError:
             print "ERROR: bad recid given"
+    recordlist = sorted(recordlist, reverse=True)
+    print "Checking", len(recordlist), "records"
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '_correct.out', filename)
     output = open(filename, 'w')
