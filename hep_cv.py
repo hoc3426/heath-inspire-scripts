@@ -21,6 +21,8 @@ author = 'Bellettini, Giorgio'
 #author = 'Betancourt, Minerba'
 author = 'Schappert, Warren'
 author = 'Cavanna, Flavio'
+author = 'Campagnari, Claudio'
+
 fileName = re.sub(r'(.*)\,.*',r'\1',author)
 fileName = fileName.replace(' ','_')
 fileName = 'www/texfiles/' + fileName + '.tex'
@@ -36,6 +38,7 @@ bai = 'Giorgio.Bellettini.1'
 #search = 'find ea Minerba.Betancourt.1'
 bai = 'Warren.Schappert.1'
 bai = 'Flavio.Cavanna.1'
+bai = 'C.Campagnari.1'
 
 search = "exactauthor:" + bai
 
