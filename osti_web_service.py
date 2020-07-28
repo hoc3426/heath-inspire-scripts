@@ -46,7 +46,6 @@ CMS = intbitset(perform_request_search(p="find r fermilab and cn cms", \
 
 CMS = intbitset(perform_request_search(p="037__z:fermilab*", cc='Fermilab'))
 
-
 def create_osti_id_pdf(recid, osti_id):
     """
     Places a PDF named after the OSTI id in a location that
@@ -145,7 +144,7 @@ def get_url(recid):
                 accepted = True
             elif item['y'].lower() == 'fermilab accepted manuscript':
                 url_postprint = item['u']
-                accepted = True                
+                accepted = True
         #if item.has_key('z') and not url_openaccess:
         #    if item['z'] == 'openaccess':
         #        url_openaccess = item['u']
@@ -165,7 +164,7 @@ def get_url(recid):
     if not accepted:
         urls = get_fieldvalues(recid, '8564_u')
         for url_i in urls:
-            url_i = re.sub('https?://inspirehep.net', 
+            url_i = re.sub('https?://inspirehep.net',
                            'https://old.inspirehep.net', url_i)
             if re.search(r'lss.*fermilab\-.*pdf', url_i, re.IGNORECASE):
                 url_fermilab = url_i
@@ -242,7 +241,7 @@ def get_pubnote(recid):
     except IndexError:
         issue = None
     try:
-        pages  = get_fieldvalues(recid, "773__c")[0]
+        pages = get_fieldvalues(recid, "773__c")[0]
     except IndexError:
         pages = None
     try:
@@ -254,7 +253,7 @@ def get_pubnote(recid):
 def get_conference(recid_hep):
     """ Get conference information """
     try:
-        cnum  = get_fieldvalues(recid_hep, "773__w")[0]
+        cnum = get_fieldvalues(recid_hep, "773__w")[0]
     except IndexError:
         return None
     search = '111__g:' + cnum
@@ -306,7 +305,7 @@ def get_author_details(recid, authors, tag):
                 matchobj = re.match(r'(.*)\, (.*)\, (.*)', author)
                 last_name = matchobj.group(1)
                 fore_name = matchobj.group(2)
-                title     = matchobj.group(3)
+                title = matchobj.group(3)
                 fore_name = fore_name + ', ' + title
             except AttributeError:
                 last_name = re.sub(r'\,.*', '', author)
@@ -517,7 +516,15 @@ def create_xml(recid, records):
             create_osti_id_pdf(recid, osti_id)
         else:
             ET.SubElement(record, 'journal_type').text = 'FT'
-    ET.SubElement(record, 'product_type').text = product_type
+
+    if product_type.startswith(r'CO.'):
+        product_subtype = re.sub(r'.*\.', '', product_type)
+        product_type = re.sub(r'\..*', '', product_type)
+        ET.SubElement(record, 'product_type',
+                      product_subtype=product_subtype).text = \
+                     product_type
+    else:
+        ET.SubElement(record, 'product_type').text = product_type
     access_limitation = ET.SubElement(record, 'access_limitation')
     ET.SubElement(access_limitation, 'unl')
     if not accepted:
@@ -585,7 +592,7 @@ def main(recids):
         return None
     filename = 'tmp_' + __file__
     filename = re.sub('.py', '.out', filename)
-    output = open(filename,'w')
+    output = open(filename, 'w')
 
     #recids = [1400805, 1373745, 1342808, 1400935]
     records = ET.Element('records')

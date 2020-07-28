@@ -8,6 +8,26 @@ OSTI_URL = 'https://www.osti.gov/elink/docs/2411dtd.htm'
 XML_PREAMBLE  = '<?xml version="1.0" encoding="UTF-8" ?>'
 XML_PREAMBLE += '<!DOCTYPE records SYSTEM "' + OSTI_URL + '">'
 
+'''
+PRODUCT SUB-TYPE CODES
+Code	Definition
+A	Conference Paper
+R	Conference Presentation (may receive a DOI)
+O	Conference Poster (may receive a DOI)
+P	Conference Proceedings
+
+EXAMPLE CONFERENCE SUBTYPE
+
+<records>
+    <record>
+        <!-- specify conference presentation metadata type -->
+        <product_type product_subtype="R">CO</product_type>
+        <!-- additional required metadata -->
+    </record>
+</records> 
+'''
+
+
 ENDING_COUNTER = 200
 
 TYPE_DICT = {
@@ -30,11 +50,11 @@ TYPE_DICT = {
 'MICROBOONE':'TR',
 'MUCOOL':'TR',
 'PLAN':'PD',
-'POSTER':'TR',
+'POSTER':'CO.O',
 'PROPOSAL':'TR',
 'PUB':'JA',
 'REVIEW':'PD',
-'SLIDES':'TR',
+'SLIDES':'CO.R',
 'THESIS':'TD',
 'TM':'TR',
 'VLHCPUB':'TR'
