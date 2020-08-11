@@ -18,6 +18,7 @@ experiments = {
 'BaBar':'SLAC-PEP2-BABAR',
 'Baikal-GVD':'BAIKAL-GVD',
 'Belle':'KEK-BF-BELLE',
+'Belle II':'KEK-BF-BELLE-II',
 'BESIII':'BEPC-BES-III',
 'Borexino':'BOREXINO',
 'BRAHMS':'BNL-RHIC-BRAHMS',

@@ -1,3 +1,4 @@
+
 """
 Input for the osti_web_service.py script.
 """
@@ -34,7 +35,7 @@ TYPE_DICT = {
 'ANNUAL':'PD',
 'BACHELORS':'TD',
 'BOOK':'B',
-'CONF':'CO',
+'CONF':'CO.A',
 'CRADA':'TR',
 'D0-EN':'TR',
 'DESIGN':'TR',
