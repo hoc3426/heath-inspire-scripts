@@ -210,12 +210,12 @@ or Franz Gross
 or Wally Melnitchouk
 or Kostas Orginos
 or Jianwei Qiu
-or or Anatoly Radyushkin
+or Anatoly Radyushkin
 or David Richards
-or or Ted Rogers
-or or Rocco Schiavilla
+or Ted Rogers
+or Rocco Schiavilla
 or Adam Szczepaniak
-or or Wally Van Orden
+or Wally Van Orden
 or Christian Weiss
 and (primarch hep-lat or hep-ph or nucl-th)""")
 

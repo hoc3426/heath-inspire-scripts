@@ -14,7 +14,7 @@ from invenio.search_engine import print_record
 from invenio.search_engine import perform_request_search
 from invenio.textmarc2xmlmarc import transform_file
 
-COUNTER_MAX = 5
+COUNTER_MAX = 500
 
 BOOKS = [
 ['Itzykson', 'quantum field theory', '0486445682', '159194'],
@@ -42,9 +42,11 @@ BOOKS = [
 ['Thomas', 'The Structure of the Nucleon', '9783527402977', '559956', '2001'],
 ['Thomas', 'New Starting Point for Nuclear Physics', 'CERN-TH-3368', '179234', '1982'],
 ['Esposito','Advanced concepts in quantum mechanics', '9781316121689', '1333796', '2014'],
-['Kovchegov', 'Quantum chromodynamics at high energy', '9780521112574', '1217905', '2012']]
+['Kovchegov', 'Quantum chromodynamics at high energy', '9780521112574', '1217905', '2012'],
+['Eides', 'Theory of Light Hydrogenic Bound States', '9783540452690', '1757483', '2007']
+]
 
-BOOKS = [BOOKS[23]]
+BOOKS = [BOOKS[18]]
 
 def process_references(book):
     '''

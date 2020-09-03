@@ -69,11 +69,15 @@ def create_xml(recid, tags, experiment, author_dict):
                 if code == 'a':
                     if value not in author_dict:
                         value = value.replace('ß', 'ss')
+                        value = value.replace("’", "'")
                         search = 'find a ' + value + ' and exp ' + experiment
                         if VERBOSE:
                             print search
                         author_dict[value] = \
                            convert_search_to_inspire_id(search)
+                        if experiment in EXPERIMENTS_FNAL and \
+                        not any(author_dict[value]):
+                            print experiment, value
                         if VERBOSE:
                             print author_dict[value]
                     if author_dict[value][0]:
@@ -162,7 +166,7 @@ def main(experiments_input):
 if __name__ == '__main__':
 
     EXPERIMENTS_INPUT = None
-    
+
     try:
         OPTIONS, ARGUMENTS = getopt.gnu_getopt(sys.argv[1:], 'e:fv')
     except getopt.error:
@@ -171,6 +175,8 @@ if __name__ == '__main__':
 
     for option, argument in OPTIONS:
         if option == '-e':
+            if not option in EXPERIMENTS:
+                argument = argument.upper()
             EXPERIMENTS_INPUT = [argument]
         elif option == '-f':
             EXPERIMENTS_INPUT = EXPERIMENTS_FNAL
