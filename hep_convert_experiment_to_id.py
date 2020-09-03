@@ -77,7 +77,7 @@ def create_xml(recid, tags, experiment, author_dict):
                            convert_search_to_inspire_id(search)
                         if experiment in EXPERIMENTS_FNAL and \
                         not any(author_dict[value]):
-                            print experiment, value
+                            print experiment, recid, value
                         if VERBOSE:
                             print author_dict[value]
                     if author_dict[value][0]:
