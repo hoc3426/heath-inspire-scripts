@@ -710,9 +710,10 @@ def process_file(eprint, file_type='tex'):
         if match:
             affiliation_dict[match.group(1)] = match.group(2)
             if VERBOSE:
-                print match.group(1), affiliation_dict[match.group(1)]
-        elif VERBOSE and re.search(r'\$\^', line):
-            print "NO MATCH:", line
+                print 'aff_dict', match.group(1), ':',\
+                       affiliation_dict[match.group(1)]
+        #elif VERBOSE and re.search(r'\$\^', line):
+        #    print "NO MATCH:", line
         #Find author/affiliations for \\author, \\affiliation
         match = re.search(r'\\author\{(.*)\}', line)
         if match:
@@ -751,8 +752,14 @@ def process_file(eprint, file_type='tex'):
         print 'author_dict =', author_dict
     print 'Number of authors:', author_position
     if affiliation_dict:
+        #for key in sorted(affiliation_dict):
+        #    print key, ':', affiliation_dict[key]
         for key in author_dict:
             for position, affiliation_key in enumerate(author_dict[key][1]):
+                if affiliation_key not in affiliation_dict:
+                    print 'Unknown affkey {0} for {1}'.format(
+                          affiliation_key, author_dict[key])
+                    continue
                 try:
                     author_dict[key][1][position] = \
                         affiliation_dict[affiliation_key]
