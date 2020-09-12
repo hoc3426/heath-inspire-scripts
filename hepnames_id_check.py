@@ -7,21 +7,26 @@ import numpy
 import re
 import sys
 
+from invenio.bibrecord import print_rec, record_add_field, \
+                              record_get_field_instances
 from invenio.search_engine import get_collection_reclist
-from invenio.search_engine import get_fieldvalues
+from invenio.search_engine import get_fieldvalues, get_record
 from invenio.search_engine import perform_request_search
 from invenio.search_engine import get_all_field_values
 from invenio.intbitset import intbitset
 
 #from invenio.bibauthorid_dbinterface \
 #     import _select_from_aidpersoniddata_where
+
+
 from invenio.dbquery import run_sql
 
 
 
 from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     bad_id_check, \
-                                    get_hepnames_anyid_from_recid
+                                    get_hepnames_anyid_from_recid,\
+                                    get_recid_from_id
 
 RECIDS_HEPN = get_collection_reclist('HepNames')
 RECIDS_INST = get_collection_reclist('Institutions')
@@ -139,6 +144,7 @@ def check_ids():
 
     print "Finding new ORCIDs in HEP"
     new_orcids(already_seen)
+    
 
 def bad_inspire_id():
     '''Find bad INSPIRE IDs in HEP'''
@@ -165,13 +171,18 @@ def bad_inspire_id():
     for baddie in baddies:
         print baddie
 
-def new_orcids(already_seen):
+def new_orcids(already_seen={}):
     """Search for new ORCIDs in HEP."""
 
-    orcid_counter = 0
+    #check to see all ORCIDs in HEP are well-formed
     fields = ('100__j', '700__j', '100__k', '700__k')
+    orcids_in_hep = {}
+    bad_orcids = set()
     for field in fields:
-        for orcid in get_all_field_values(field):
+        orcids_in_hep[field] = set(get_all_field_values(field))
+        for orcid in orcids_in_hep[field]:
+            if orcid in orcids_in_hep:
+                continue
             if not re.search('00-000', orcid):
                 continue
             if not orcid.startswith('ORCID:'):
@@ -187,44 +198,87 @@ def new_orcids(already_seen):
                 if len(recid):
                     print 'Bad ORCID', recid, orcid
 
-
-    search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
-              or {3}:ORCID:* 980:core".format(fields[0],
-                  fields[1], fields[2], fields[3])
-    search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
-              or {3}:ORCID:* (037__c:hep-* or 037__c:nucl-* \
-              or 037__c:math*)".format(fields[0],
-                  fields[1], fields[2], fields[3])
-    #search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
-    #          or {3}:ORCID:* 037__c:/^hep-[pt]h$/".format(fields[0],
-    #              fields[1], fields[2], fields[3])
-
-
-    result = perform_request_search(p=search, cc='HEP')
-    #search = "{0}:ORCID:* or {1}:ORCID:* or {2}:ORCID:* \
-    #          or {3}:ORCID:*".format(fields[0],
-    #              fields[1], fields[2], fields[3])
-    #result = perform_request_search(p=search, cc='Fermilab')
-
-    for recid, field in [(recid, field) for recid in result \
-                                        for field in fields]:
-        for orcid in get_fieldvalues(recid, field):
-            if not orcid.startswith('ORCID:'):
+    #Check to see if there are any CORE ORCIDs not in HEPNames
+    fields = fields[:2]
+    all_identifiers = set(get_all_field_values('035__a'))
+    search_core = '037__c:hep-* or 037__c:nucl-* or 037__c:gr-qc'
+    search_core = '037__c:nucl-*'
+    core = intbitset(perform_request_search(p=search_core, cc='HEP'))
+    search = "{0}:ORCID:* or {1}:ORCID:*".format(fields[0], fields[1])
+    result = intbitset(perform_request_search(p=search, cc='HEP'))
+    result = result & core
+    new_orcids = set()
+    hepnames_to_add_dict = {}
+    orcid_counter = 0
+    for recid in result:
+        record = get_record(recid)
+        for (tag, field_instance) in \
+                [(tag, field_instance) for tag in fields \
+                 for field_instance in record_get_field_instances(record, \
+                 tag[0:3], tag[3], tag[4])]:
+            aff = author = email = orcid = None
+            hepnames_recid = hepnames_orcid = None
+            for code, value in field_instance[0]:
+                #print recid, code, value
+                if code == 'j' and value.startswith('ORCID:'):
+                    orcid = value.strip('ORCID:')
+                    if orcid in all_identifiers:
+                        orcid = None
+                        break
+                    if orcid in new_orcids:
+                        orcid = None
+                        break
+                    if get_recid_from_id(orcid):
+                        orcid = None
+                        break
+                    new_orcids.add(orcid)
+                elif code == 'a':
+                    author = value
+                elif code == 'i':
+                    hepnames_recid = get_recid_from_id(value)
+                    if not hepnames_recid:
+                       print 'Bad INSPIRE ID on HEP record', recid, value
+                       continue
+                elif code == 'm':
+                    hepnames_recid = get_recid_from_id(value)
+                    email = value
+                elif code == 'u':
+                    aff = value
+            if hepnames_recid:
+                hepnames_orcid = get_hepnames_anyid_from_recid(recid, 'ORCID')
+                if hepnames_orcid:
+                    print "Mismatch:", recid, orcid, hepnames_orcid, \
+                                       hepnames_recid
+                    continue
+            if orcid and author and hepnames_recid:
+                print '*', recid, author, orcid, hepnames_orcid, hepnames_recid
+                hepnames_to_add_dict[hepnames_recid] = orcid
+            elif orcid and author:
+                #This ORCID must be added by hand
+                print "inspirehep.net/record/{0} orcid.org/{1}".format(
+                      str(recid), orcid)
+                print "  {0:30}{1:20}{2}".format(author, email, aff)
+                orcid_counter += 1
                 continue
-            orcid = orcid.strip('ORCID:')
-            if orcid in already_seen:
-                continue
-            if bad_id_check(orcid, 'ORCID'):
-                print "Bad ORCID in HEP:", orcid
-            already_seen[orcid] = recid
-            print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
-                  format(str(recid), orcid)
-            orcid_counter += 1
-            #search = '001:' + str(recid) + ' 980:CORE'
-            #if perform_request_search(p=search, cc='HEP'):
-            #  print "http://inspirehep.net/record/{0}\thttp://orcid.org/{1}".\
-            #      format(str(recid), orcid)
+
+
     print 'New orcids:', orcid_counter
+    orcids = len(hepnames_to_add_dict)
+    if not orcids:
+        return
+    print 'Appending orcids:', orcids
+    filename = 'tmp_' + __file__
+    filename = re.sub('.py', '_orcids_append.out', filename)
+    output = open(filename, 'w')
+    for recid, orcid in hepnames_to_add_dict.items():
+        record = {}
+        record_add_field(record, '001', controlfield_value=str(recid))
+        subfields = (('a', orcid), ('9', 'ORCID'), ('2', 'from HEP'))
+        record_add_field(record, '035', '_', '_', subfields=subfields)
+        output.write(print_rec(record))
+    output.close()
+    print filename
+    
 
 def bad_url_z():
     """Check to make sure $$z field is correct."""
