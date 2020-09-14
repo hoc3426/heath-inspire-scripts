@@ -28,6 +28,8 @@ from hep_convert_email_to_id import find_inspire_id_from_record, \
                                     get_hepnames_anyid_from_recid,\
                                     get_recid_from_id
 
+from hepnames_id_check_import import CORE
+
 RECIDS_HEPN = get_collection_reclist('HepNames')
 RECIDS_INST = get_collection_reclist('Institutions')
 RECIDS_EXPT = get_collection_reclist('Experiments')
@@ -201,8 +203,7 @@ def new_orcids(already_seen={}):
     #Check to see if there are any CORE ORCIDs not in HEPNames
     fields = fields[:2]
     all_identifiers = set(get_all_field_values('035__a'))
-    search_core = '037__c:hep-* or 037__c:nucl-* or 037__c:gr-qc'
-    search_core = '037__c:nucl-*'
+    search_core = CORE
     core = intbitset(perform_request_search(p=search_core, cc='HEP'))
     search = "{0}:ORCID:* or {1}:ORCID:*".format(fields[0], fields[1])
     result = intbitset(perform_request_search(p=search, cc='HEP'))
