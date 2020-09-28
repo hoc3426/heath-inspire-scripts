@@ -119,7 +119,11 @@ class OSTI(Repository):
     def __init__(self):
         super(OSTI, self).__init__(r'doi:10\.2172/\d+')
 
+class HEPDATA(Repository):
+    """Set up the HEPDATA subclass."""
 
+    def __init__(self):
+        super(HEPDATA, self).__init__(r'doi:10\.17182/hepdata\.\d+')
 
 class Zenodo(Repository):
     """Set up the Zenodo subclass."""
@@ -164,6 +168,9 @@ def main():
     output.write('\n--------------\n\n')
     osti_output = OSTI()
     output.write(osti_output.citations)
+    output.write('\n--------------\n\n')
+    HEPDATA_output = HEPDATA()
+    output.write(HEPDATA_output.citations)
     output.write('\n--------------\n\n')
     zenodo_output = Zenodo()
     output.write(zenodo_output.citations)

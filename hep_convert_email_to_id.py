@@ -310,7 +310,7 @@ def create_xml(recid, tags, author_dict):
             derived_orcid = 'ORCID:' + derived_orcid
             correct_subfields.append(('k', derived_orcid))
             flag = True
-        elif derived_inspire_id and not inspire_id and not orcid_flag:
+        if derived_inspire_id and not inspire_id and not orcid_flag:
             correct_subfields.append(('i', derived_inspire_id))
             flag = True
         record_add_field(correct_record, tag[0:3], tag[3], tag[4], \

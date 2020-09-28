@@ -34,7 +34,42 @@ from invenio.textutils import translate_latex2unicode
 #from osti_web_service import check_already_sent
 #from datetime import datetime
 
-    
+def latex_check(input):
+
+    for math in (r'_', r'^', r'\\'):
+        if math in input and not r"$" in input:
+            return input 
+    for symbol in (r'&'):
+        slash_symbol = '\\' + symbol
+        if symbol in input and not slash_symbol in input:
+            return input
+    if input.count('$') % 2 != 0:
+            return input
+    return None    
+
+def check_titles(search):
+
+    from invenio.search_engine import perform_request_search, get_fieldvalues
+    LIMIT = 100
+    result = perform_request_search(p=search, cc='HEP')
+    print search
+    print 'Checking {0} records'.format(len(result))
+    icount = 0
+    for iteration, recid in enumerate(result):
+        if icount > LIMIT:
+            break
+        try:
+            check = latex_check(get_fieldvalues(recid, '245__a')[0])
+        except IndexError:
+            print 'PROBLEM with title'
+            print 'https://old.inspirehep.net/record/{0}'.format(recid)
+            return
+        if check:
+            print 'https://old.inspirehep.net/record/{0}'.format(recid)
+            print '   ', check
+            icount += 1
+    print '{0} out of {1}'.format(icount, iteration)
+
 def add_date():
 
     import re
@@ -793,6 +828,4 @@ def bad_reports():
 
 if __name__ == '__main__':
 
-    add_date()
-
-
+    check_titles('find primarch hep-ex')
