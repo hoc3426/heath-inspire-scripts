@@ -103,8 +103,11 @@ def download_source(eprint, download_path = ""):
 def author_first_last(author):
     """Determines the components of the author's name.."""
 
+    #Handle ways for 'q'
     qname = re.search(u'\s*\\\\begin{CJK\*}{UTF8}{gkai}\((.*)\)\\\\end{CJK\*}',
                       author)
+    if not qname:
+        qname = re.search(u'\(chname\{(.*)\}\)', author)
     if qname:
         author = author.replace(qname.group(0), u'')
         qname = ':' + qname.group(1)

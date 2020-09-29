@@ -62,10 +62,10 @@ def check_titles(search):
             check = latex_check(get_fieldvalues(recid, '245__a')[0])
         except IndexError:
             print 'PROBLEM with title'
-            print 'https://old.inspirehep.net/record/{0}'.format(recid)
+            print 'https://inspirehep.net/record/{0}'.format(recid)
             return
         if check:
-            print 'https://old.inspirehep.net/record/{0}'.format(recid)
+            print 'https://inspirehep.net/record/{0}'.format(recid)
             print '   ', check
             icount += 1
     print '{0} out of {1}'.format(icount, iteration)
