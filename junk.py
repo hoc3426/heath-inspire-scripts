@@ -181,19 +181,27 @@ def cleanup(search, tag, cc='HEP', old=None, new=None):
     if old and new:
         old = re.compile(old, re.I)
     for recid in perform_request_search(p=search, cc=cc):
-       if recid in RECIDS:
-           print 'Already done', recid
-           continue
-       RECIDS.add(recid)
+       try:
+           if recid in RECIDS:
+               print 'Already done', recid
+               continue
+           RECIDS.add(recid)
+       except NameError:
+           pass
        output = print_record(recid, ot=tag, format='hm')
        output = output.replace(pre_open, '')
        output = output.replace(pre_close, '')
-       print 'OLD', output
+       output = re.sub(r'.*Brief [Ee]ntry.*\n', '', output)
+       output = re.sub(r'.*Temporary [Ee]ntry.*\n', '', output)
+       output = re.sub(r'\n', '', output)
+       output = re.sub(r'^(\d)', r'\n\1', output)
+
+       #print 'OLD', output
        if new in output:
            output = re.sub(old, '', output)
        elif old.search(output):
            output = re.sub(old, new, output)
-       print 'NEW', output
+       print output
 
 
 def create_xml(recid, tag, subfield, value):
@@ -828,4 +836,7 @@ def bad_reports():
 
 if __name__ == '__main__':
 
-    check_titles('find primarch hep-ex')
+    #check_titles('find primarch nucl-th')
+    #cleanup("100:'orcid.org' or 700:'orcid.org'", ['100','700'], cc='HEP', old=r'$$https?://orcid.org/0000', new='$$jORCID:0000')
+    cleanup("520__a:/github\.com/ -8564_y:github", ['520'], cc='HEP', old=r'500__ $$a.*https://github', new='8564_ $$yGitHub$$uhttps://github')
+

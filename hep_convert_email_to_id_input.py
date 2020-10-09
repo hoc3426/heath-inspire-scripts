@@ -2,6 +2,7 @@ VERBOSE = False
 #VERBOSE = True
 
 RECIDS = None
+COUNTER_MAX = 100
 
 SEARCH = 'find dadd 2015 or 2016 or 2017 and r fermilab not ac 10+'
 SEARCH = 'find dadd 2015 and r fermilab not ac 10+'

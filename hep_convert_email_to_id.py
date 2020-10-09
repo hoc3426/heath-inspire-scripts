@@ -18,7 +18,7 @@ from invenio.intbitset import intbitset
 from invenio.bibformat_engine import BibFormatObject
 from invenio.search_engine import get_collection_reclist
 
-from hep_convert_email_to_id_input import RECIDS, SEARCH, VERBOSE
+from hep_convert_email_to_id_input import COUNTER_MAX, RECIDS, SEARCH, VERBOSE
 
 HN = get_collection_reclist('HepNames')
 
@@ -28,8 +28,6 @@ EMAILS_HEPNAMES = get_all_field_values('371__m') + \
          get_all_field_values('595__o')
 EMAILS_HEPNAMES = set([email_hn.lower() for email_hn in EMAILS_HEPNAMES])
 EMAILS_HEP = get_all_field_values('100__m') + get_all_field_values('700__m')
-
-COUNTER_MAX = 400
 
 def generate_check_digit(base_digits):
     '''
