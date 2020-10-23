@@ -258,7 +258,7 @@ def new_orcids(already_seen={}):
                 #This ORCID must be added by hand
                 print "inspirehep.net/record/{0} orcid.org/{1}".format(
                       str(recid), orcid)
-                print "  {0:30}{1:20}{2}".format(author, email, aff)
+                print "  {0:30}{1:30}{2}".format(author, email, aff)
                 orcid_counter += 1
                 continue
 

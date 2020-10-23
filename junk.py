@@ -34,6 +34,30 @@ from invenio.textutils import translate_latex2unicode
 #from osti_web_service import check_already_sent
 #from datetime import datetime
 
+def author_count():
+    from invenio.search_engine import perform_request_search
+
+    for count in range(1, 10):
+        search = 'find primarch hep-lat and ac ' + str(count)
+        result = perform_request_search(p=search, cc='HEP')
+        print '{0:12s} {1:6d}'.format(str(count), len(result))
+    z = [(count, mag) for mag in range(1, 4) for count in range(1, 10)]
+    for count, mag in z:
+        count = '{0}{1}->{0}{2}'.format(str(count), '0'*mag, '9'*mag)
+        search = 'find primarch hep-lat and ac ' + count
+        result = perform_request_search(p=search, cc='HEP')
+        print '{0:12s} {1:6d}'.format(count, len(result))
+#    for count in range(1, 10):
+#        count = '{0}00->{0}99'.format(str(count))
+#        search = 'find ac ' + str(count)
+#        result = perform_request_search(p=search, cc='HEP')
+#        print '{0:12s} {1:6d}'.format(str(count), len(result))
+#    for count in range(1, 10):
+#        count = '{0}000->{0}990'.format(str(count))
+#        search = 'find ac ' + str(count)
+#        result = perform_request_search(p=search, cc='HEP')
+#        print '{0:12s} {1:6d}'.format(str(count), len(result))
+
 def latex_check(input):
 
     for math in (r'_', r'^', r'\\'):
@@ -46,6 +70,13 @@ def latex_check(input):
     if input.count('$') % 2 != 0:
             return input
     return None    
+
+
+def tex_title(title):
+
+    title = re.sub(r'\b(\S+[_^]\S+)\b', r'$\1$', title)
+    title = title.replace('$ x $', ' \times ')
+    return title
 
 def check_titles(search):
 
@@ -61,14 +92,15 @@ def check_titles(search):
         try:
             check = latex_check(get_fieldvalues(recid, '245__a')[0])
         except IndexError:
-            print 'PROBLEM with title'
+            print 'PROBLEM with title', get_fieldvalues(recid, '245__a')
             print 'https://inspirehep.net/record/{0}'.format(recid)
             return
         if check:
             print 'https://inspirehep.net/record/{0}'.format(recid)
             print '   ', check
+            #print '   ', tex_title(check)
             icount += 1
-    print '{0} out of {1}'.format(icount, iteration)
+    print '{0} out of {1} records checked'.format(icount, iteration)
 
 def add_date():
 
@@ -173,7 +205,7 @@ def check_bibcodes(file_name):
         print line
 
 
-def cleanup(search, tag, cc='HEP', old=None, new=None):
+def cleanup(search, tag, cc='HEP', old='', new=''):
     import re
     from invenio.search_engine import perform_request_search, print_record
     pre_open = '<pre style="margin: 1em 0px;">'
@@ -193,7 +225,7 @@ def cleanup(search, tag, cc='HEP', old=None, new=None):
        output = output.replace(pre_close, '')
        output = re.sub(r'.*Brief [Ee]ntry.*\n', '', output)
        output = re.sub(r'.*Temporary [Ee]ntry.*\n', '', output)
-       output = re.sub(r'\n', '', output)
+       #output = re.sub(r'\n', '', output)
        output = re.sub(r'^(\d)', r'\n\1', output)
 
        #print 'OLD', output
@@ -593,7 +625,7 @@ def bad_aff():
 def citation_primarch(recid):
   total = 3641
   for primarch in ['cond-mat*', 
-                   'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph',
+                   'gr-qc', 'hep-ex', 'hep-lat', 'hep-lat',
                    'hep-th', 'math-ph', 'math*', 'nucl-ex', 'nucl-th',
                    'quant-ph',
 'astro-ph or 037__c:astro-ph.he or 037__c:astro-ph.co or 037__c:astro-ph.GA \
@@ -836,7 +868,10 @@ def bad_reports():
 
 if __name__ == '__main__':
 
-    #check_titles('find primarch nucl-th')
+    import re
+    check_titles('find primarch hep-*')
     #cleanup("100:'orcid.org' or 700:'orcid.org'", ['100','700'], cc='HEP', old=r'$$https?://orcid.org/0000', new='$$jORCID:0000')
-    cleanup("520__a:/github\.com/ -8564_y:github", ['520'], cc='HEP', old=r'500__ $$a.*https://github', new='8564_ $$yGitHub$$uhttps://github')
-
+    #cleanup("520__a:/github\.com/ -8564_y:github", ['520'], cc='HEP', old=r'500__ $$a.*https://github', new='8564_ $$yGitHub$$uhttps://github')
+    #cleanup("678__a:/(prize|award|medal)/", ['678'], cc='HepNames')
+    #cleanup("678__a:/dirac/", ['100', '678'], cc='HepNames')
+    #author_count()

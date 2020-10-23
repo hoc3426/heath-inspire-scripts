@@ -1,1 +1,1 @@
-CORE = '037__c:hep-ph'
+CORE = '037__c:hep-th'
