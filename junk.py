@@ -34,6 +34,15 @@ from invenio.textutils import translate_latex2unicode
 #from osti_web_service import check_already_sent
 #from datetime import datetime
 
+def primarch():
+    from invenio.search_engine import perform_request_search
+  
+    primarch = 'quant-ph'
+    for year in range(1995, 2020):
+        search = 'find primarch {0} and de {1}'.format(primarch, year)   
+        result = perform_request_search(p=search, cc='HEP')
+        print '{0:12s} {1:6d}'.format(str(year), len(result))
+
 def author_count():
     from invenio.search_engine import perform_request_search
 
@@ -47,16 +56,6 @@ def author_count():
         search = 'find primarch hep-lat and ac ' + count
         result = perform_request_search(p=search, cc='HEP')
         print '{0:12s} {1:6d}'.format(count, len(result))
-#    for count in range(1, 10):
-#        count = '{0}00->{0}99'.format(str(count))
-#        search = 'find ac ' + str(count)
-#        result = perform_request_search(p=search, cc='HEP')
-#        print '{0:12s} {1:6d}'.format(str(count), len(result))
-#    for count in range(1, 10):
-#        count = '{0}000->{0}990'.format(str(count))
-#        search = 'find ac ' + str(count)
-#        result = perform_request_search(p=search, cc='HEP')
-#        print '{0:12s} {1:6d}'.format(str(count), len(result))
 
 def latex_check(input):
 
@@ -90,11 +89,12 @@ def check_titles(search):
         if icount > LIMIT:
             break
         try:
-            check = latex_check(get_fieldvalues(recid, '245__a')[0])
+            title = get_fieldvalues(recid, '245__a')[0]
         except IndexError:
             print 'PROBLEM with title', get_fieldvalues(recid, '245__a')
-            print 'https://inspirehep.net/record/{0}'.format(recid)
+            print 'https://old.inspirehep.net/record/{0}'.format(recid)
             return
+        check = latex_check(title)
         if check:
             print 'https://inspirehep.net/record/{0}'.format(recid)
             print '   ', check
@@ -869,9 +869,10 @@ def bad_reports():
 if __name__ == '__main__':
 
     import re
-    check_titles('find primarch hep-*')
+    check_titles('find r bnl')
     #cleanup("100:'orcid.org' or 700:'orcid.org'", ['100','700'], cc='HEP', old=r'$$https?://orcid.org/0000', new='$$jORCID:0000')
     #cleanup("520__a:/github\.com/ -8564_y:github", ['520'], cc='HEP', old=r'500__ $$a.*https://github', new='8564_ $$yGitHub$$uhttps://github')
     #cleanup("678__a:/(prize|award|medal)/", ['678'], cc='HepNames')
     #cleanup("678__a:/dirac/", ['100', '678'], cc='HepNames')
     #author_count()
+    #primarch()

@@ -180,11 +180,15 @@ def new_orcids(already_seen={}):
     fields = ('100__j', '700__j', '100__k', '700__k')
     orcids_in_hep = {}
     bad_orcids = set()
+    already_seen = set()
     for field in fields:
         orcids_in_hep[field] = set(get_all_field_values(field))
         for orcid in orcids_in_hep[field]:
-            if orcid in orcids_in_hep:
+            #if orcid in orcids_in_hep:
+            #    continue
+            if orcid in already_seen:
                 continue
+            already_seen.add(orcid)
             if not re.search('00-000', orcid):
                 continue
             if not orcid.startswith('ORCID:'):
@@ -202,7 +206,8 @@ def new_orcids(already_seen={}):
 
     #Check to see if there are any CORE ORCIDs not in HEPNames
     fields = fields[:2]
-    all_identifiers = set(get_all_field_values('035__a'))
+    all_identifiers = set(get_all_field_values('035__a')) or \
+                      set(get_all_field_values('035__z'))
     search_core = CORE
     core = intbitset(perform_request_search(p=search_core, cc='HEP'))
     search = "{0}:ORCID:* or {1}:ORCID:*".format(fields[0], fields[1])
