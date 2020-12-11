@@ -213,12 +213,13 @@ def main(authors, inspire):
                     logging.warn('  Bad ORCID: {0}'.format(orcid))
                     orcid = None
             else:
-                try:
-                    element.decode('ascii')
-                except UnicodeDecodeError:
-                    native_name = element
-                else:
-                    affiliation = element
+                affiliation = element
+                #try:
+                #    element.decode('ascii')
+                #except UnicodeDecodeError:
+                #    native_name = element
+                #else:
+                #    affiliation = element
         for value in (email, orcid):
             if not value:
                 continue

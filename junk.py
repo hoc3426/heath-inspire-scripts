@@ -62,7 +62,7 @@ def latex_check(input):
     for math in (r'_', r'^', r'\\'):
         if math in input and not r"$" in input:
             return input 
-    for symbol in (r'&'):
+    for symbol in (r'&', r'#', r'%'):
         slash_symbol = '\\' + symbol
         if symbol in input and not slash_symbol in input:
             return input
@@ -204,15 +204,35 @@ def check_bibcodes(file_name):
             continue
         print line
 
+import requests
+def new_url(line):
+
+    headers = headers = {'user-agent': 'heath'}
+    new_url = None
+    url_search = re.search(r'(https?://.*linkedin.com/pub/.*)/?\$\$yLINKEDIN', line)
+    if not url_search:
+        return None
+    url = url_search.group(1)
+    req = requests.get(url, allow_redirects=False, headers=headers)
+    new_url = req.headers.get('Location')
+    print 'url     = ', url
+    print 'new_url = ', new_url
+    new_line = line.replace(url, new_url)
+    return new_line
+
 
 def cleanup(search, tag, cc='HEP', old='', new=''):
     import re
     from invenio.search_engine import perform_request_search, print_record
+
     pre_open = '<pre style="margin: 1em 0px;">'
     pre_close = '</pre>'
     if old and new:
         old = re.compile(old, re.I)
-    for recid in perform_request_search(p=search, cc=cc):
+    print search
+    result = perform_request_search(p=search, cc=cc)
+    print len(result)
+    for recid in result:
        try:
            if recid in RECIDS:
                print 'Already done', recid
@@ -228,12 +248,15 @@ def cleanup(search, tag, cc='HEP', old='', new=''):
        #output = re.sub(r'\n', '', output)
        output = re.sub(r'^(\d)', r'\n\1', output)
 
-       #print 'OLD', output
+       print output
        if new in output:
            output = re.sub(old, '', output)
        elif old.search(output):
            output = re.sub(old, new, output)
-       print output
+       #print 'NEW', output
+       
+       #if new_output:
+       #    print new_output
 
 
 def create_xml(recid, tag, subfield, value):
@@ -869,10 +892,13 @@ def bad_reports():
 if __name__ == '__main__':
 
     import re
-    check_titles('find r bnl')
+    check_titles('find dadd 2020')
     #cleanup("100:'orcid.org' or 700:'orcid.org'", ['100','700'], cc='HEP', old=r'$$https?://orcid.org/0000', new='$$jORCID:0000')
     #cleanup("520__a:/github\.com/ -8564_y:github", ['520'], cc='HEP', old=r'500__ $$a.*https://github', new='8564_ $$yGitHub$$uhttps://github')
     #cleanup("678__a:/(prize|award|medal)/", ['678'], cc='HepNames')
     #cleanup("678__a:/dirac/", ['100', '678'], cc='HepNames')
     #author_count()
     #primarch()
+    #cleanup('8564_u:"*linkedin.com/pub*"', ['8564'], cc='HepNames')
+    #cleanup('773__t:"Presented at" -773__w:/\w/', ['773'], cc='HEP', old=r'^\d+ 773__ \$\$tPresented at', new='')
+ 
